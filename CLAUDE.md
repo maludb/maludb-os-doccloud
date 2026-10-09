@@ -63,5 +63,8 @@ graph** in a MaluDB memory database of its own. It is what Dropbox, Box and Next
 - Commit after every finished step on `main` in the repository's message style; never push unless the owner asks.
 
 ## State
-2026-10-09 — planned; the design awaits the owner's decisions (§13 D1–D16 and three open questions). Nothing built. Ports
-8190 / 8841 / 8842 reserved; K31 (the kernel's catalog row) follows the owner's go.
+2026-10-09 — planned and **APPROVED** (§15: D1–D16 and the three open questions, every recommendation taken). K31 built in the
+kernel (db/176). Nothing of the application built yet. **Next: Phase 0** (schema db/001–0NN proven on a scratch database incl.
+the 200,000-document timing set, the kit from Consultant Tracking, the extractor copied from Knowledge, the engine proof against
+the live MaluDB API, `maludb-os.json`, `os/{expert,clerk}.md`, the skills, `deploy/` with `ROOT_STEPS.sh`), then Phase 1 for the
+owner's checkpoint.

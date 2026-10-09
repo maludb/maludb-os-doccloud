@@ -633,7 +633,7 @@ queries with expected documents run before and after a policy or model change.
 | SP3 / HD4 / P4 / H3 | the siblings' "save to DocCloud" and a `reads[]` on `document_link` | nothing reads us yet |
 | KN1 | Knowledge's feed over `doccloud.documents_index` + `document_text` (a folder as a base) | Knowledge's `feeds` already consume K7 reads; the provider is this plan |
 
-## 13. The decisions (recommendations; the owner's answers go to §15)
+## 13. The decisions (recommendations; the owner's answers are §15 — every one taken, 2026-10-09)
 
 | # | Decision | Recommendation | Alternative |
 |---|---|---|---|
@@ -687,16 +687,38 @@ live in DocCloud — a later decision that would make `document_link` their door
 
 ## 15. The owner's answers
 
-*Awaiting the owner's checkpoint on §13 (D1–D16 and the three open questions).*
+**2026-10-09 — every recommendation of §13 taken, and the three open questions answered**, walked through one by one.
+
+| # | Decision | Where it lives |
+|---|---|---|
+| D1 | **"DocCloud", key `doccloud`, DNS label `doccloud`**, databases `<tenant>_doccloud` and `<tenant>_doccloud_memory`, roles `doccloud_rw` / `_records_ro` / `_activity_ro`, prefix `dc_` | `maludb-os.json`; §14 |
+| D2 | **Four roles**: Guest, Member (`user`), Curator, DocCloud admin; group ownership a row; the admin sees personal libraries, logged `library.admin_view` | §3; `dc_roles`; `app_roles` |
+| D3 | **A memory database of its own**, one namespace `dc`, the token read in `graph.php` alone; document content never enters the tenant's agent memory | §6.3; §14 |
+| D4 | **The expert answers about the store and runs keyword search; `graph_find` only when asked**; never an answer composed from a document's words (Knowledge's, through K7) | §5; `os/expert.md` |
+| D5 | **Ownership + library base + inherited additive rows + restrict; four levels (view, upload, edit, manage); `upload` sees only its own; guests by name; a link one thing; the admin everything, logged; the scale rule** | §3; `docs/build-specs/visibility.md` |
+| D6 | **New canonical `groups` / `group_members`** — custom or a department mirror; a group library created with the group and surviving it | §6.2; §6.4 |
+| D7 | **PostgreSQL full text on Spaces' `search_index`** (title A, tags and description B, 200,000 characters of text C), `websearch`, trigram on names; no second server | §6.1; slice 4 |
+| D8 | **Three graph policies per library and folder — `none` / `index` (default, `remember`, no model) / `full` (queued model extraction under 100 MB of text a month via K24, estimate first)**; replace on a new version, forget on purge | §6.3; `docs/build-specs/document-graph.md` |
+| D9 | **Resumable 8 MB parts; 2 GB per file (a setting); sha256-deduplicated blobs with a reference count; `finfo`; executables, HTML and SVG never inline; folders dropped as trees** | §6.1; `docs/build-specs/uploads-and-versions.md` |
+| D10 | **Versions: all for 30 days, then the last 10, the current always; the trash 30 days then purge; locks 24 h, breakable by a manager** — all settings | §6.2; slice 6 |
+| D11 | **Links expire in 30 days by default** ("never" only when the admin allows), download allowed by default, optional password, every open logged; **file requests upload-only and blind**; both pause for an agent | §4; slice 3 |
+| D12 | **Managed + free tags**; a free tag used by three becomes a proposal; folder auto-tag rules; merges keep aliases; the Clerk proposes from the graph | §6.2; slice 4 |
+| D13 | **A key acts as its person** (60/min, 5,000/day); the routes of §8; **four K7 shares** `folders_index`, `documents_index`, `document_text`, `document_link` (a signed 10-minute URL) | §8; slice 7 |
+| D14 | **Expert and Filing Clerk** hired on install; the pause list of §5; the Clerk Monday 06:50 | §5; `agents[]` |
+| D15 | **On request, not a default; the repository private** until the owner says | §12; the org |
+| D16 | **Ports 8190 / 8841 / 8842**, scratch 8701–8707; **the Spaces division** — the planning model builds K31, Phases 0–2, slice 1 and the exemplars (slice 2 uploads, slice 5 the graph, with 3 and 4 between); Sonnet 5.5 builds slices 6–9 and Phases 4–5 | §14; `CLAUDE.md` |
+| (a) | **The siblings' attachments stay theirs; "save to DocCloud" is each sibling's Extended item** (HD4, P4, SP3, H3: a `reads[]` on `document_link` and an upload through the API as the acting person) | §8; §11 |
+| (b) | **WebDAV is the first Extended item**, not version 1 | §11 |
+| (c) | **The bytes live under the install by default** (`/srv/apps/doccloud/storage/blobs`), `DC_STORAGE_DIR` pointing at a mount when the owner names one at install; `ROOT_STEPS.sh` makes it | §6; §14 |
 
 ## 16. State
 
-**2026-10-09 — planned; AWAITING THE OWNER'S DECISIONS (§13).** The research of §0 done: the field (Dropbox, Box, Nextcloud, Drive),
+**2026-10-09 — planned and APPROVED the same day (§15: D1–D16 and (a)–(c), every recommendation).** The research of §0 done: the field (Dropbox, Box, Nextcloud, Drive),
 the estate's canonical tables surveyed in every sibling's `db/*.sql` (Spaces' `search_index` and `page_permissions`, GL's secure-link
 shape, Help Desk's `tags`, Knowledge's extractor and memory-database pattern reused; `groups`, `documents`/`versions`/`blobs`,
 `folders`/`folder_access` and `document_tags` new canonical), MaluDB read for what it gives (no full-text route; no metadata or ACL
 filter on any search route; `remember` without a model; `documents` with a model call per ~1,800 characters, synchronous; several
-memory databases per tenant). Repository `maludb/maludb-os-doccloud` created private and cloned to `/srv/apps/doccloud`. Nothing
-of the kernel changed; K31 (db/176) follows the owner's go. **Next:** the owner's answers → K31 → Phase 0 (schema and proofs, the
+memory databases per tenant). Repository `maludb/maludb-os-doccloud` created private and cloned to `/srv/apps/doccloud`. **K31 built**
+the same day as the kernel's db/176 (the catalog row under Operations, category `storage`). **Next:** Phase 0 (schema and proofs, the
 kit, the extractor, the engine proof, `maludb-os.json`, agents, skills, `deploy/`) → Phase 1 for approval → Phase 2 → slice 1 →
 the exemplars (slices 2 and 5) → the handoff to Sonnet 5.5.
