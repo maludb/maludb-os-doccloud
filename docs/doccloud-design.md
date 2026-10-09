@@ -629,7 +629,10 @@ queries with expected documents run before and after a policy or model change.
 | **M10** | **A `document_ids[]` (or metadata) pre-filter on `POST /v1/memory/search` and `/recall`** so a visibility-filtered search stops over-fetching | owed upstream; the wall over-fetches ×3 to the cap until then |
 | **M11** | **An asynchronous or bulk ingest route** (`POST /v1/memory/documents` as a job) so a worker is not one HTTP request per document | owed upstream; DocCloud's queue holds the request, one at a time |
 | M3 / M6 / M7 | graph routes scoped by namespace; community detection; sequence-allocated subject ids and aliases | inherited from Knowledge; `document_type = 'dc'` filtering; subjects made through `remember` |
-| M12 | `remember` admits more than eight subjects per document (a document with twelve tags loses four) | owed upstream; the eight most used win until then |
+| M12 | `remember` admits more than eight subjects per document (a document with twelve tags loses four) | owed upstream; the eight most used win until then (`subjects_dropped` names the rest) |
+| M2 | usage on `POST /v1/memory/documents` | owed upstream; K24 meters at the proxy |
+| found | `source_type` and `subject_type` are CONTROLLED vocabularies (`malu$source_type`: document, conversation, ticket, …; the subject types project, person, ai_agent, equipment, software, network, event, process, workflow, time_period, other, stakeholder, concept): an unknown one is a 422 — for a subject type, AFTER the model was paid | both policies store `source_type = 'document'` (`full` adds `document_type = 'dc'`; `remember` sets none — the policy is `graph_documents.policy`); the `full` prompt names registered types only (`docs/build-specs/document-graph.md`) |
+| found | `GET /v1/subjects/{id}` answers a subject's documents directly; `graph/query`'s `namespace` is a canonical-name prefix (useless here); `/v1/memory/search` returns `document_id` but no metadata; a `document_ids[]` body field is ignored | the memory database being DocCloud's own (D3) is what scopes every graph read; the wall maps `maludb_document_id` → `graph_documents` → `dc_can_see_document()` (`tests/phase0/engine/FINDINGS.md`) |
 | SP3 / HD4 / P4 / H3 | the siblings' "save to DocCloud" and a `reads[]` on `document_link` | nothing reads us yet |
 | KN1 | Knowledge's feed over `doccloud.documents_index` + `document_text` (a folder as a base) | Knowledge's `feeds` already consume K7 reads; the provider is this plan |
 
@@ -712,6 +715,39 @@ live in DocCloud — a later decision that would make `document_link` their door
 | (c) | **The bytes live under the install by default** (`/srv/apps/doccloud/storage/blobs`), `DC_STORAGE_DIR` pointing at a mount when the owner names one at install; `ROOT_STEPS.sh` makes it | §6; §14 |
 
 ## 16. State
+
+**2026-10-09 — Phase 0 COMPLETE and Phase 1 WRITTEN, the same day as the plan** (the owner: "proceed doing the rest of the early tasks … stop
+when we are ready to delegate to Sonnet 5.5" — so Phase 1 was built on and its checkpoint stays open for the owner to read; nothing of it
+is PHP). **Phase 0:** db/001–015 (the kit's five from Knowledge; libraries/groups/folders, the file store, the access rows and the walls,
+tags, the keyword index, links and requests, the graph's bookkeeping, the reused tables, the reads and the worker's passes, 33 views)
+proven by `db/proof/phase0_proof.sql` (**160 checks**: every actor, the ownership rule, inheritance and restrict, dedupe, versions and
+their windows, the trash and the purge freeing a blob, locks, tags and merges, the index honouring the wall for four callers, links,
+requests and rates, the graph's queue, budget and THE WALL over the engine's answers, keys, notifications, the read roles seeing views
+only) and `db/proof/phase0_timing.sql` (the 200,000-document set — the numbers below); the kit from Inventory/Knowledge proven without a
+kernel (`tests/phase0/run.sh`, **71**); the extractor copied from Knowledge (`tests/extract/run.sh`, **34**); **`app/doccloud/graph.php`
+proven against the real MaluDB API on a scratch memory database** (`tests/phase0/engine.sh`, **74**; `tests/phase0/engine/FINDINGS.md`,
+§12); `maludb-os.json`, `os/{expert,clerk}.md`, nine skills, `deploy/` with `ROOT_STEPS.sh`; the installer's `plan` clean. Found on the way:
+a proof that runs an action and inspects the result in one expression fails — an uncorrelated subquery is evaluated before the function
+beside it (Spaces' lesson, met again); a bulk load must skip the per-row counts (`app.dc_bulk`, `dc_recount_bulk()`); a trigger that
+copies inherited rows must guard against its own recursion (`app.dc_inheriting`); a read over 200,000 rows must put the wall AFTER an
+indexed cut (the trigram name search, recents, duplicates — the curator's report runs with no per-row wall). **Phase 1:**
+`docs/doccloud-mcp-tool-surface.md` (71 records tools, 7 activity), `docs/doccloud-action-manifest.md` (67 screens, 95 actions, 23
+paused), `mcp/action_registry.json` (`--check` green; `bin/sync_approvals.php` in step), the three build specs
+(`uploads-and-versions.md`, `visibility.md`, `document-graph.md`), ten slice specs (`sso-shell` + nine; `uploads-versions` and `graph`
+the exemplars), `tests/phase1/check_specs.sh` (**55**: every manifest row claimed once, every tool named, every approval a manifest
+action), `docs/phase1-consistency.md`; **db/016** adds the reads Phase 1 asked for (the folder path text, a page and an excerpt of a
+version, the shares' reads, the graph filter with the find's filters, the Clerk's settings and report). **The scale rule, measured** (`tests/phase0/timing.sh`, 200,000 documents in 2,460 folders of 60 libraries, 620 explicit access rows,
+as an ordinary member with a few groups and a department; the planning host, nothing cached): the principals 10 ms · my libraries 33 ·
+a folder listing page of 100 (a group library) 3 · (a shared library) 16 · a keyword search page matching 20,000 documents 231 (it was
+21,000 before the batch wall `dc_visible_among()`) · the same with filters 8 · the nearest name by trigram 1,107 (every synthetic name
+is `doc-N`; a GiST `<->` scan, the index-ordered worst case) · the graph filter over 150 candidates 270 · shared with me 11 ·
+`mcp_documents` for one folder 99 · recents 48 · the admin's storage by library 374 · duplicates 627 · a folder move with its subtree
+11 — the ceiling is 2,000 ms a step and every step is under it. **Decisions taken in the
+specs, for the owner to confirm:** the Clerk's reach is ONE report read (`dc_clerk_report()`: names, counts, ids — never content), not
+membership of every library; the `document_link` signing key is derived from `ACTION_TOKEN_KEY` (`hash_hmac('sha256',
+'doccloud-link-signing-v1', …)`), nothing new to install; the routing form is the vhost's (`/s/`, `/r/`, `/d/`, `/f/{id}` →
+`/folders/{id}`, a document's page `/documents/{id}`); GET navigations are not actions; `key_revoke` never pauses. **Next:** Phase 2
+(`sso-shell.md`), slice 1, slice 2 (THE FIRST EXEMPLAR), slices 3–4, slice 5 (THE SECOND) — the handoff point.
 
 **2026-10-09 — planned and APPROVED the same day (§15: D1–D16 and (a)–(c), every recommendation).** The research of §0 done: the field (Dropbox, Box, Nextcloud, Drive),
 the estate's canonical tables surveyed in every sibling's `db/*.sql` (Spaces' `search_index` and `page_permissions`, GL's secure-link

@@ -63,8 +63,9 @@ graph** in a MaluDB memory database of its own. It is what Dropbox, Box and Next
 - Commit after every finished step on `main` in the repository's message style; never push unless the owner asks.
 
 ## State
-2026-10-09 — planned and **APPROVED** (§15: D1–D16 and the three open questions, every recommendation taken). K31 built in the
-kernel (db/176). Nothing of the application built yet. **Next: Phase 0** (schema db/001–0NN proven on a scratch database incl.
-the 200,000-document timing set, the kit from Consultant Tracking, the extractor copied from Knowledge, the engine proof against
-the live MaluDB API, `maludb-os.json`, `os/{expert,clerk}.md`, the skills, `deploy/` with `ROOT_STEPS.sh`), then Phase 1 for the
-owner's checkpoint.
+2026-10-09 — planned and **APPROVED** (§15); K31 built in the kernel (db/176). **Phase 0 COMPLETE and Phase 1 WRITTEN the same day**
+(design §16: schema db/001–016, the proof 160 + the 200,000-document timing set; the kit 71; the extractor 34; the engine proof 74;
+Phase 1's 55 spec checks; the installer's plan clean). The owner's checkpoint on Phase 1 stays open to read; by the owner's word the build
+goes on to Phase 2, slice 1 and the exemplars (slices 2 and 5, with 3 and 4 between) — the handoff point to Sonnet 5.5. Proofs:
+`bash tests/phase0/run.sh`, `bash tests/phase0/timing.sh`, `bash tests/extract/run.sh`, `bash tests/phase0/engine.sh`,
+`bash tests/phase1/check_specs.sh`.

@@ -1,0 +1,3620 @@
+{
+    "generated_from": "docs/doccloud-action-manifest.md",
+    "generated_at": "2026-10-09T15:29:14+00:00",
+    "screens": {
+        "home": {
+            "screen": "home",
+            "url": "/",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "when": "the start: my libraries and groups as cards, recent documents, shared with me this week, open requests, links expiring, the Clerk's note; a new person's one button, Upload your first file",
+            "params": [],
+            "built": true,
+            "stub": false
+        },
+        "shared-with-me": {
+            "screen": "shared-with-me",
+            "url": "/shared",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "when": "what was shared with me, by whom, when",
+            "params": [
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "recent": {
+            "screen": "recent",
+            "url": "/recent",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "when": "what I opened or changed lately",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "favourites": {
+            "screen": "favourites",
+            "url": "/favourites",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "when": "my favourites: documents and folders",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "notifications": {
+            "screen": "notifications",
+            "url": "/notifications",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "when": "my notices, unread first",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "activity": {
+            "screen": "activity",
+            "url": "/activity",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "when": "my own trail here",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "settings": {
+            "screen": "settings",
+            "url": "/settings/",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "when": "my preferences: notification kinds and channels",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "settings-tokens": {
+            "screen": "settings-tokens",
+            "url": "/settings/tokens/",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "when": "my MCP tokens and my API keys: mint (shown once), rotate, revoke",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "library-list": {
+            "screen": "library-list",
+            "url": "/libraries",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "the libraries I reach as cards: kind, used of quota, policy",
+            "params": [
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "library-view": {
+            "screen": "library-view",
+            "url": "/libraries/{id}",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "a library at a glance: its root folder, counts, quota, policy, its group or owner",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "library-add": {
+            "screen": "library-add",
+            "url": "/libraries/new",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "to make a shared library: a name, who gets what by default (curators)",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "library-edit": {
+            "screen": "library-edit",
+            "url": "/libraries/{id}/edit",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "to rename a shared library, set its description, its everyone level, its graph policy",
+            "params": [
+                "everyone_level"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "group-list": {
+            "screen": "group-list",
+            "url": "/groups",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "the groups as cards: members, owners, kind; mine marked",
+            "params": [
+                "q",
+                "mine",
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "group-view": {
+            "screen": "group-view",
+            "url": "/groups/{id}",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "one group: its members and owners, its library, its default level",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "group-add": {
+            "screen": "group-add",
+            "url": "/groups/new",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "to make a group: a name, custom or from a department, the default level",
+            "params": [
+                "department"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "group-edit": {
+            "screen": "group-edit",
+            "url": "/groups/{id}/edit",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "to rename a group, set its description or default level",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "group-members": {
+            "screen": "group-members",
+            "url": "/groups/{id}/members",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "who is in a group: add people and agents with the picker, make an owner, remove",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "folder": {
+            "screen": "folder",
+            "url": "/folders/{id}",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "a folder: crumbs, the listing table (sort, filter, grid for images), multi-select, upload, new folder, share, link, request, the access summary",
+            "params": [
+                "sort",
+                "dir",
+                "kind",
+                "q"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "folder-add": {
+            "screen": "folder-add",
+            "url": "/folders/new",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "to make a folder here",
+            "params": [
+                "parent"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "folder-edit": {
+            "screen": "folder-edit",
+            "url": "/folders/{id}/edit",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "to rename a folder, set its colour or auto-tags",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "folder-move": {
+            "screen": "folder-move",
+            "url": "/folders/{id}/move",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "to move a folder: the picker over folders I may edit",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "document": {
+            "screen": "document",
+            "url": "/documents/{id}",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "when": "a document: the preview, name, description, tags, owner, path, size, the versions with restore, the lock, who can see it and why, links, comments, related documents, the trail, download",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "document-edit": {
+            "screen": "document-edit",
+            "url": "/documents/{id}/edit",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "when": "to rename a document or write its description",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "document-move": {
+            "screen": "document-move",
+            "url": "/documents/{id}/move",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "when": "to move a document: the picker over folders I may add to",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "document-versions": {
+            "screen": "document-versions",
+            "url": "/documents/{id}/versions",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "when": "every version: who, when, size, restore, purge (admin)",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "upload": {
+            "screen": "upload",
+            "url": "/folders/{id}/upload",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "when": "to drop files or folders here: the per-file progress, keep both on a conflict",
+            "params": [
+                "document"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "exports": {
+            "screen": "exports",
+            "url": "/exports",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "when": "my zips: the ones ready to download, the ones still being made, when each expires",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "folder-share": {
+            "screen": "folder-share",
+            "url": "/folders/{id}/share",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "who can see a folder and why: the inherited rows greyed, the explicit rows, add a principal with the picker, the level, restrict",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "document-share": {
+            "screen": "document-share",
+            "url": "/documents/{id}/share",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "who can see one document and why; share it alone",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "folder-links": {
+            "screen": "folder-links",
+            "url": "/folders/{id}/links",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "the links and file requests on a folder: make, rotate, revoke, the opens",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "document-links": {
+            "screen": "document-links",
+            "url": "/documents/{id}/links",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "the links on a document",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "link-add": {
+            "screen": "link-add",
+            "url": "/links/new",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "to make a link: expiry, download allowed, a password",
+            "params": [
+                "folder",
+                "document"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "request-add": {
+            "screen": "request-add",
+            "url": "/requests/new",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "to ask for files: a label, a message, an expiry",
+            "params": [
+                "folder"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "my-shares": {
+            "screen": "my-shares",
+            "url": "/shares/mine",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "what I shared out, to whom; the stale ones to guests",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "public-link": {
+            "screen": "public-link",
+            "url": "/s/{token}",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "a link holder's view: a document to preview and download, or a folder's read-only listing with download as zip; the password page",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "public-request": {
+            "screen": "public-request",
+            "url": "/r/{token}",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "a file request's drop zone for whoever holds the link",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "requests": {
+            "screen": "requests",
+            "url": "/requests",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "my file requests, open and closed, with the uploads each received",
+            "params": [
+                "status"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "access-history": {
+            "screen": "access-history",
+            "url": "/folders/{id}/history",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "when": "who could see this folder (or `/documents/{id}/history`, this document) on a day, from the access trail",
+            "params": [
+                "at"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "tag-list": {
+            "screen": "tag-list",
+            "url": "/tags",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "when": "the tags as chips with counts: managed and free; create; merge; the proposals",
+            "params": [
+                "kind",
+                "q"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "tag-view": {
+            "screen": "tag-view",
+            "url": "/tags/{id}",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "when": "one tag: its documents, aliases, colour",
+            "params": [
+                "library"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "tag-add": {
+            "screen": "tag-add",
+            "url": "/tags/new",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "when": "to make a managed tag: label, colour (curators)",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "tag-edit": {
+            "screen": "tag-edit",
+            "url": "/tags/{id}/edit",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "when": "to relabel or recolour a tag, or merge it into another",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "tag-proposals": {
+            "screen": "tag-proposals",
+            "url": "/tags/proposals",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "when": "the free tags proposed for the vocabulary, the merges and the Clerk's applications: accept or dismiss",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "tag-rules": {
+            "screen": "tag-rules",
+            "url": "/tags/rules",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "when": "every folder that applies tags on upload (its auto-tags), to review and change",
+            "params": [
+                "library"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "search": {
+            "screen": "search",
+            "url": "/search",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "when": "to search by keyword with filters as chips, excerpts, save this search, try the graph",
+            "params": [
+                "q",
+                "library",
+                "folder",
+                "owner",
+                "tag",
+                "kind",
+                "before",
+                "after",
+                "mine",
+                "shared_with_me"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "saved-searches": {
+            "screen": "saved-searches",
+            "url": "/search/saved",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "when": "my saved searches and the shared ones; run one",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "graph": {
+            "screen": "graph",
+            "url": "/graph/",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "when": "to find documents by the graph: the box, filters, results with the matched subjects and the best passage; the policy and the queue state in a footer",
+            "params": [
+                "q",
+                "library",
+                "folder",
+                "tag",
+                "kind"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "graph-explore": {
+            "screen": "graph-explore",
+            "url": "/graph/explore",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "when": "to explore: subjects by degree for a library, a subject's neighbourhood, a path between two subjects",
+            "params": [
+                "library",
+                "subject",
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "subject-view": {
+            "screen": "subject-view",
+            "url": "/graph/subjects/{id}",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "when": "one subject: its type, its documents I may see, its neighbours",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "graph-admin": {
+            "screen": "graph-admin",
+            "url": "/graph/admin",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "when": "the queue, the estimate for a folder, the budget, the policy per library and folder, the model (changed with a pause), usage by month",
+            "params": [
+                "folder",
+                "month"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "graph-path": {
+            "screen": "graph-path",
+            "url": "/graph/path",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "when": "how two subjects connect: the path between them, with the documents on the way",
+            "params": [
+                "from",
+                "to"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "trash": {
+            "screen": "trash",
+            "url": "/trash/",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "when": "my trash, or a folder's for its managers: restore, purge (admin), when each purges",
+            "params": [
+                "folder"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-quotas": {
+            "screen": "admin-quotas",
+            "url": "/admin/quotas",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "when": "every library's quota and use; set a quota",
+            "params": [
+                "near"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-worker": {
+            "screen": "admin-worker",
+            "url": "/admin/worker",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "when": "the worker's passes: what each step did, the last error, the expiry windows",
+            "params": [
+                "limit"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-keys": {
+            "screen": "admin-keys",
+            "url": "/admin/keys",
+            "section": "The API, keys and K7 (slice 7)",
+            "when": "every API key of every person: limits, last use, today; revoke",
+            "params": [
+                "member",
+                "status"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-connections": {
+            "screen": "admin-connections",
+            "url": "/admin/connections",
+            "section": "The API, keys and K7 (slice 7)",
+            "when": "which siblings may read which folders through the kernel: the application rows, the kernel's connections, the reads",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "proposals": {
+            "screen": "proposals",
+            "url": "/curate/proposals",
+            "section": "Agents, the Clerk and notifications (slice 8)",
+            "when": "the Clerk's proposals for me (or every one for a curator): accept or dismiss",
+            "params": [
+                "kind",
+                "status"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-agents": {
+            "screen": "admin-agents",
+            "url": "/admin/agents",
+            "section": "Agents, the Clerk and notifications (slice 8)",
+            "when": "the agents this application declares, which member is the expert and which the Clerk, their dispatches, retry",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "curate": {
+            "screen": "curate",
+            "url": "/curate/",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "when": "the curate area: groups, shared libraries, tags and rules, ownership, the storage report, the search report, the Clerk's proposals",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "curate-ownership": {
+            "screen": "curate-ownership",
+            "url": "/curate/ownership",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "when": "a leaver's documents: who owns what, transfer them to someone",
+            "params": [
+                "member"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "curate-storage": {
+            "screen": "curate-storage",
+            "url": "/curate/storage",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "when": "storage by library and by owner, duplicates",
+            "params": [
+                "library"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "curate-search": {
+            "screen": "curate-search",
+            "url": "/curate/search",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "when": "what people searched for that found nothing; the saved searches people share",
+            "params": [
+                "since"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin": {
+            "screen": "admin",
+            "url": "/admin/",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "when": "the admin area: settings, quotas, the graph, links, libraries, keys, agents, connections, the worker",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "admin-settings": {
+            "screen": "admin-settings",
+            "url": "/admin/settings",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "when": "the ceilings, the windows (versions, trash, locks), link defaults, rates, the graph's defaults, each its own form",
+            "params": [],
+            "built": false,
+            "stub": false
+        },
+        "admin-links": {
+            "screen": "admin-links",
+            "url": "/admin/links",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "when": "every link and request: live, expiring, revoked, suspicious; revoke",
+            "params": [
+                "kind",
+                "status"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-libraries": {
+            "screen": "admin-libraries",
+            "url": "/admin/libraries",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "when": "every library, the personal ones marked (opening one logs the admin's look)",
+            "params": [
+                "kind",
+                "archived"
+            ],
+            "built": false,
+            "stub": false
+        },
+        "admin-storage": {
+            "screen": "admin-storage",
+            "url": "/admin/storage",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "when": "the disk: blobs, de-duplication, freed bytes, the storage directory",
+            "params": [],
+            "built": false,
+            "stub": false
+        }
+    },
+    "actions": {
+        "prefs_save": {
+            "action": "prefs_save",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/settings/prefs.php",
+            "params": [
+                {
+                    "name": "email_enabled",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "text_enabled",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "kinds",
+                    "required": false,
+                    "repeated": true,
+                    "hint": "the kinds that notify"
+                },
+                {
+                    "name": "text_kinds",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "settings.prefs",
+            "who": "own",
+            "agent": true,
+            "record_id": "the prefs",
+            "built": false
+        },
+        "notification_read": {
+            "action": "notification_read",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/notifications/read.php",
+            "params": [
+                {
+                    "name": "notification",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one — or none for all"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "notification.read",
+            "who": "own",
+            "agent": true,
+            "record_id": "the notification",
+            "built": false
+        },
+        "notifications_read_all": {
+            "action": "notifications_read_all",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/notifications/read-all.php",
+            "params": [
+                {
+                    "name": "all",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes — every unread notice of mine"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "notification.read_all",
+            "who": "own",
+            "agent": true,
+            "record_id": "the count",
+            "built": false
+        },
+        "token_mint": {
+            "action": "token_mint",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/settings/tokens/mint.php",
+            "params": [
+                {
+                    "name": "label",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "up to 80 characters"
+                },
+                {
+                    "name": "expires_in_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "blank for never"
+                }
+            ],
+            "undo": "token_revoke",
+            "confirm": false,
+            "approval": null,
+            "log_event": "token.mint",
+            "who": "own",
+            "agent": false,
+            "record_id": "the token",
+            "built": false
+        },
+        "token_revoke": {
+            "action": "token_revoke",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/settings/tokens/revoke.php",
+            "params": [
+                {
+                    "name": "token",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "token.revoke",
+            "who": "own",
+            "agent": false,
+            "record_id": "the token",
+            "built": false
+        },
+        "key_mint": {
+            "action": "key_mint",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/settings/tokens/key-mint.php",
+            "params": [
+                {
+                    "name": "label",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "up to 80 characters"
+                },
+                {
+                    "name": "rate_per_minute",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 100000 — the setting by default"
+                },
+                {
+                    "name": "rate_per_day",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 10000000"
+                },
+                {
+                    "name": "expires_in_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "key_revoke",
+            "confirm": false,
+            "approval": null,
+            "log_event": "key.mint",
+            "who": "own",
+            "agent": false,
+            "record_id": "the key",
+            "built": false
+        },
+        "key_rotate": {
+            "action": "key_rotate",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/settings/tokens/key-rotate.php",
+            "params": [
+                {
+                    "name": "api_key",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the old one keeps 24 hours"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "key.rotate",
+            "who": "own",
+            "agent": false,
+            "record_id": "the new key",
+            "built": false
+        },
+        "key_revoke": {
+            "action": "key_revoke",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/settings/tokens/key-revoke.php",
+            "params": [
+                {
+                    "name": "api_key",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "key.revoke",
+            "who": "own or links.all",
+            "agent": false,
+            "record_id": "the key",
+            "built": false
+        },
+        "favourite_add": {
+            "action": "favourite_add",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/favourites/add.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                }
+            ],
+            "undo": "favourite_remove",
+            "confirm": false,
+            "approval": null,
+            "log_event": "favourite.add",
+            "who": "view",
+            "agent": true,
+            "record_id": "the favourite",
+            "built": false
+        },
+        "favourite_remove": {
+            "action": "favourite_remove",
+            "section": "Home, me and the shell (Phase 2 and slice 9)",
+            "endpoint": "/favourites/remove.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                }
+            ],
+            "undo": "favourite_add",
+            "confirm": false,
+            "approval": null,
+            "log_event": "favourite.remove",
+            "who": "own",
+            "agent": true,
+            "record_id": "the favourite",
+            "built": false
+        },
+        "library_create": {
+            "action": "library_create",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/libraries/save.php",
+            "params": [
+                {
+                    "name": "name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "description",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "everyone_level",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "none or view or upload or edit — view by default"
+                },
+                {
+                    "name": "graph_policy",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "none or index or full — index by default"
+                },
+                {
+                    "name": "quota_mb",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "library_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "library.create",
+            "who": "libraries.shared",
+            "agent": true,
+            "record_id": "the library",
+            "built": false
+        },
+        "library_update": {
+            "action": "library_update",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/libraries/save.php",
+            "params": [
+                {
+                    "name": "library",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "name",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "description",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "graph_policy",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "none or index or full"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "library.update",
+            "who": "libraries.shared on a shared library or the admin",
+            "agent": true,
+            "record_id": "the library",
+            "built": false
+        },
+        "library_everyone_set": {
+            "action": "library_everyone_set",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/libraries/everyone.php",
+            "params": [
+                {
+                    "name": "library",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "everyone_level",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "none or view or upload or edit — every member of the business"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": true,
+            "approval": "external_send",
+            "log_event": "library.everyone_set",
+            "who": "libraries.shared on a shared library",
+            "agent": true,
+            "record_id": "the library",
+            "built": false
+        },
+        "library_delete": {
+            "action": "library_delete",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/libraries/delete.php",
+            "params": [
+                {
+                    "name": "library",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a shared or group library — its documents go to the trash first"
+                },
+                {
+                    "name": "confirm_name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the library's name typed"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "library.delete",
+            "who": "libraries.shared or the admin",
+            "agent": true,
+            "record_id": "the library",
+            "built": false
+        },
+        "group_create": {
+            "action": "group_create",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/groups/save.php",
+            "params": [
+                {
+                    "name": "name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "key",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "lower-case letters digits and dashes — from the name by default"
+                },
+                {
+                    "name": "description",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "kind",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "custom or department — custom by default"
+                },
+                {
+                    "name": "department",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "when kind is department"
+                },
+                {
+                    "name": "member_level",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "view or edit — edit by default"
+                }
+            ],
+            "undo": "group_archive",
+            "confirm": false,
+            "approval": null,
+            "log_event": "group.create",
+            "who": "groups.manage",
+            "agent": true,
+            "record_id": "the group",
+            "built": false
+        },
+        "group_update": {
+            "action": "group_update",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/groups/save.php",
+            "params": [
+                {
+                    "name": "group",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "name",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "key",
+                    "repeated": false,
+                    "hint": "lower-case letters digits and dashes — from the name by default"
+                },
+                {
+                    "required": false,
+                    "name": "description",
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "required": false,
+                    "name": "kind",
+                    "repeated": false,
+                    "hint": "custom or department — custom by default"
+                },
+                {
+                    "required": false,
+                    "name": "department",
+                    "repeated": false,
+                    "hint": "when kind is department"
+                },
+                {
+                    "required": false,
+                    "name": "member_level",
+                    "repeated": false,
+                    "hint": "view or edit — edit by default"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "group.update",
+            "who": "groups.manage or a group owner",
+            "agent": true,
+            "record_id": "the group",
+            "built": false,
+            "partial": true
+        },
+        "group_member_add": {
+            "action": "group_member_add",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/groups/members/add.php",
+            "params": [
+                {
+                    "name": "group",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "member",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a person or an agent — never a guest"
+                },
+                {
+                    "name": "role",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "member or owner — member by default"
+                }
+            ],
+            "undo": "group_member_remove",
+            "confirm": false,
+            "approval": null,
+            "log_event": "group.member_add",
+            "who": "groups.manage or a group owner (a custom group only)",
+            "agent": true,
+            "record_id": "the group",
+            "built": false
+        },
+        "group_member_remove": {
+            "action": "group_member_remove",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/groups/members/remove.php",
+            "params": [
+                {
+                    "name": "group",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "member",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "group_member_add",
+            "confirm": false,
+            "approval": null,
+            "log_event": "group.member_remove",
+            "who": "groups.manage or a group owner (a custom group only)",
+            "agent": true,
+            "record_id": "the group",
+            "built": false
+        },
+        "group_owner_set": {
+            "action": "group_owner_set",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/groups/members/owner.php",
+            "params": [
+                {
+                    "name": "group",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "member",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "owner",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "group.owner_set",
+            "who": "groups.manage or a group owner",
+            "agent": true,
+            "record_id": "the group",
+            "built": false
+        },
+        "group_archive": {
+            "action": "group_archive",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/groups/archive.php",
+            "params": [
+                {
+                    "name": "group",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "its library closes to members — the admin and each owner still reach the documents"
+                }
+            ],
+            "undo": "group_restore",
+            "confirm": true,
+            "approval": null,
+            "log_event": "group.archive",
+            "who": "groups.manage",
+            "agent": true,
+            "record_id": "the group",
+            "built": false
+        },
+        "group_restore": {
+            "action": "group_restore",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/groups/restore.php",
+            "params": [
+                {
+                    "name": "group",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "group_archive",
+            "confirm": false,
+            "approval": null,
+            "log_event": "group.restore",
+            "who": "groups.manage",
+            "agent": true,
+            "record_id": "the group",
+            "built": false
+        },
+        "group_delete": {
+            "action": "group_delete",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/groups/delete.php",
+            "params": [
+                {
+                    "name": "group",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "an archived group — its library's documents are transferred to new_owner first"
+                },
+                {
+                    "name": "new_owner",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "confirm_name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "group.delete",
+            "who": "groups.manage",
+            "agent": true,
+            "record_id": "the group",
+            "built": false
+        },
+        "folder_create": {
+            "action": "folder_create",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/folders/save.php",
+            "params": [
+                {
+                    "name": "name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "parent",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the folder to make it in"
+                },
+                {
+                    "name": "colour",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a hex colour"
+                },
+                {
+                    "name": "auto_tags",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "folder_trash",
+            "confirm": false,
+            "approval": null,
+            "log_event": "folder.create",
+            "who": "add on the parent",
+            "agent": true,
+            "record_id": "the folder",
+            "built": false
+        },
+        "folder_rename": {
+            "action": "folder_rename",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/folders/save.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "folder.rename",
+            "who": "edit on the folder",
+            "agent": true,
+            "record_id": "the folder",
+            "built": false
+        },
+        "folder_update": {
+            "action": "folder_update",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/folders/save.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "colour",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "description",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "folder.update",
+            "who": "edit on the folder",
+            "agent": true,
+            "record_id": "the folder",
+            "built": false
+        },
+        "folder_auto_tags_set": {
+            "action": "folder_auto_tags_set",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/folders/auto-tags.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "auto_tags",
+                    "required": false,
+                    "repeated": true,
+                    "hint": "slugs applied to every document added under it — empty to clear"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "folder.auto_tags",
+            "who": "manage on the folder",
+            "agent": true,
+            "record_id": "the folder",
+            "built": false
+        },
+        "folder_move": {
+            "action": "folder_move",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/folders/move.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "target_folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "in the same library"
+                }
+            ],
+            "undo": "folder_move",
+            "confirm": false,
+            "approval": null,
+            "log_event": "folder.move",
+            "who": "edit on the folder and add on the target",
+            "agent": true,
+            "record_id": "the folder",
+            "built": false
+        },
+        "folder_trash": {
+            "action": "folder_trash",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/folders/trash.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "its subtree goes with it — 30 days to restore"
+                }
+            ],
+            "undo": "folder_restore",
+            "confirm": true,
+            "approval": null,
+            "log_event": "folder.trash",
+            "who": "manage on the folder",
+            "agent": true,
+            "record_id": "the folder",
+            "built": false
+        },
+        "folder_restore": {
+            "action": "folder_restore",
+            "section": "Libraries, groups and folders (slice 1)",
+            "endpoint": "/folders/restore.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "folder_trash",
+            "confirm": false,
+            "approval": null,
+            "log_event": "folder.restore",
+            "who": "manage on the folder or trash.own",
+            "agent": true,
+            "record_id": "the folder",
+            "built": false
+        },
+        "document_upload": {
+            "action": "document_upload",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/upload.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "file",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the bytes — one request up to 64 MB or an upload_session for more"
+                },
+                {
+                    "name": "name",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "the document's name — the file name by default"
+                },
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "to add a version to this one"
+                },
+                {
+                    "name": "on_conflict",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "version or keep_both or refuse — version by default"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "up to 500 characters"
+                },
+                {
+                    "name": "tags",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "document_trash",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.upload",
+            "who": "add on the folder (a version: edit on the document)",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "document_rename": {
+            "action": "document_rename",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/save.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.rename",
+            "who": "edit on the document",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "document_describe": {
+            "action": "document_describe",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/save.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "description",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "up to 4000 characters"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.describe",
+            "who": "edit on the document",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "document_move": {
+            "action": "document_move",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/move.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "target_folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "document_move",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.move",
+            "who": "edit on the document and add on the target",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "document_copy": {
+            "action": "document_copy",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/copy.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "target_folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "name",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "the copy's name — the same by default"
+                }
+            ],
+            "undo": "document_trash",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.copy",
+            "who": "view on the document and add on the target",
+            "agent": true,
+            "record_id": "the copy",
+            "built": false
+        },
+        "version_restore": {
+            "action": "version_restore",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/versions/restore.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "version",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "becomes a new version from the old bytes"
+                }
+            ],
+            "undo": "version_restore",
+            "confirm": false,
+            "approval": null,
+            "log_event": "version.restore",
+            "who": "versions.restore and edit on the document",
+            "agent": true,
+            "record_id": "the new version",
+            "built": false
+        },
+        "version_purge": {
+            "action": "version_purge",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/versions/purge.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "version",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "never the current one"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "version.purge",
+            "who": "trash.purge",
+            "agent": true,
+            "record_id": "the version",
+            "built": false
+        },
+        "document_lock": {
+            "action": "document_lock",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/lock.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "24 hours — the setting"
+                }
+            ],
+            "undo": "document_unlock",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.lock",
+            "who": "edit on the document",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "document_unlock": {
+            "action": "document_unlock",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/unlock.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "one's own lock — a manager breaks another's"
+                }
+            ],
+            "undo": "document_lock",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.unlock",
+            "who": "own lock or manage on the document",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "export_folder": {
+            "action": "export_folder",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/folders/export.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a zip of its subtree — ready within the minute and kept 7 days"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "folder.export",
+            "who": "export.own and view on the folder",
+            "agent": true,
+            "record_id": "the export",
+            "built": false
+        },
+        "export_documents": {
+            "action": "export_documents",
+            "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
+            "endpoint": "/documents/export.php",
+            "params": [
+                {
+                    "name": "documents",
+                    "required": false,
+                    "repeated": true,
+                    "hint": "a zip of these"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.export",
+            "who": "export.own and view on each",
+            "agent": true,
+            "record_id": "the export",
+            "built": false
+        },
+        "share_member": {
+            "action": "share_member",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/access/share.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "member",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a person — never a guest"
+                },
+                {
+                    "name": "level",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "view or upload or edit or manage — upload on a folder only"
+                }
+            ],
+            "undo": "share_remove",
+            "confirm": false,
+            "approval": null,
+            "log_event": "access.share",
+            "who": "documents.share and manage on the thing",
+            "agent": true,
+            "record_id": "the access row",
+            "built": false
+        },
+        "share_group": {
+            "action": "share_group",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/access/share-group.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "group",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "level",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "share_remove",
+            "confirm": false,
+            "approval": null,
+            "log_event": "access.share",
+            "who": "documents.share and manage on the thing",
+            "agent": true,
+            "record_id": "the access row",
+            "built": false
+        },
+        "share_department": {
+            "action": "share_department",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/access/share-department.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "department",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "level",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "share_remove",
+            "confirm": false,
+            "approval": null,
+            "log_event": "access.share",
+            "who": "documents.share and manage on the thing",
+            "agent": true,
+            "record_id": "the access row",
+            "built": false
+        },
+        "share_agent": {
+            "action": "share_agent",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/access/share-agent.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "agent",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "an OS agent"
+                },
+                {
+                    "name": "level",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "share_remove",
+            "confirm": false,
+            "approval": null,
+            "log_event": "access.share",
+            "who": "documents.share and manage on the thing",
+            "agent": true,
+            "record_id": "the access row",
+            "built": false
+        },
+        "share_guest": {
+            "action": "share_guest",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/access/share-guest.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "guest",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "an external member holding Guest"
+                },
+                {
+                    "name": "level",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "view or edit"
+                }
+            ],
+            "undo": "share_remove",
+            "confirm": true,
+            "approval": "external_send",
+            "log_event": "access.share_guest",
+            "who": "documents.share and manage on the thing",
+            "agent": true,
+            "record_id": "the access row",
+            "built": false
+        },
+        "share_application": {
+            "action": "share_application",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/access/share-application.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a sibling reads folders — never one document"
+                },
+                {
+                    "name": "application",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a catalog key such as knowledge"
+                },
+                {
+                    "name": "level",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "view"
+                }
+            ],
+            "undo": "share_remove",
+            "confirm": true,
+            "approval": "external_send",
+            "log_event": "access.share_application",
+            "who": "documents.share and manage on the folder",
+            "agent": true,
+            "record_id": "the access row",
+            "built": false
+        },
+        "share_level_set": {
+            "action": "share_level_set",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/access/level.php",
+            "params": [
+                {
+                    "name": "access",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the row"
+                },
+                {
+                    "name": "level",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "view or upload or edit or manage or none"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "access.level_set",
+            "who": "manage on the thing",
+            "agent": true,
+            "record_id": "the access row",
+            "built": false
+        },
+        "share_remove": {
+            "action": "share_remove",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/access/remove.php",
+            "params": [
+                {
+                    "name": "access",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the row — never the library's own owner"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "access.unshare",
+            "who": "manage on the thing",
+            "agent": true,
+            "record_id": "the access row",
+            "built": false
+        },
+        "folder_restrict": {
+            "action": "folder_restrict",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/access/restrict.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "keep",
+                    "required": false,
+                    "repeated": true,
+                    "hint": "the rows to keep as kind:id:level — the inherited principals are dropped"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "access.restrict",
+            "who": "manage on the folder",
+            "agent": true,
+            "record_id": "the folder",
+            "built": false
+        },
+        "link_make": {
+            "action": "link_make",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/links/make.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "label",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "what the log calls it — up to 120 characters"
+                },
+                {
+                    "name": "expires_in_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "30 by default — 0 for never when the admin allows"
+                },
+                {
+                    "name": "allow_download",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no — yes by default"
+                },
+                {
+                    "name": "password",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "optional — never logged"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "shown to the holder"
+                }
+            ],
+            "undo": "link_revoke",
+            "confirm": true,
+            "approval": "external_send",
+            "log_event": "link.make",
+            "who": "links.make and manage on the thing",
+            "agent": true,
+            "record_id": "the link",
+            "built": false
+        },
+        "link_rotate": {
+            "action": "link_rotate",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/links/rotate.php",
+            "params": [
+                {
+                    "name": "link",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a new token — the old one dies now"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "external_send",
+            "log_event": "link.rotate",
+            "who": "own or manage on the thing",
+            "agent": true,
+            "record_id": "the new link",
+            "built": false
+        },
+        "link_revoke": {
+            "action": "link_revoke",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/links/revoke.php",
+            "params": [
+                {
+                    "name": "link",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "link.revoke",
+            "who": "own or manage on the thing or links.all",
+            "agent": true,
+            "record_id": "the link",
+            "built": false
+        },
+        "request_make": {
+            "action": "request_make",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/requests/make.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the uploads land here owned by me"
+                },
+                {
+                    "name": "label",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "up to 120 characters"
+                },
+                {
+                    "name": "message",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "shown to the uploader — up to 1000 characters"
+                },
+                {
+                    "name": "expires_in_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "30 by default"
+                },
+                {
+                    "name": "password",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "request_close",
+            "confirm": true,
+            "approval": "external_send",
+            "log_event": "request.make",
+            "who": "requests.make and add on the folder",
+            "agent": true,
+            "record_id": "the request",
+            "built": false
+        },
+        "request_close": {
+            "action": "request_close",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/requests/close.php",
+            "params": [
+                {
+                    "name": "request",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "request.close",
+            "who": "own or manage on the folder",
+            "agent": true,
+            "record_id": "the request",
+            "built": false
+        },
+        "link_update": {
+            "action": "link_update",
+            "section": "Access, sharing, links and file requests (slice 3)",
+            "endpoint": "/links/update.php",
+            "params": [
+                {
+                    "name": "link",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "label",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "up to 120 characters"
+                },
+                {
+                    "name": "expires_in_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "0 never — only when the admin allows"
+                },
+                {
+                    "name": "allow_download",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "password",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "blank keeps it and the word none removes it"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "link.update",
+            "who": "own or manage on the thing",
+            "agent": true,
+            "record_id": "the link",
+            "built": false
+        },
+        "tag_create": {
+            "action": "tag_create",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/save.php",
+            "params": [
+                {
+                    "name": "label",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "up to 50 characters"
+                },
+                {
+                    "name": "kind",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "managed or free — managed needs tags.manage"
+                },
+                {
+                    "name": "colour",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a hex colour"
+                }
+            ],
+            "undo": "tag_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.create",
+            "who": "tags.apply (managed: tags.manage)",
+            "agent": true,
+            "record_id": "the tag",
+            "built": false
+        },
+        "tag_update": {
+            "action": "tag_update",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/save.php",
+            "params": [
+                {
+                    "name": "tag",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "label",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "colour",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.update",
+            "who": "tags.manage",
+            "agent": true,
+            "record_id": "the tag",
+            "built": false
+        },
+        "tag_apply": {
+            "action": "tag_apply",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/apply.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "tags",
+                    "required": false,
+                    "repeated": true,
+                    "hint": "slugs or labels — a missing one becomes a free tag"
+                }
+            ],
+            "undo": "tag_remove",
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.apply",
+            "who": "tags.apply and edit on the document",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "tag_remove": {
+            "action": "tag_remove",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/remove.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "tags",
+                    "required": false,
+                    "repeated": true,
+                    "hint": ""
+                }
+            ],
+            "undo": "tag_apply",
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.remove",
+            "who": "tags.apply and edit on the document",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "tag_merge": {
+            "action": "tag_merge",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/merge.php",
+            "params": [
+                {
+                    "name": "tag",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the one that goes"
+                },
+                {
+                    "name": "into",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the tag that stays — its slug becomes an alias"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "tag.merge",
+            "who": "tags.manage",
+            "agent": true,
+            "record_id": "the surviving tag",
+            "built": false
+        },
+        "tag_delete": {
+            "action": "tag_delete",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/delete.php",
+            "params": [
+                {
+                    "name": "tag",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "removed from every document — archived with no alias"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "tag.delete",
+            "who": "tags.manage",
+            "agent": true,
+            "record_id": "the tag",
+            "built": false
+        },
+        "tag_propose": {
+            "action": "tag_propose",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/propose.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "tag",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a slug or label — the Clerk's proposal to apply it"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "why — up to 500 characters"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.propose",
+            "who": "view on the document",
+            "agent": true,
+            "record_id": "the proposal",
+            "built": false
+        },
+        "tag_proposal_decide": {
+            "action": "tag_proposal_decide",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/proposals/decide.php",
+            "params": [
+                {
+                    "name": "tag_proposal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "decision",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "accept or dismiss"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.decide",
+            "who": "tags.manage (an apply: edit on the document)",
+            "agent": true,
+            "record_id": "the proposal",
+            "built": false
+        },
+        "tag_archive": {
+            "action": "tag_archive",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/archive.php",
+            "params": [
+                {
+                    "name": "tag",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "kept on its documents and hidden from the pickers"
+                }
+            ],
+            "undo": "tag_restore",
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.archive",
+            "who": "tags.manage",
+            "agent": false,
+            "record_id": "the tag",
+            "built": false
+        },
+        "tag_restore": {
+            "action": "tag_restore",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/tags/restore.php",
+            "params": [
+                {
+                    "name": "tag",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "tag_archive",
+            "confirm": false,
+            "approval": null,
+            "log_event": "tag.restore",
+            "who": "tags.manage",
+            "agent": false,
+            "record_id": "the tag",
+            "built": false
+        },
+        "saved_search_save": {
+            "action": "saved_search_save",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/search/save.php",
+            "params": [
+                {
+                    "name": "name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "up to 80 characters"
+                },
+                {
+                    "name": "query",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "filters",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a JSON object of the search's filters"
+                },
+                {
+                    "name": "kind",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "keyword or graph — keyword by default"
+                },
+                {
+                    "name": "is_shared",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "saved_search",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "to change an existing one"
+                }
+            ],
+            "undo": "saved_search_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "saved_search.save",
+            "who": "own",
+            "agent": true,
+            "record_id": "the saved search",
+            "built": false
+        },
+        "saved_search_delete": {
+            "action": "saved_search_delete",
+            "section": "Tags, the keyword index and search (slice 4)",
+            "endpoint": "/search/delete.php",
+            "params": [
+                {
+                    "name": "saved_search",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "saved_search.delete",
+            "who": "own",
+            "agent": true,
+            "record_id": "the saved search",
+            "built": false
+        },
+        "graph_policy_set": {
+            "action": "graph_policy_set",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "endpoint": "/graph/policy.php",
+            "params": [
+                {
+                    "name": "library",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "graph_policy",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "none or index or full — a folder may say inherit"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": true,
+            "approval": "other",
+            "log_event": "graph.policy_set",
+            "who": "graph.manage",
+            "agent": true,
+            "record_id": "the library or folder",
+            "built": false
+        },
+        "graph_budget_set": {
+            "action": "graph_budget_set",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "endpoint": "/graph/budget.php",
+            "params": [
+                {
+                    "name": "graph_monthly_text_mb",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "1 to 100000 — megabytes of text extracted by the model per month"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": true,
+            "approval": "other",
+            "log_event": "graph.budget_set",
+            "who": "graph.manage",
+            "agent": true,
+            "record_id": "the settings",
+            "built": false
+        },
+        "graph_model_set": {
+            "action": "graph_model_set",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "endpoint": "/graph/model.php",
+            "params": [
+                {
+                    "name": "model_alias",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "the provider's model id"
+                },
+                {
+                    "name": "embedding_model",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "rebuild_confirmed",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes — required when the embedding model changes"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": true,
+            "approval": "other",
+            "log_event": "graph.model_set",
+            "who": "graph.manage",
+            "agent": true,
+            "record_id": "the settings",
+            "built": false
+        },
+        "graph_rebuild_all": {
+            "action": "graph_rebuild_all",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "endpoint": "/graph/rebuild.php",
+            "params": [
+                {
+                    "name": "library",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "confirm",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "yes"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "other",
+            "log_event": "graph.rebuild",
+            "who": "graph.manage",
+            "agent": true,
+            "record_id": "the library or folder",
+            "built": false
+        },
+        "graph_job_retry": {
+            "action": "graph_job_retry",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "endpoint": "/graph/retry.php",
+            "params": [
+                {
+                    "name": "graph_job",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a failed one"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "graph.retry",
+            "who": "graph.manage",
+            "agent": true,
+            "record_id": "the job",
+            "built": false
+        },
+        "graph_job_skip": {
+            "action": "graph_job_skip",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "endpoint": "/graph/skip.php",
+            "params": [
+                {
+                    "name": "graph_job",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a queued or failed one — the document is marked current so the catch-up stops offering it"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "graph.skip",
+            "who": "graph.manage",
+            "agent": false,
+            "record_id": "the job",
+            "built": false
+        },
+        "graph_test_extraction": {
+            "action": "graph_test_extraction",
+            "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
+            "endpoint": "/graph/test.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "one — a dry run of the full prompt on its text through the engine; the model is paid once and nothing is kept"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "graph.test",
+            "who": "graph.manage",
+            "agent": false,
+            "record_id": "the document",
+            "built": false
+        },
+        "document_trash": {
+            "action": "document_trash",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "endpoint": "/documents/trash.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "30 days to restore"
+                }
+            ],
+            "undo": "document_restore",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.trash",
+            "who": "manage on the document",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "document_restore": {
+            "action": "document_restore",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "endpoint": "/trash/restore.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "back to its folder — or the library root when that folder is gone — renamed when the name is taken"
+                }
+            ],
+            "undo": "document_trash",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.restore",
+            "who": "own or trash.own on the folder",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "document_purge": {
+            "action": "document_purge",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "endpoint": "/trash/purge.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a trashed one — its versions and bytes released and the graph forgets it"
+                },
+                {
+                    "name": "confirm",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "yes"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "document.purge",
+            "who": "trash.purge",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "folder_delete": {
+            "action": "folder_delete",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "endpoint": "/trash/delete.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a trashed folder with its subtree — purged now"
+                },
+                {
+                    "name": "confirm_name",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the folder's name typed"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "folder.delete",
+            "who": "trash.purge",
+            "agent": true,
+            "record_id": "the folder",
+            "built": false
+        },
+        "trash_purge": {
+            "action": "trash_purge",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "endpoint": "/trash/purge-all.php",
+            "params": [
+                {
+                    "name": "older_than_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 3650 — the window by default"
+                },
+                {
+                    "name": "library",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "confirm",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "yes"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "trash.purge",
+            "who": "trash.purge",
+            "agent": true,
+            "record_id": "the settings",
+            "built": false
+        },
+        "quota_set": {
+            "action": "quota_set",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "endpoint": "/admin/quotas/save.php",
+            "params": [
+                {
+                    "name": "library",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "quota_mb",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "blank for none"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": true,
+            "approval": "other",
+            "log_event": "quota.set",
+            "who": "quotas.manage",
+            "agent": true,
+            "record_id": "the library",
+            "built": false
+        },
+        "document_lock_break": {
+            "action": "document_lock_break",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "endpoint": "/documents/lock-break.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "another's lock"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "document.lock_break",
+            "who": "manage on the document",
+            "agent": true,
+            "record_id": "the document",
+            "built": false
+        },
+        "worker_run": {
+            "action": "worker_run",
+            "section": "The trash, locks, quotas and the worker (slice 6)",
+            "endpoint": "/admin/worker/run.php",
+            "params": [
+                {
+                    "name": "step",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one pass by name — or blank for all"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "worker.run",
+            "who": "settings.manage",
+            "agent": false,
+            "record_id": "the pass",
+            "built": false
+        },
+        "clerk_propose": {
+            "action": "clerk_propose",
+            "section": "Agents, the Clerk and notifications (slice 8)",
+            "endpoint": "/agents/propose.php",
+            "params": [
+                {
+                    "name": "kind",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "untagged or duplicate or stale_share or link_expiring or link_suspicious or request_open or trash_due or locked or no_text or quota or budget or orphaned or tags"
+                },
+                {
+                    "name": "title",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "up to 200 characters"
+                },
+                {
+                    "name": "for_member",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "whose decision it is"
+                },
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "library",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "link",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "payload",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "a JSON object — the facts"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "clerk.propose",
+            "who": "an agent (the Clerk) or agents.settings",
+            "agent": true,
+            "record_id": "the proposal",
+            "built": false
+        },
+        "clerk_proposal_decide": {
+            "action": "clerk_proposal_decide",
+            "section": "Agents, the Clerk and notifications (slice 8)",
+            "endpoint": "/curate/proposals/decide.php",
+            "params": [
+                {
+                    "name": "proposal",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "decision",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "accept or dismiss"
+                },
+                {
+                    "name": "note",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "why"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "clerk.decide",
+            "who": "own (for me) or groups.manage",
+            "agent": true,
+            "record_id": "the proposal",
+            "built": false
+        },
+        "notification": {
+            "action": "notification",
+            "section": "Agents, the Clerk and notifications (slice 8)",
+            "endpoint": "/agents/notify.php",
+            "params": [
+                {
+                    "name": "member",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "the recipient — or group for every owner of it"
+                },
+                {
+                    "name": "title",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "up to 200 characters"
+                },
+                {
+                    "name": "body",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "Markdown up to 4000 characters"
+                },
+                {
+                    "name": "kind",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "monday_note or proposal"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "notification.send",
+            "who": "an agent or agents.settings",
+            "agent": true,
+            "record_id": "the notification",
+            "built": false
+        },
+        "dispatch_retry": {
+            "action": "dispatch_retry",
+            "section": "Agents, the Clerk and notifications (slice 8)",
+            "endpoint": "/admin/agents/retry.php",
+            "params": [
+                {
+                    "name": "dispatch",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a failed or refused one"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "agent.dispatch",
+            "who": "agents.settings",
+            "agent": true,
+            "record_id": "the dispatch",
+            "built": false
+        },
+        "tags_propose_request": {
+            "action": "tags_propose_request",
+            "section": "Agents, the Clerk and notifications (slice 8)",
+            "endpoint": "/agents/propose-tags.php",
+            "params": [
+                {
+                    "name": "folder",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "its untagged documents — the expert proposes tags from the graph"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "agent.dispatch",
+            "who": "edit on the folder",
+            "agent": false,
+            "record_id": "the dispatch",
+            "built": false
+        },
+        "agents_settings_save": {
+            "action": "agents_settings_save",
+            "section": "Agents, the Clerk and notifications (slice 8)",
+            "endpoint": "/admin/agents/save.php",
+            "params": [
+                {
+                    "name": "expert",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "an agent member — empty for none"
+                },
+                {
+                    "name": "clerk",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "an agent member — empty for none"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "agents_settings.save",
+            "who": "agents.settings",
+            "agent": true,
+            "record_id": "the settings",
+            "built": false
+        },
+        "dispatch_cancel": {
+            "action": "dispatch_cancel",
+            "section": "Agents, the Clerk and notifications (slice 8)",
+            "endpoint": "/admin/agents/cancel.php",
+            "params": [
+                {
+                    "name": "dispatch",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "a sent or awaiting one — nothing is sent again"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": null,
+            "log_event": "agent.dispatch_cancel",
+            "who": "agents.settings",
+            "agent": false,
+            "record_id": "the dispatch",
+            "built": false
+        },
+        "settings_save": {
+            "action": "settings_save",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "endpoint": "/admin/settings/save.php",
+            "params": [
+                {
+                    "name": "business_name",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "max_document_bytes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "max_text_bytes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "upload_part_bytes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "link_default_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 3650"
+                },
+                {
+                    "name": "link_no_expiry_allowed",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
+                },
+                {
+                    "name": "link_opens_per_minute",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "request_uploads_per_hour",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "key_rate_per_minute",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "key_rate_per_day",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "key_rotation_overlap_hours",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "0 to 168"
+                },
+                {
+                    "name": "free_tag_proposal_threshold",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 100"
+                },
+                {
+                    "name": "stale_guest_share_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "graph_default_policy",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "none or index or full"
+                },
+                {
+                    "name": "graph_text_chars",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                },
+                {
+                    "name": "timezone",
+                    "required": false,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": false,
+            "approval": "other",
+            "log_event": "settings.save",
+            "who": "settings.manage",
+            "agent": true,
+            "record_id": "the settings",
+            "built": false
+        },
+        "retention_set": {
+            "action": "retention_set",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "endpoint": "/admin/settings/retention.php",
+            "params": [
+                {
+                    "name": "versions_keep_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 3650"
+                },
+                {
+                    "name": "versions_keep_count",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 1000"
+                },
+                {
+                    "name": "trash_days",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 3650"
+                },
+                {
+                    "name": "lock_hours",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 720"
+                }
+            ],
+            "undo": "restore prior",
+            "confirm": true,
+            "approval": "other",
+            "log_event": "retention.set",
+            "who": "retention.manage",
+            "agent": true,
+            "record_id": "the settings",
+            "built": false
+        },
+        "ownership_transfer": {
+            "action": "ownership_transfer",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "endpoint": "/curate/ownership/transfer.php",
+            "params": [
+                {
+                    "name": "owner",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "whose documents"
+                },
+                {
+                    "name": "new_owner",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "an admitted member"
+                },
+                {
+                    "name": "library",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "only this library's — every one by default"
+                }
+            ],
+            "undo": null,
+            "confirm": true,
+            "approval": "deletion",
+            "log_event": "document.transfer",
+            "who": "ownership.transfer",
+            "agent": true,
+            "record_id": "the new owner",
+            "built": false
+        },
+        "note_add": {
+            "action": "note_add",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "endpoint": "/notes/add.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "folder",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "one of these is required"
+                },
+                {
+                    "name": "body",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "up to 4000 characters"
+                }
+            ],
+            "undo": "note_delete",
+            "confirm": false,
+            "approval": null,
+            "log_event": "note.add",
+            "who": "view on the thing",
+            "agent": true,
+            "record_id": "the note",
+            "built": false
+        },
+        "note_delete": {
+            "action": "note_delete",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "endpoint": "/notes/delete.php",
+            "params": [
+                {
+                    "name": "note",
+                    "required": true,
+                    "repeated": false,
+                    "hint": ""
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "note.delete",
+            "who": "own or manage on the thing",
+            "agent": true,
+            "record_id": "the note",
+            "built": false
+        },
+        "storage_export": {
+            "action": "storage_export",
+            "section": "Home, curate, admin, reports and tokens (slice 9)",
+            "endpoint": "/curate/storage/export.php",
+            "params": [
+                {
+                    "name": "report",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "storage or search"
+                },
+                {
+                    "name": "format",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "csv"
+                }
+            ],
+            "undo": null,
+            "confirm": false,
+            "approval": null,
+            "log_event": "report.export",
+            "who": "reports.storage or reports.search",
+            "agent": true,
+            "record_id": "the file",
+            "built": false
+        }
+    }
+}
