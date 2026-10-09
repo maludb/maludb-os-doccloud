@@ -1,0 +1,88 @@
+<?php
+/** Slice 3 proof — file requests (spec "Proof" 9): the page shows the maker and the message and nothing of the folder; an upload lands owned by the maker, tagged, source request, the maker told (and texted when opted in); the uploader sees nothing; the 21st upload in an hour 429; a closed request 404; the worker closes an expired one. */
+require __DIR__ . '/lib.php';
+$seed = seed_store();
+$contracts = $seed['contracts'];
+$board = $seed['board_root'];
+pdo()->exec("SELECT set_config('app.member_id', '27', false)");
+$inbox = (int) one("INSERT INTO folders (library_id, parent_id, name, owner_member_id, created_by) VALUES ((SELECT library_id FROM folders WHERE id = $board), $board, 'Supplier inbox', 27, 27) RETURNING id");
+$secret = (int) one('SELECT document_id FROM dc_version_add(NULL, :f, :n, (SELECT blob_id FROM dc_blob_claim(:s, 700)), :n, :m, 700, :s, 27)', ['f' => $inbox, 'n' => 'secret-pricing.pdf', 'm' => 'application/pdf', 's' => hash('sha256', 's3:secret')]);
+
+echo "1. Make a request\n";
+$m = make_request(27, ['folder' => $inbox, 'label' => 'Supplier uploads', 'message' => 'Drop the invoices here, thanks.', 'expires_in_days' => 14]);
+ok($m['r']['code'] === 200 && $m['link_id'] > 0 && preg_match('#^/r/[a-f0-9]{48}$#', $m['path']) === 1, 'request_make: ok, the request\'s id, the /r/ URL once');
+$l = q('SELECT * FROM share_links WHERE id = :id', ['id' => $m['link_id']])[0];
+ok($l['kind'] === 'request' && (int) $l['folder_id'] === $inbox && !(bool) $l['allow_download'] && $l['note'] === 'Drop the invoices here, thanks.', 'kind request on the folder, no download, the message kept as the note');
+ok(last_event('request.make') !== null && (int) last_event('request.make')['folder_id'] === $inbox, 'logged request.make');
+$r = post_j(26, '/requests/make.php', ['folder' => $contracts, 'label' => 'x']);
+ok($r['code'] === 403, 'an editor (not a manager) cannot make a request: 403');
+$r = post_j(27, '/requests/make.php', ['document' => $secret, 'label' => 'x']);
+ok($r['code'] === 422, 'a request names a folder (422 without one)');
+$r = page(actor(27), '/requests/new?folder=' . $inbox);
+ok($r['code'] === 200 && str_contains($r['body'], 'id="link-form"') && str_contains($r['body'], 'Make the request'), 'the request form');
+$r = page(actor(27), '/requests');
+ok($r['code'] === 200 && str_contains($r['body'], 'id="request-row-' . $m['link_id'] . '"') && str_contains($r['body'], 'Supplier inbox'), 'My requests lists it with its folder');
+
+echo "2. The request page\n";
+$r = pub($m['path'], 'up');
+ok($r['code'] === 200 && str_contains($r['body'], 'SMOKE Marco is asking for files') && str_contains($r['body'], 'Drop the invoices here, thanks.') && str_contains($r['body'], 'id="request-drop-zone"'), 'the page: the maker, the message, the drop zone');
+ok(!str_contains($r['body'], 'Supplier inbox') && !str_contains($r['body'], 'secret-pricing') && !str_contains($r['body'], 'id="public-listing"'), 'nothing of the folder: not its name, not its contents');
+ok(pub('/s/' . $m['raw'], 'up')['code'] === 302, 'the /s/ door sends a request token to /r/');
+
+echo "3. An upload lands owned by the maker\n";
+$inv = fx_write('invoice-42.txt', 'Invoice 42: 1,200.00 due in 30 days. ' . fx_para(2, 200));
+$r = pub_upload($m['path'] . '/upload', $inv, 'Acme Billing', 'up', $m['path']);
+ok($r['code'] === 200 && ($r['json']['ok'] ?? false) === true, 'the upload answers ok (' . $r['code'] . ')');
+$d = q("SELECT d.*, v.source, v.note FROM documents d JOIN document_versions v ON v.id = d.current_version_id WHERE d.folder_id = :f AND d.name = 'invoice-42.txt'", ['f' => $inbox]);
+ok(count($d) === 1 && (int) $d[0]['owner_member_id'] === 27 && $d[0]['source'] === 'request' && str_contains((string) $d[0]['note'], 'from Acme Billing via the request Supplier uploads'), 'the document is Marco\'s, source request, the uploader\'s name in the version\'s note');
+$docId = (int) $d[0]['id'];
+ok(in_array('request-supplier-uploads', explode(',', trim((string) one('SELECT dc_document_tag_slugs(:d)', ['d' => $docId]), '{}')), true), 'tagged request:supplier-uploads (slug request-supplier-uploads, source request)');
+ok((int) one('SELECT upload_count FROM share_links WHERE id = :l', ['l' => $m['link_id']]) === 1 && (int) one("SELECT count(*) FROM link_opens WHERE link_id = :l AND what = 'upload'", ['l' => $m['link_id']]) === 1, 'counted on the request');
+$b = bell(27, 'request_received');
+ok(count($b) === 1 && str_contains($b[0]['title'], 'arrived in Supplier inbox from the request Supplier uploads') && (int) $b[0]['document_id'] === $docId, 'Marco\'s bell rang');
+$ev = last_event('request.upload');
+ok($ev !== null && $ev['source'] === 'portal' && $ev['actor_member_id'] === null && (int) $ev['document_id'] === $docId, 'logged request.upload with source portal');
+$r = pub($m['path'], 'up');
+ok($r['code'] === 200 && !str_contains($r['body'], 'invoice-42'), 'the uploader\'s next visit shows nothing of the upload (blind)');
+$r = pub($m['path'] . '?done=1', 'up');
+ok($r['code'] === 200 && str_contains($r['body'], 'id="public-thanks"'), 'the thank-you page shows nothing either');
+$r = pub_upload($m['path'] . '/upload', $inv, 'Acme Billing', 'up', $m['path']);
+ok($r['code'] === 200 && (int) one("SELECT count(*) FROM documents WHERE folder_id = :f AND name LIKE 'invoice-42%' AND trashed_at IS NULL", ['f' => $inbox]) === 2, 'the same name again: keep both (invoice-42 (2).txt)');
+ok(count(bell(27, 'request_received')) === 1 && (int) one("SELECT count(*) FROM notification_outbox WHERE member_id = 27 AND kind = 'request_received'") === 1, 'the second upload in the hour rings nothing twice: one bell, one email (deduped per hour)');
+pdo()->exec("INSERT INTO notification_prefs (member_id, text_enabled, text_kinds) VALUES (27, true, '{request_received}') ON CONFLICT (member_id) DO UPDATE SET text_enabled = true, text_kinds = '{request_received}'");
+pdo()->exec("DELETE FROM notification_outbox WHERE member_id = 27");
+pdo()->exec("DELETE FROM link_opens WHERE link_id = " . $m['link_id'] . " AND what = 'upload'");
+$r = pub_upload($m['path'] . '/upload', fx_write('po.txt', 'PO 7'), 'Acme', 'up', $m['path']);
+ok($r['code'] === 200 && (int) one("SELECT count(*) FROM notification_outbox WHERE member_id = 27 AND kind = 'request_received' AND channel = 'text'") === 1, 'with the text opt-in a text row is queued for the outbox (slice 8 sends it through K6)');
+pdo()->exec("UPDATE dc_settings SET max_document_bytes = 1048576");
+$big = tmpfile_of(1200000, 'big', 'huge.bin');
+$r = pub_upload($m['path'] . '/upload', $big, 'Acme', 'up', $m['path']);
+ok($r['code'] === 413, 'a file over the ceiling (1 MB set; 64 MB at most on this door): 413 (' . $r['code'] . ')');
+@unlink($big);
+pdo()->exec("UPDATE dc_settings SET max_document_bytes = 2147483648");
+$r = req('POST', $m['path'] . '/upload', ['jar' => visitor('up'), 'form' => ['name' => 'x']]);
+ok($r['code'] === 403 || $r['code'] === 422, 'a POST without the page\'s token or a file is refused (' . $r['code'] . ')');
+
+echo "4. The rate, closing, expiry\n";
+$codes = [];
+for ($i = 0; $i < 22; $i++) { $codes[] = pub_upload($m['path'] . '/upload', fx_write('n' . $i . '.txt', 'n' . $i), 'Flood', 'flood', $m['path'])['code']; }
+ok(in_array(429, $codes, true) && count(array_filter($codes, static fn (int $c): bool => $c === 200)) <= 20, 'uploads from one address past the 20th in an hour are 429');
+pdo()->exec("DELETE FROM link_rate");
+$r = post_j(26, '/requests/close.php', ['request' => $m['link_id']]);
+ok($r['code'] === 403, 'an editor cannot close another\'s request');
+$r = post_j(27, '/requests/close.php', ['request' => $m['link_id']]);
+ok($r['code'] === 200 && one('SELECT revoked_at FROM share_links WHERE id = :l', ['l' => $m['link_id']]) !== null && last_event('request.close') !== null, 'request_close by the maker; logged');
+ok(pub($m['path'], 'up2')['code'] === 404, 'a closed request: 404');
+$r = page(actor(27), '/requests?status=closed');
+ok($r['code'] === 200 && str_contains($r['body'], 'data-state="revoked"'), 'My requests, closed: listed as revoked');
+$e = make_request(27, ['folder' => $inbox, 'label' => 'Expiring', 'expires_in_days' => 1]);
+pdo()->exec("UPDATE share_links SET expires_at = now() - interval '1 minute' WHERE id = " . $e['link_id']);
+$w = worker('requests_close,links_expire');
+ok(($w['passes']['requests_close']['closed'] ?? $w['requests_close']['closed'] ?? 0) >= 1 || one('SELECT revoked_at FROM share_links WHERE id = :l', ['l' => $e['link_id']]) !== null, 'the worker closes an expired request');
+ok(count(array_filter(bell(27, 'request_received'), static fn (array $n): bool => str_contains($n['title'], 'expired'))) === 1, '...and tells the maker once');
+ok(pub($e['path'], 'ex')['code'] === 404, '...and its page is 404');
+$x = make_link(27, ['document' => $secret, 'label' => 'old link', 'expires_in_days' => 1]);
+pdo()->exec("UPDATE share_links SET expires_at = now() - interval '1 minute' WHERE id = " . $x['link_id']);
+worker('links_expire'); worker('links_expire');
+ok((int) one("SELECT count(*) FROM activity_log WHERE action = 'link.expire' AND entity_id = :l", ['l' => $x['link_id']]) === 1, 'an expired link is logged link.expire once');
+finish();

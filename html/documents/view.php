@@ -31,6 +31,8 @@ $st->execute(['t' => 'document', 'id' => $id]);
 $notes = $st->fetchAll();
 $me = (int) current_member_id();
 $level = $doc['my_level'];
+require_once dirname(__DIR__, 2) . '/app/features/access/queries.php';
+$accessLine = document_access_line($pdo, $d);
 $lockedByOther = $d['locked_by'] !== null && (int) $d['locked_by'] !== $me && $d['lock_expires_at'] !== null && strtotime((string) $d['lock_expires_at']) > time();
 $may = ['edit' => dc_level_at_least($level, 'edit') && has_right('documents.edit') && !$lockedByOther, 'manage' => dc_level_at_least($level, 'manage'),
         'restore' => dc_level_at_least($level, 'edit') && has_right('versions.restore') && !$lockedByOther, 'purge' => has_right('retention.manage') || has_right('trash.purge'),
@@ -41,7 +43,7 @@ log_activity($pdo, 'document.open', 'document', $id, ['screen' => 'document', 'd
 $pdo->prepare('UPDATE documents SET last_opened_at = now() WHERE id = :id')->execute(['id' => $id]);
 if (wants_json()) {
     respond_screen(['document' => present_document($d), 'preview' => present_preview($preview), 'versions' => array_map('present_version', $versions), 'crumbs' => present_crumbs($crumbs), 'may' => $may,
-        'extraction' => extraction_sentence($d, $text), 'starred' => isset($stars['document'][$id]), 'notes' => array_map(static fn (array $n): array => ['note_id' => (int) $n['note_id'], 'author' => $n['author'], 'body' => $n['body'], 'created_at' => json_ts($n['created_at'])], $notes),
+        'extraction' => extraction_sentence($d, $text), 'starred' => isset($stars['document'][$id]), 'access_line' => $accessLine, 'notes' => array_map(static fn (array $n): array => ['note_id' => (int) $n['note_id'], 'author' => $n['author'], 'body' => $n['body'], 'created_at' => json_ts($n['created_at'])], $notes),
         'timeline' => array_map('present_activity_row', $timeline)]);
 }
 $notices = ['uploaded' => ['success', 'Uploaded.'], 'version' => ['success', 'A new version was added.'], 'renamed' => ['success', 'Renamed.'], 'described' => ['success', 'Saved.'], 'moved' => ['success', 'Moved.'],
@@ -49,5 +51,5 @@ $notices = ['uploaded' => ['success', 'Uploaded.'], 'version' => ['success', 'A 
             'unlocked' => ['success', 'Unlocked.'], 'lock_broken' => ['success', 'The lock was broken; its holder was told.'], 'reextract' => ['success', 'The text will be read again within the minute.'],
             'starred' => ['success', 'Added to your favourites.'], 'unstarred' => ['success', 'Removed from your favourites.'], 'export' => ['success', 'The zip is being made; find it under Exports.'], 'trashed' => ['success', 'Sent to the trash.']];
 render_screen($d['name'], view('files/document.php', ['d' => $d, 'preview' => $preview, 'versions' => $versions, 'crumbs' => $crumbs, 'may' => $may, 'stars' => $stars, 'tz' => member_timezone(), 'text' => $text,
-    'extraction' => extraction_sentence($d, $text), 'notes' => $notes, 'timeline' => $timeline, 'notice' => dc_notice($_GET['notice'] ?? null, $notices), 'adminView' => dc_is_admin_view((int) $d['library_id']), 'lockedByOther' => $lockedByOther]),
+    'extraction' => extraction_sentence($d, $text), 'notes' => $notes, 'timeline' => $timeline, 'accessLine' => $accessLine, 'notice' => dc_notice($_GET['notice'] ?? null, $notices), 'adminView' => dc_is_admin_view((int) $d['library_id']), 'lockedByOther' => $lockedByOther]),
     ['activeNav' => 'files', 'screen' => 'document', 'entity' => 'document', 'recordId' => $id]);

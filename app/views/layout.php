@@ -238,7 +238,9 @@ $groups = nav_groups();
             var screen = pc.dataset.screen || '';
             var navId = { 'dashboard': 'home', 'settings': 'my-settings', 'settings-tokens': 'tokens', 'activity': 'activity', 'tokens': 'tokens', 'notifications': 'notifications', 'my-files': 'files', 'shared-with-me': 'shared',
                           'folder': 'files', 'folder-add': 'files', 'folder-edit': 'files', 'folder-move': 'files', 'library-list': 'libraries', 'library-view': 'libraries', 'library-add': 'libraries', 'library-edit': 'libraries',
-                          'group-list': 'groups', 'group-view': 'groups', 'group-add': 'groups', 'group-edit': 'groups', 'group-members': 'groups' }[screen] || screen;
+                          'group-list': 'groups', 'group-view': 'groups', 'group-add': 'groups', 'group-edit': 'groups', 'group-members': 'groups',
+                          'folder-share': 'files', 'document-share': 'files', 'folder-links': 'files', 'document-links': 'files', 'link-add': 'files', 'request-add': 'files', 'requests': 'files', 'access-history': 'files', 'my-shares': 'shared',
+                          'document': 'files', 'document-edit': 'files', 'document-move': 'files', 'upload': 'files', 'exports': 'files' }[screen] || screen;
             document.querySelectorAll('.nxl-navbar .nxl-link, #app-tabbar .app-tab').forEach(function (a) { a.classList.remove('active'); });
             var link = document.querySelector('#nav-' + navId + ' .nxl-link');
             if (link) { link.classList.add('active'); }

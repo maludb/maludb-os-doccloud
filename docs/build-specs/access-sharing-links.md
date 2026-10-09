@@ -137,4 +137,28 @@ Tags on request uploads beyond the `request:` tag (4), the Clerk's stale-share p
 13. Registry `--check`: 10 screens built, 16 actions (15 on the registry; `request_upload` public), 6 approvals in step.
 
 ## Open questions
-None.
+Decided while building slice 3 (2026-10-09), for the owner to confirm:
+
+1. **Routes.** The manifest's routes win where this spec's file list differed: the share screen is `/folders/{id}/share` and `/documents/{id}/share`
+   (`/f/{id}/share`, `/d/{id}/share` are aliases to the same controller), links at `/folders/{id}/links` and `/documents/{id}/links`, history at
+   `/folders/{id}/history` and `/documents/{id}/history`; the six share actions post to `html/access/share*.php`, one `share_handler($kind)` body.
+2. **Which table an `access` id names.** `folder_access` and `document_access` ids collide, so `share_level_set` and `share_remove` take `kind`
+   (`folder` | `document`, or the `folder` / `document` hint); an id found in both tables with no hint answers 422.
+3. **A guest through the person form.** A person who picks a guest in the "Who" picker is routed to `access.share_guest` (logged as such); an agent
+   doing the same through `share_member` is refused 422 (`use share_guest`) so the paused action is the only door for agents.
+4. **`link_update` may lengthen the expiry** (the manifest is canonical over the spec's "shorten only"); `0` (never) only when
+   `link_no_expiry_allowed`; a password `null` keeps, `''` removes.
+5. **A request's uploads carry the free tag `request:<label>`** (slug `request-<label>`), applied through `dc_tag_ensure`/`dc_tag_apply`; slice 4
+   lists it as any free tag.
+6. **Notification dedupe is whole**: `dc_notify`'s dedupe key suppresses the bell as well as the mail, so a request's `request_received` is one bell
+   and one mail per link per hour.
+7. **The doors ignore a JSON `Accept`**: `/s/` and `/r/` are browser pages, never an API (the kit's 501 rule is for screens); only the request
+   door's upload answers JSON to its own script (`X-Requested-With` or the caller's original `Accept`, kept in `$GLOBALS['__public_accept']`).
+8. **The upload ceiling on a request** = `min(64 MB, max_document_bytes)`; over it answers 413 before the file is read.
+9. **A dead token is logged**: `link.refused` carries the dead link's id and reason (`revoked` | `rotated` | `expired`, `not_found` with no id) while
+   the visitor sees the same 404 page for every reason.
+10. **db/019** (additive): a `folders` AFTER INSERT trigger sets `access_root_id` for a folder born under a folder with rows (the move trigger
+    covered only moves), and `dc_access_history` orders by `changed_at DESC, id DESC` so a delete-and-reinsert in one transaction reads in order.
+11. **No `is_eval` wall here.** The kernel's actions server records an eval run's write and never sends it (two independent controls there); the
+    application reads run facts only at an agent's first admission, so an application-side refusal would be unreliable and none is built.
+12. **Agents have no personal library** (the sync makes one for humans only); an agent shares what it manages in a group or shared library.

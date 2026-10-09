@@ -9,10 +9,11 @@ declare(strict_types=1);
  *           'label'  => fn(PDO, int $id): ?string]
  * `search` reuses the feature's own list query (find_*() with ILIKE and paging), never a second one; `label` names the chosen record.
  * Slice 1 adds folder (folders the caller may add to; param `library`), library, group, member (people and agents, never a guest; param
- * `group` hides its live members) and department. Later slices add document (2), tag (4), link and request (3), saved_search (4).
+ * `group` hides its live members) and department. Slice 2 adds document; slice 3 guest and application; later slices tag (4), saved_search (4).
  * A short enumeration (a kind, a level, a colour) stays a <select>.
  */
 $files = static function (): void { require_once __DIR__ . '/features/files/handler.php'; };
+$access = static function (): void { require_once __DIR__ . '/features/access/handler.php'; };
 return [
     'folder' => [
         'title' => 'Folders', 'noun' => 'folder', 'roles' => ['library.personal', 'documents.guest'], 'params' => ['library'],
@@ -38,6 +39,16 @@ return [
         'title' => 'Documents', 'noun' => 'document', 'roles' => ['library.personal', 'documents.guest'], 'params' => ['folder', 'library'],
         'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($files): array { $files(); return documents_for_pick($pdo, $q, $params, $page); },
         'label' => static function (PDO $pdo, int $id) use ($files): ?string { $files(); return find_document($pdo, $id)['name'] ?? null; },
+    ],
+    'guest' => [
+        'title' => 'Guests', 'noun' => 'guest', 'roles' => ['documents.share'], 'params' => [],
+        'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($access): array { $access(); return guests_for_pick($pdo, $q, $params, $page); },
+        'label' => static function (PDO $pdo, int $id): ?string { $st = $pdo->prepare('SELECT display_name FROM mcp_members WHERE member_id = :id AND is_guest'); $st->execute(['id' => $id]); $v = $st->fetchColumn(); return $v === false ? null : (string) $v; },
+    ],
+    'application' => [
+        'title' => 'Applications', 'noun' => 'application', 'roles' => ['documents.share'], 'params' => [],
+        'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($access): array { $access(); return applications_for_pick($pdo, $q, $params, $page); },
+        'label' => static function (PDO $pdo, int $id) use ($access): ?string { $access(); $k = application_key_of($id); return $k === null ? null : KNOWN_APPLICATIONS[$k]; },
     ],
     'department' => [
         'title' => 'Departments', 'noun' => 'department', 'roles' => ['groups.manage'], 'params' => [],

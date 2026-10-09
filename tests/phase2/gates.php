@@ -47,8 +47,8 @@ ok(badge_of($jAdmin) === 'Super-admin' && badge_of($jCurator) === 'Curator' && b
 
 echo "2. The placeholders — a page naming its slice, 501 for JSON and for a POST\n";
 $stubs = trim((string) shell_exec('grep -rl "render_nav_stub(" ' . escapeshellarg(dirname(__DIR__, 2) . '/html') . ' 2>/dev/null | wc -l'));
-ok((int) $stubs === 7, "seven controllers call render_nav_stub (slice 1 built My files, Groups, Libraries, Recent, Favourites): $stubs");
-$ph = ['shared' => ['/shared/', 'slice 3', 'Shared with me'], 'tags' => ['/tags/', 'slice 4', 'Tags'], 'search' => ['/search/', 'slice 4', 'Search'],
+ok((int) $stubs === 6, "six controllers call render_nav_stub (slice 1 built My files, Groups, Libraries, Recent, Favourites; slice 3 Shared with me): $stubs");
+$ph = ['tags' => ['/tags/', 'slice 4', 'Tags'], 'search' => ['/search/', 'slice 4', 'Search'],
        'graph' => ['/graph/', 'slice 5', 'Graph'], 'trash' => ['/trash/', 'slice 6', 'Trash'], 'curate' => ['/curate/', 'slice 9', 'Curate'], 'admin' => ['/admin/', 'slice 9', 'Admin']];
 $bad = [];
 foreach ($ph as $id => [$url, $slice, $title]) {
@@ -69,7 +69,7 @@ $reg = [];
 foreach (($built['screens'] ?? []) as $s) { $reg[$s['screen'] ?? ''] = $s; }
 $stubIds = array_values(array_filter(array_keys($reg), static fn ($k) => !empty($reg[$k]['stub'])));
 $builtIds = array_values(array_filter(array_keys($reg), static fn ($k) => !empty($reg[$k]['built'])));
-ok(count($stubIds) === 7 && ($reg['home']['built'] ?? null) === true && ($reg['settings-tokens']['built'] ?? null) === true && ($reg['admin']['stub'] ?? null) === true && ($reg['folder']['built'] ?? null) === true, 'the registry marks seven screens as stubs and the shell\'s five plus slice 1\'s sixteen as built, so the voice surface never offers an unbuilt screen (' . count($stubIds) . ' stubs, ' . count($builtIds) . ' built)');
+ok(count($stubIds) === 6 && ($reg['home']['built'] ?? null) === true && ($reg['settings-tokens']['built'] ?? null) === true && ($reg['admin']['stub'] ?? null) === true && ($reg['folder']['built'] ?? null) === true, 'the registry marks six screens as stubs and the shell\'s five plus slices 1–3\'s as built, so the voice surface never offers an unbuilt screen (' . count($stubIds) . ' stubs, ' . count($builtIds) . ' built)');
 
 echo "3. The menu and the tab bar per role, and no session\n";
 $menu = fn (string $j): array => (preg_match_all('/id="nav-([a-z-]+)"/', page($j, '/')['body'], $m) ? array_values(array_filter($m[1], fn ($i) => !str_starts_with($i, 'library-'))) : []);

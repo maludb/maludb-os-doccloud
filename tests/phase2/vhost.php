@@ -25,7 +25,7 @@ ok(page($j, '/groups/new')['code'] === 200 && page($j, '/groups/999999')['code']
 ok(page($j, '/folders/1')['code'] === 404 && page($j, '/documents/1')['code'] === 404, '/folders/{id} and /documents/{id} are rewritten to their view.php: 404 until slices 1 and 2');
 ok(page($j, '/f/1')['code'] === 404 && page($j, '/f/1/share')['code'] === 404, '/f/{id} and /f/{id}/share are rewritten to f/index.php and f/share.php: 404 until slices 1 and 3');
 ok(req('GET', '/d/1')['code'] === 401 && req('GET', '/d/1/v/2')['code'] === 401 && req('GET', '/d/1/thumb')['code'] === 401, '/d/{id}, /d/{id}/v/{n} and /d/{id}/thumb are rewritten to d/index.php and d/thumb.php: 401 anonymous (slice 2)');
-ok(req('GET', '/s/' . str_repeat('a', 48))['code'] === 404 && req('GET', '/r/' . str_repeat('b', 48))['code'] === 404, '/s/<token> and /r/<token> are rewritten to s/index.php and r/index.php: 404 until slice 3');
+ok(req('GET', '/s/' . str_repeat('a', 48))['code'] === 404 && req('GET', '/r/' . str_repeat('b', 48))['code'] === 404, '/s/<token> and /r/<token> are rewritten to s/index.php and r/index.php: an unknown token is 404 (the same nothing)');
 ok(req('GET', '/s/short')['code'] === 404 && req('GET', '/s.php')['code'] === 404 && req('GET', '/d.php')['code'] === 404, 'a malformed token path and the old s.php / d.php names are 404');
 ok(req('GET', '/upload/start')['code'] === 405 && in_array(req('GET', '/exports/1')['code'], [302, 401], true), '/upload/{x} and /exports/{id} are rewritten to their files: 405 for a GET on the start, the launcher for an anonymous export (slice 2)');
 ok(req('GET', '/nosuchscreen', ['jar' => $j])['code'] === 404, 'an unknown path: 404');

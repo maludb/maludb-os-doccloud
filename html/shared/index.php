@@ -1,5 +1,16 @@
 <?php
 declare(strict_types=1);
-/** Shared with me (screen `shared`) — built by slice 3 (NAV_SLICES); until then the shell's placeholder: 200 after the right (library.personal|documents.guest), 501 for JSON and a POST. Removing this call is the slice's first step. */
-require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
-render_nav_stub('shared', NAV_SLICES['shared'], 'library.personal|documents.guest');
+/** Shared with me (`shared-with-me`, /shared): the explicit rows naming me, my groups or my departments (dc_shared_with_me) — a guest's home. */
+require_once dirname(__DIR__, 2) . '/app/features/access/handler.php';
+require_login();
+require_any_right('library.personal|documents.guest');
+$pdo = db();
+$page = max(1, request_integer('page') ?? 1);
+$kind = request_string('kind') ?: null;
+$data = shared_with_me($pdo, $page);
+$rows = $kind === null ? $data['rows'] : array_values(array_filter($data['rows'], static fn (array $r): bool => $r['kind'] === $kind));
+log_screen_view($pdo, 'shared');
+if (wants_json()) {
+    respond_screen(['rows' => array_map('present_shared_row', $rows), 'page' => $data['page'], 'more' => $data['more'], 'kind' => $kind]);
+}
+render_screen('Shared with me', view('files/shared.php', ['rows' => $rows, 'page' => $data['page'], 'more' => $data['more'], 'kind' => $kind, 'tz' => member_timezone(), 'guest' => is_guest()]), ['activeNav' => 'shared', 'screen' => 'shared-with-me']);

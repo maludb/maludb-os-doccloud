@@ -21,6 +21,7 @@ if (PHP_SAPI !== 'cli') { fwrite(STDERR, "CLI only.\n"); exit(1); }
 require_once dirname(__DIR__) . '/app/bootstrap.php';
 require_once dirname(__DIR__) . '/app/features/files/handler.php';          // the store, the gate, the file modules (slice 2)
 require_once dirname(__DIR__) . '/app/features/files/worker_steps.php';
+require_once dirname(__DIR__) . '/app/features/links/worker_steps.php';
 
 /** The passes, in the order they run. A new pass is a name here and a function worker_pass_<name>(PDO, int $limit, DateTimeImmutable $now): array. */
 const WORKER_PASSES = ['upload_sessions_expire', 'extract_text', 'thumbnails', 'search_catch_up', 'graph_jobs', 'versions_expire', 'trash_purge', 'blobs_free',
@@ -95,10 +96,10 @@ function worker_pass_versions_expire(PDO $pdo, int $limit, DateTimeImmutable $no
 function worker_pass_trash_purge(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['purged' => 0, 'stub' => true]; }
 /** SLICE 6 — blobs whose ref_count reached zero: the file unlinked, the row marked deleted. */
 function worker_pass_blobs_free(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['freed' => 0, 'stub' => true]; }
-/** SLICE 3 — links past expires_at marked expired (logged link.expire). */
-function worker_pass_links_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['expired' => 0, 'stub' => true]; }
-/** SLICE 3 — file requests past their expiry closed. */
-function worker_pass_requests_close(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['closed' => 0, 'stub' => true]; }
+/** SLICE 3 — links past expires_at logged link.expire once (the database already refuses them; app/features/links/worker_steps.php). */
+function worker_pass_links_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_links_expire($pdo, $limit); }
+/** SLICE 3 — file requests past their expiry revoked, the maker told once. */
+function worker_pass_requests_close(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_requests_close($pdo, $limit); }
 /** SLICE 2 (the lock UI is there) — locks past lock_expires_at released. */
 function worker_pass_locks_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_locks_expire($pdo); }
 /** SLICE 2 — queued exports built (a zip of what the maker may see); expired exports' files removed. */

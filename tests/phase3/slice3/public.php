@@ -1,0 +1,103 @@
+<?php
+/** Slice 3 proof — the link door (spec "Proof" 8 second half): a document link opened, previewed, downloaded, counted; a wrong token, expired, revoked → the same 404; the password page; the rate rule; a folder link's listing, its subtree only, its zip; the address hash never the address; download refused when disallowed. */
+require __DIR__ . '/lib.php';
+$seed = seed_store();
+$contracts = $seed['contracts'];
+$acme = $seed['board_doc'];
+$board = $seed['board_root'];
+pdo()->exec("SELECT set_config('app.member_id', '27', false)");
+$minutes = (int) one("INSERT INTO folders (library_id, parent_id, name, owner_member_id, created_by) VALUES ((SELECT library_id FROM folders WHERE id = $board), $board, 'Public minutes', 27, 27) RETURNING id");
+$minDoc = (int) one('SELECT document_id FROM dc_version_add(NULL, :f, :n, (SELECT blob_id FROM dc_blob_claim(:s, 700)), :n, :m, 700, :s, 27)', ['f' => $minutes, 'n' => 'minutes.txt', 'm' => 'text/plain', 's' => hash('sha256', 's3:min')]);
+$sub = (int) one("INSERT INTO folders (library_id, parent_id, name, owner_member_id, created_by) VALUES ((SELECT library_id FROM folders WHERE id = $contracts), $contracts, 'Public 2026', 27, 27) RETURNING id");
+// real files for the previews and the zip
+$png = fx_dir() . '/photo.png'; $im = imagecreatetruecolor(120, 80); imagefill($im, 0, 0, imagecolorallocate($im, 20, 120, 60)); imagepng($im, $png); imagedestroy($im);
+$txt = fx_write('terms.txt', "Termination: ninety days notice.\n" . fx_para(3, 300));
+$u1 = upload_file(27, $contracts, $png); $photo = (int) $u1['finish']['json']['record_id'];
+$u2 = upload_file(27, $sub, $txt); $terms = (int) $u2['finish']['json']['record_id'];
+worker('extract_text');
+
+echo "1. A document link\n";
+$m = make_link(27, ['document' => $photo, 'label' => 'the photo', 'expires_in_days' => 30]);
+$path = $m['path'];
+$r = pub($path);
+ok($r['code'] === 200 && str_contains($r['body'], 'id="public-document-name"') && str_contains($r['body'], 'photo.png') && str_contains($r['body'], 'id="public-download-btn"') && str_contains($r['body'], 'id="document-preview" data-mode="image"') && preg_match('/X-Robots-Tag: noindex/i', $r['headers']) === 1, 'the link opens: the name, the preview, Download, noindex');
+ok(!str_contains($r['body'], 'nav-') && !str_contains($r['body'], 'SMOKE Priya') && str_contains($r['body'], 'shared by SMOKE Marco'), 'no navigation, no other names — the maker\'s only');
+$o = q('SELECT what, address_hash, document_id FROM link_opens WHERE link_id = :l ORDER BY id', ['l' => $m['link_id']]);
+ok(count($o) === 1 && $o[0]['what'] === 'view' && strlen($o[0]['address_hash']) === 64 && !str_contains($o[0]['address_hash'], '127.0.0.1') && (int) $o[0]['document_id'] === $photo, 'the open is counted with an address hash, never the address');
+$ev = last_event('link.open');
+ok($ev !== null && $ev['source'] === 'portal' && $ev['actor_member_id'] === null && (int) $ev['document_id'] === $photo, 'logged link.open with source portal and no actor');
+$r = req('GET', '/d/' . $photo, ['jar' => visitor()]);
+ok($r['code'] === 200 && preg_match('/Content-Disposition: inline/i', $r['headers']) === 1, 'the gate serves the image inline to the link holder (the session admitted it)');
+$r = req('GET', '/d/' . $photo . '?download=1', ['jar' => visitor()]);
+ok($r['code'] === 200 && preg_match('/Content-Disposition: attachment/i', $r['headers']) === 1 && (int) one("SELECT count(*) FROM link_opens WHERE link_id = :l AND what = 'download'", ['l' => $m['link_id']]) === 1, 'a download through the gate, counted');
+ok((int) one('SELECT view_count FROM share_links WHERE id = :l', ['l' => $m['link_id']]) === 3, 'view_count 3 (the page, the inline view, the download)');
+ok(req('GET', '/d/' . $acme, ['jar' => visitor()])['code'] === 404 || req('GET', '/d/' . $acme, ['jar' => visitor()])['code'] === 401, 'the same session cannot reach another document through the gate');
+$r = req('GET', '/d/' . $photo, ['jar' => jar()]);
+ok($r['code'] === 401, 'a fresh session with no link: 401 at the gate');
+
+echo "2. The same nothing\n";
+ok(pub('/s/' . str_repeat('0', 48))['code'] === 404 && str_contains(pub('/s/' . str_repeat('0', 48))['body'], 'This link is not available'), 'a wrong token: 404, the same page');
+pdo()->exec("UPDATE share_links SET expires_at = now() - interval '1 minute' WHERE id = " . $m['link_id']);
+$r = pub($path, 'v2');
+ok($r['code'] === 404 && str_contains($r['body'], 'This link is not available'), 'an expired link: the same 404');
+pdo()->exec("UPDATE share_links SET expires_at = now() + interval '1 day' WHERE id = " . $m['link_id']);
+post_j(27, '/links/revoke.php', ['link' => $m['link_id']]);
+ok(pub($path, 'v3')['code'] === 404, 'a revoked link: the same 404');
+ok(last_event('link.refused') !== null && json_decode(last_event('link.refused')['after'], true)['reason'] === 'revoked' && (int) last_event('link.refused')['entity_id'] === $m['link_id'], 'refusals logged link.refused with the reason (revoked) and the link');
+pdo()->exec("UPDATE documents SET trashed_at = now(), trashed_by = 27 WHERE id = " . $minDoc);
+$t = make_link(27, ['document' => $minDoc, 'label' => 'trashed one']);
+ok($t['r']['code'] === 404 || pub($t['path'], 'v4')['code'] === 404, 'a link to a trashed document opens nothing');
+pdo()->exec("UPDATE documents SET trashed_at = NULL, trashed_by = NULL WHERE id = " . $minDoc);
+
+echo "3. The password\n";
+$p = make_link(27, ['document' => $photo, 'label' => 'locked', 'password' => 'open sesame', 'allow_download' => 'no']);
+$r = pub($p['path'], 'pw');
+ok($r['code'] === 200 && str_contains($r['body'], 'id="public-password-form"') && !str_contains($r['body'], 'id="public-document-name"'), 'a password link asks first, shows nothing');
+$r = pub_post($p['path'] . '/password', ['password' => 'wrong'], 'pw', $p['path']);
+ok($r['code'] === 403 && str_contains($r['body'], 'id="public-password-wrong"') && (int) one("SELECT count(*) FROM link_opens WHERE link_id = :l AND what = 'password_refused'", ['l' => $p['link_id']]) === 1, 'a wrong password: refused and counted');
+$r = pub_post($p['path'] . '/password', ['password' => 'open sesame'], 'pw', $p['path']);
+ok($r['code'] === 302, 'the right password: on to the page');
+$r = pub($p['path'], 'pw');
+ok($r['code'] === 200 && str_contains($r['body'], 'id="public-document-name"') && str_contains($r['body'], 'id="public-no-download"') && !str_contains($r['body'], 'id="public-download-btn"'), '...the page, once per session; view only: no Download');
+$r = req('GET', '/d/' . $photo . '?download=1', ['jar' => visitor('pw')]);
+ok($r['code'] === 403, 'a download through the gate on a view-only link: 403 in words');
+ok(pub($p['path'], 'pw2')['code'] === 200 && str_contains(pub($p['path'], 'pw2')['body'], 'id="public-password-form"'), 'another session asks again');
+
+echo "4. The rate rule\n";
+$f = make_link(27, ['folder' => $contracts, 'label' => 'contracts', 'expires_in_days' => 30, 'note' => 'Everything we signed.']);
+$codes = [];
+for ($i = 0; $i < 70; $i++) { $codes[] = pub($f['path'], 'rate')['code']; }
+$c429 = count(array_filter($codes, static fn (int $c): bool => $c === 429));
+ok($c429 >= 1 && $codes[0] === 200 && end($codes) === 429, 'from one address, opens past the 60th in a minute are 429 (' . $c429 . ' of 70)');
+pdo()->exec("DELETE FROM link_rate");
+
+echo "5. A folder link\n";
+$r = pub($f['path'], 'fv');
+ok($r['code'] === 200 && str_contains($r['body'], 'id="public-listing"') && str_contains($r['body'], 'id="public-row-document-' . $photo . '"') && str_contains($r['body'], 'id="public-row-folder-' . $sub . '"') && str_contains($r['body'], 'Everything we signed.') && str_contains($r['body'], 'id="public-zip-btn"'), 'the folder link lists its documents and subfolders, the note, Download all');
+ok(!str_contains($r['body'], 'minutes.txt') && !str_contains($r['body'], 'id="public-row-document-' . $minDoc . '"'), 'never a sibling folder\'s document');
+$r = pub($f['path'] . '/f/' . $sub, 'fv');
+ok($r['code'] === 200 && str_contains($r['body'], 'id="public-row-document-' . $terms . '"') && str_contains($r['body'], 'id="public-crumbs"'), 'the subfolder within the link, crumbs inside the link\'s root');
+ok(pub($f['path'] . '/f/' . $minutes, 'fv')['code'] === 404 && pub($f['path'] . '/d/' . $minDoc, 'fv')['code'] === 404, 'a folder or a document outside the link: 404');
+$r = pub($f['path'] . '/d/' . $terms, 'fv');
+ok($r['code'] === 200 && str_contains($r['body'], 'id="public-back"') && str_contains($r['body'], 'data-mode="text"'), 'a document inside the folder link: its page with the preview and a way back');
+ok(req('GET', '/d/' . $terms . '?download=1', ['jar' => visitor('fv')])['code'] === 200 && req('GET', '/d/' . $minDoc, ['jar' => visitor('fv')])['code'] !== 200, 'the gate serves what the link reaches and not what it does not');
+$r = pub_post($f['path'] . '/zip', [], 'fv', $f['path']);
+ok($r['code'] === 302 && preg_match('#/zip/([0-9]+)$#', (string) ($r['location'] ?? ''), $zm) === 1, 'Download all: an export is queued and the page points at it');
+$eid = (int) $zm[1];
+ok((int) one('SELECT link_id FROM exports WHERE id = :e', ['e' => $eid]) === $f['link_id'] && (int) one('SELECT created_by FROM exports WHERE id = :e', ['e' => $eid]) === 27, 'the export is keyed by the link and made as the maker');
+$r = pub($f['path'] . '/zip/' . $eid, 'fv');
+ok($r['code'] === 200 && str_contains($r['body'], 'data-status="queued"'), 'before the worker: the page says the zip is being made');
+worker('exports');
+$r = pub($f['path'] . '/zip/' . $eid, 'fv');
+ok($r['code'] === 200 && preg_match('/Content-Disposition: attachment; filename="[^"]*\.zip"/i', $r['headers']) === 1, 'after the worker: the zip downloads as an attachment (' . $r['code'] . ' ' . substr(preg_replace('/\s+/', ' ', $r['headers']), 0, 300) . ')');
+$tmp = tempnam(sys_get_temp_dir(), 'dczip'); file_put_contents($tmp, $r['body']);
+$z = new ZipArchive(); $z->open($tmp); $names = []; for ($i = 0; $i < $z->numFiles; $i++) { $names[] = $z->getNameIndex($i); } $z->close(); @unlink($tmp);
+sort($names);
+ok(in_array('photo.png', $names, true) && in_array('Public 2026/terms.txt', $names, true) && !in_array('minutes.txt', $names, true) && in_array('acme-msa.pdf', $names, true) === false, 'the zip holds the subtree (photo, Public 2026/terms) and nothing of Minutes (' . implode(', ', $names) . ')');
+ok((int) one("SELECT count(*) FROM link_opens WHERE link_id = :l AND what = 'download'", ['l' => $f['link_id']]) >= 1, 'the zip download is counted on the link');
+$v = make_link(27, ['folder' => $contracts, 'label' => 'view only folder', 'allow_download' => 'no']);
+$r = pub($v['path'], 'vo');
+ok($r['code'] === 200 && !str_contains($r['body'], 'id="public-zip-btn"') && pub_post($v['path'] . '/zip', [], 'vo', $v['path'])['code'] === 404, 'a view-only folder link offers no zip and refuses one');
+$j = pub($f['path'], 'fv', ['headers' => ['Accept: application/json']]);
+ok($j['code'] === 200 && str_contains($j['body'], '<html'), 'the public door answers HTML to every caller (no JSON branch, no API) (' . $j['code'] . ')');
+finish();

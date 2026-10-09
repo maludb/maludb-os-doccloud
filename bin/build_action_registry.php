@@ -228,6 +228,9 @@ function screen_controller(string $url): ?string
 {
     $path = parse_url($url, PHP_URL_PATH) ?: $url;
     $path = '/' . ltrim($path, '/');
+    if (preg_match('#^(/[a-z_-]+)/\{token\}$#', $path, $m)) {         // a public door /s/{token}, /r/{token} → its index.php (the vhost rewrites the token)
+        return is_file(WEB_ROOT . $m[1] . '/index.php') ? WEB_ROOT . $m[1] . '/index.php' : null;
+    }
     $path = preg_replace('/\{[a-z_]+\}/', '1', $path);          // /pages/{id} → /pages/1
     if (str_ends_with($path, '/')) {
         return is_file(WEB_ROOT . $path . 'index.php') ? WEB_ROOT . $path . 'index.php' : null;

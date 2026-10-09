@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T17:47:38+00:00",
+    "generated_at": "2026-10-09T18:15:23+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -19,8 +19,8 @@
             "params": [
                 "kind"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "recent": {
             "screen": "recent",
@@ -281,7 +281,7 @@
             "section": "Access, sharing, links and file requests (slice 3)",
             "when": "who can see a folder and why: the inherited rows greyed, the explicit rows, add a principal with the picker, the level, restrict",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "document-share": {
@@ -290,7 +290,7 @@
             "section": "Access, sharing, links and file requests (slice 3)",
             "when": "who can see one document and why; share it alone",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "folder-links": {
@@ -299,7 +299,7 @@
             "section": "Access, sharing, links and file requests (slice 3)",
             "when": "the links and file requests on a folder: make, rotate, revoke, the opens",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "document-links": {
@@ -308,7 +308,7 @@
             "section": "Access, sharing, links and file requests (slice 3)",
             "when": "the links on a document",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "link-add": {
@@ -320,7 +320,7 @@
                 "folder",
                 "document"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "request-add": {
@@ -331,7 +331,7 @@
             "params": [
                 "folder"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "my-shares": {
@@ -340,7 +340,7 @@
             "section": "Access, sharing, links and file requests (slice 3)",
             "when": "what I shared out, to whom; the stale ones to guests",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "public-link": {
@@ -349,7 +349,7 @@
             "section": "Access, sharing, links and file requests (slice 3)",
             "when": "a link holder's view: a document to preview and download, or a folder's read-only listing with download as zip; the password page",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "public-request": {
@@ -358,7 +358,7 @@
             "section": "Access, sharing, links and file requests (slice 3)",
             "when": "a file request's drop zone for whoever holds the link",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "requests": {
@@ -369,7 +369,7 @@
             "params": [
                 "status"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "access-history": {
@@ -380,7 +380,7 @@
             "params": [
                 "at"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "tag-list": {
@@ -1919,7 +1919,7 @@
             "who": "documents.share and manage on the thing",
             "agent": true,
             "record_id": "the access row",
-            "built": false
+            "built": true
         },
         "share_group": {
             "action": "share_group",
@@ -1958,7 +1958,7 @@
             "who": "documents.share and manage on the thing",
             "agent": true,
             "record_id": "the access row",
-            "built": false
+            "built": true
         },
         "share_department": {
             "action": "share_department",
@@ -1997,7 +1997,7 @@
             "who": "documents.share and manage on the thing",
             "agent": true,
             "record_id": "the access row",
-            "built": false
+            "built": true
         },
         "share_agent": {
             "action": "share_agent",
@@ -2036,7 +2036,7 @@
             "who": "documents.share and manage on the thing",
             "agent": true,
             "record_id": "the access row",
-            "built": false
+            "built": true
         },
         "share_guest": {
             "action": "share_guest",
@@ -2075,7 +2075,7 @@
             "who": "documents.share and manage on the thing",
             "agent": true,
             "record_id": "the access row",
-            "built": false
+            "built": true
         },
         "share_application": {
             "action": "share_application",
@@ -2108,7 +2108,7 @@
             "who": "documents.share and manage on the folder",
             "agent": true,
             "record_id": "the access row",
-            "built": false
+            "built": true
         },
         "share_level_set": {
             "action": "share_level_set",
@@ -2135,7 +2135,7 @@
             "who": "manage on the thing",
             "agent": true,
             "record_id": "the access row",
-            "built": false
+            "built": true
         },
         "share_remove": {
             "action": "share_remove",
@@ -2156,7 +2156,7 @@
             "who": "manage on the thing",
             "agent": true,
             "record_id": "the access row",
-            "built": false
+            "built": true
         },
         "folder_restrict": {
             "action": "folder_restrict",
@@ -2183,7 +2183,7 @@
             "who": "manage on the folder",
             "agent": true,
             "record_id": "the folder",
-            "built": false
+            "built": true
         },
         "link_make": {
             "action": "link_make",
@@ -2240,7 +2240,7 @@
             "who": "links.make and manage on the thing",
             "agent": true,
             "record_id": "the link",
-            "built": false
+            "built": true
         },
         "link_rotate": {
             "action": "link_rotate",
@@ -2261,7 +2261,7 @@
             "who": "own or manage on the thing",
             "agent": true,
             "record_id": "the new link",
-            "built": false
+            "built": true
         },
         "link_revoke": {
             "action": "link_revoke",
@@ -2282,7 +2282,7 @@
             "who": "own or manage on the thing or links.all",
             "agent": true,
             "record_id": "the link",
-            "built": false
+            "built": true
         },
         "request_make": {
             "action": "request_make",
@@ -2327,7 +2327,7 @@
             "who": "requests.make and add on the folder",
             "agent": true,
             "record_id": "the request",
-            "built": false
+            "built": true
         },
         "request_close": {
             "action": "request_close",
@@ -2348,7 +2348,7 @@
             "who": "own or manage on the folder",
             "agent": true,
             "record_id": "the request",
-            "built": false
+            "built": true
         },
         "link_update": {
             "action": "link_update",
@@ -2399,7 +2399,7 @@
             "who": "own or manage on the thing",
             "agent": true,
             "record_id": "the link",
-            "built": false
+            "built": true
         },
         "tag_create": {
             "action": "tag_create",
