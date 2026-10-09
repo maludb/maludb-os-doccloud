@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T19:35:34+00:00",
+    "generated_at": "2026-10-09T21:10:20+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -543,8 +543,8 @@
             "params": [
                 "folder"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "admin-quotas": {
             "screen": "admin-quotas",
@@ -554,7 +554,7 @@
             "params": [
                 "near"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-worker": {
@@ -565,7 +565,7 @@
             "params": [
                 "limit"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-keys": {
@@ -667,7 +667,7 @@
             "section": "Home, curate, admin, reports and tokens (slice 9)",
             "when": "the ceilings, the windows (versions, trash, locks), link defaults, rates, the graph's defaults, each its own form",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-links": {
@@ -2945,7 +2945,7 @@
             "who": "manage on the document",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "document_restore": {
             "action": "document_restore",
@@ -2966,7 +2966,7 @@
             "who": "own or trash.own on the folder",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "document_purge": {
             "action": "document_purge",
@@ -2993,7 +2993,7 @@
             "who": "trash.purge",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "folder_delete": {
             "action": "folder_delete",
@@ -3020,7 +3020,7 @@
             "who": "trash.purge",
             "agent": true,
             "record_id": "the folder",
-            "built": false
+            "built": true
         },
         "trash_purge": {
             "action": "trash_purge",
@@ -3053,7 +3053,7 @@
             "who": "trash.purge",
             "agent": true,
             "record_id": "the settings",
-            "built": false
+            "built": true
         },
         "quota_set": {
             "action": "quota_set",
@@ -3080,7 +3080,7 @@
             "who": "quotas.manage",
             "agent": true,
             "record_id": "the library",
-            "built": false
+            "built": true
         },
         "document_lock_break": {
             "action": "document_lock_break",
@@ -3122,7 +3122,7 @@
             "who": "settings.manage",
             "agent": false,
             "record_id": "the pass",
-            "built": false
+            "built": true
         },
         "clerk_propose": {
             "action": "clerk_propose",
@@ -3503,7 +3503,7 @@
             "who": "retention.manage",
             "agent": true,
             "record_id": "the settings",
-            "built": false
+            "built": true
         },
         "ownership_transfer": {
             "action": "ownership_transfer",

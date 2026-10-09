@@ -23,7 +23,7 @@ $archived = $lib['archived_at'] !== null;
                     <?php if ($lib['kind'] === 'personal' && $owner !== null): ?><dt class="col-5 col-md-4">Owner</dt><dd class="col-7 col-md-8" id="library-owner"><?= e($owner) ?></dd><?php endif; ?>
                     <?php if ($lib['kind'] === 'shared'): ?><dt class="col-5 col-md-4">Everyone gets</dt><dd class="col-7 col-md-8" id="library-everyone"><?= e(EVERYONE_LEVELS[$lib['everyone_level']] ?? $lib['everyone_level']) ?></dd><?php endif; ?>
                     <dt class="col-5 col-md-4">Documents</dt><dd class="col-7 col-md-8" id="library-documents"><?= (int) $docs ?></dd>
-                    <dt class="col-5 col-md-4">Storage</dt><dd class="col-7 col-md-8" id="library-quota"><?= e(format_bytes((int) $lib['used_bytes'])) ?><?= $lib['quota_bytes'] !== null ? ' of ' . e(format_bytes((int) $lib['quota_bytes'])) . ' (' . e((string) ($quota['pct'] ?? 0)) . '%)' . (!empty($quota['near']) ? ' · nearly full' : '') : ' · no quota' ?></dd>
+                    <dt class="col-5 col-md-4">Storage</dt><dd class="col-7 col-md-8" id="library-quota"><?= view('libraries/partials/quota-bar.php', ['q' => $quota, 'idPrefix' => 'quota']) ?><?php if (has_right('quotas.manage')): ?><?= hx_link('/admin/quotas?library=' . $id, 'Set the quota', 'fs-11 fw-semibold', 'id="library-quota-link"') ?><?php endif; ?></dd>
                 </dl>
                 <div class="mt-3 d-flex flex-wrap gap-1">
                     <?= hx_link(with_back('/f/' . $root, '/libraries/' . $id), '<i class="feather-folder me-1"></i>Open the root folder', 'btn btn-primary btn-touch', 'id="library-open-btn"') ?>

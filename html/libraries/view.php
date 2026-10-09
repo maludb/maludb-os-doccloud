@@ -3,6 +3,7 @@ declare(strict_types=1);
 /** A library (screen `library-view`, /libraries/{id}): name, kind, description, the owner or the group, everyone level (shared), graph policy chip, quota, the root's listing link, a group's members, Edit · Archive/Restore · Delete by rule, the timeline. */
 require_once dirname(__DIR__, 2) . '/app/features/files/handler.php';
 require_once dirname(__DIR__, 2) . '/app/features/activity/queries.php';
+require_once dirname(__DIR__, 2) . '/app/features/admin/queries.php';
 require_login();
 $pdo = db();
 $lib = library_from_request($pdo, 'id');

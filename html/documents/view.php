@@ -5,7 +5,7 @@ declare(strict_types=1);
  * crumb, size and kind, the lock state, the versions table with restore (and purge for the admin), download, the trail, comments (notes, read-only
  * until slice 8's composer), "who can see this" (slice 3) and related documents from the graph (slice 5: the document's subjects, the documents like it through the wall). Read on a phone first.
  */
-require_once dirname(__DIR__, 2) . '/app/features/files/handler.php';
+require_once dirname(__DIR__, 2) . '/app/features/trash/handler.php';
 require_once dirname(__DIR__, 2) . '/app/features/activity/queries.php';
 require_once dirname(__DIR__, 2) . '/app/features/tags/queries.php';
 require_once dirname(__DIR__, 2) . '/app/features/tags/present.php';
@@ -58,7 +58,7 @@ if (wants_json()) {
 $notices = ['tagged' => ['success', 'Tagged.'], 'untagged' => ['success', 'The tag was removed.'], 'proposed' => ['success', 'Proposed to the curators.'], 'uploaded' => ['success', 'Uploaded.'], 'version' => ['success', 'A new version was added.'], 'renamed' => ['success', 'Renamed.'], 'described' => ['success', 'Saved.'], 'moved' => ['success', 'Moved.'],
             'copied' => ['success', 'Copied — this is the copy.'], 'restored' => ['success', 'Restored as a new version.'], 'purged' => ['success', 'The version was purged.'], 'locked' => ['success', 'Locked for you.'],
             'unlocked' => ['success', 'Unlocked.'], 'lock_broken' => ['success', 'The lock was broken; its holder was told.'], 'reextract' => ['success', 'The text will be read again within the minute.'],
-            'starred' => ['success', 'Added to your favourites.'], 'unstarred' => ['success', 'Removed from your favourites.'], 'export' => ['success', 'The zip is being made; find it under Exports.'], 'trashed' => ['success', 'Sent to the trash.']];
+            'starred' => ['success', 'Added to your favourites.'], 'unstarred' => ['success', 'Removed from your favourites.'], 'export' => ['success', 'The zip is being made; find it under Exports.'], 'trashed' => ['success', 'Sent to the trash.'], 'untrashed' => ['success', 'Restored from the trash.'], 'restored_root' => ['success', 'Restored to the library\'s top folder: its folder is gone.']];
 render_screen($d['name'], view('files/document.php', ['d' => $d, 'preview' => $preview, 'versions' => $versions, 'crumbs' => $crumbs, 'may' => $may, 'stars' => $stars, 'tz' => member_timezone(), 'text' => $text,
     'extraction' => extraction_sentence($d, $text), 'notes' => $notes, 'timeline' => $timeline, 'accessLine' => $accessLine, 'documentTags' => $documentTags, 'datalist' => $datalist, 'notice' => dc_notice($_GET['notice'] ?? null, $notices), 'adminView' => dc_is_admin_view((int) $d['library_id']), 'lockedByOther' => $lockedByOther, 'related' => $related, 'graphSubjects' => $graphSubjects]),
     ['activeNav' => 'files', 'screen' => 'document', 'entity' => 'document', 'recordId' => $id]);

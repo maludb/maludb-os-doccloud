@@ -172,10 +172,115 @@ function worker_exports_expire(PDO $pdo): array
     return ['expired' => $n];
 }
 
-/** Locks past their hour, released. */
+/** Locks past their hours, released (dc_pass_locks_expire); each holder told once that theirs expired (lock_broken). Returns ['released' => n, 'told' => n]. */
 function worker_locks_expire(PDO $pdo): array
 {
-    return ['released' => (int) one_value($pdo, 'SELECT dc_pass_locks_expire()')];
+    $due = $pdo->query('SELECT id, name, folder_id, library_id, locked_by, locked_at FROM documents WHERE locked_by IS NOT NULL AND lock_expires_at <= now() AND trashed_at IS NULL')->fetchAll();
+    $n = (int) one_value($pdo, 'SELECT dc_pass_locks_expire()');
+    $told = 0;
+    foreach ($due as $d) {
+        log_activity($pdo, 'document.lock_expire', 'document', (int) $d['id'], ['source' => 'cron', 'actor_member_id' => null, 'document_id' => (int) $d['id'], 'folder_id' => (int) $d['folder_id'], 'library_id' => (int) $d['library_id'], 'after' => ['holder_member_id' => (int) $d['locked_by']]]);
+        $r = $pdo->prepare('SELECT dc_notify(:m, :k, :t, :b, :rt, :rid, :d, :f, NULL, :dd)');
+        $r->execute(['m' => (int) $d['locked_by'], 'k' => 'lock_broken', 't' => 'Your lock on ' . $d['name'] . ' expired', 'b' => 'It was released after its time, so others can edit it. Lock it again if you still need it.',
+                     'rt' => 'document', 'rid' => (int) $d['id'], 'd' => (int) $d['id'], 'f' => (int) $d['folder_id'], 'dd' => 'lock_expired:' . (int) $d['id'] . ':' . strtotime((string) $d['locked_at'])]);
+        $told++;
+    }
+    return ['released' => $n, 'told' => $told];
+}
+
+/** Versions past the window (versions_keep_days, then the last versions_keep_count; the current always kept) purged; logged version.expire with the count. */
+function worker_versions_expire(PDO $pdo, int $limit = 1000): array
+{
+    $st = $pdo->prepare('SELECT dc_pass_versions_expire(:l)');
+    $st->execute(['l' => $limit]);
+    $n = (int) $st->fetchColumn();
+    if ($n > 0) {
+        log_activity($pdo, 'version.expire', 'document', null, ['source' => 'cron', 'actor_member_id' => null, 'after' => ['versions' => $n]]);
+    }
+    return ['purged' => $n];
+}
+
+/** Documents (and then empty folders) past the trash window purged through the database (the graph's forget is queued by its trigger); one document.purge row each, cron. */
+function worker_trash_purge(PDO $pdo, int $limit = 500): array
+{
+    $due = $pdo->prepare("SELECT id, name, folder_id, library_id, byte_size FROM documents WHERE trashed_at IS NOT NULL AND trashed_at < now() - make_interval(days => dc_setting_int('trash_days')::integer) ORDER BY trashed_at LIMIT :l");
+    $due->bindValue('l', $limit, PDO::PARAM_INT);
+    $due->execute();
+    $docs = $due->fetchAll();
+    $foldersBefore = (int) one_value($pdo, "SELECT count(*) FROM folders WHERE trashed_at IS NOT NULL");
+    $st = $pdo->prepare('SELECT dc_pass_trash_purge(:l)');
+    $st->execute(['l' => $limit]);
+    $n = (int) $st->fetchColumn();
+    foreach ($docs as $d) {
+        log_activity($pdo, 'document.purge', 'document', (int) $d['id'], ['source' => 'cron', 'actor_member_id' => null, 'document_id' => (int) $d['id'], 'folder_id' => (int) $d['folder_id'], 'library_id' => (int) $d['library_id'],
+            'after' => ['name' => $d['name'], 'byte_size' => (int) $d['byte_size'], 'reason' => 'window']]);
+    }
+    $folders = max(0, $foldersBefore - (int) one_value($pdo, "SELECT count(*) FROM folders WHERE trashed_at IS NOT NULL"));
+    if ($folders > 0) {
+        log_activity($pdo, 'folder.purge', 'folder', null, ['source' => 'cron', 'actor_member_id' => null, 'after' => ['folders' => $folders, 'reason' => 'window']]);
+    }
+    return ['purged' => $n, 'folders' => $folders];
+}
+
+/** Blobs nobody holds (ref_count 0, an hour old): marked deleted by the database, the files unlinked here (a file already gone is fine); logged blob.free with the count. */
+function worker_blobs_free(PDO $pdo, int $limit = 500): array
+{
+    $st = $pdo->prepare('SELECT dc_pass_blobs_free(:l)');
+    $st->execute(['l' => $limit]);
+    $freed = 0;
+    foreach ($st->fetchAll(PDO::FETCH_COLUMN) as $path) {
+        store_unlink((string) $path);
+        $freed++;
+    }
+    if ($freed > 0) {
+        log_activity($pdo, 'blob.free', 'blob', null, ['source' => 'cron', 'actor_member_id' => null, 'after' => ['blobs' => $freed]]);
+    }
+    return ['freed' => $freed];
+}
+
+/** Libraries at 90% of their quota: their owners told once a month (quota_near; the bell row of the month is the dedupe), logged quota.near once a month per library. */
+function worker_quota_watch(PDO $pdo): array
+{
+    $month = (string) one_value($pdo, "SELECT to_char(date_trunc('month', now()), 'YYYY-MM-DD')");
+    $near = $pdo->query("SELECT l.id, l.kind, l.name, l.owner_member_id, l.created_by, l.group_id, l.used_bytes, l.quota_bytes FROM libraries l
+                          WHERE l.archived_at IS NULL AND l.quota_bytes IS NOT NULL AND l.used_bytes >= 0.9 * l.quota_bytes ORDER BY l.id")->fetchAll();
+    $told = $pdo->prepare("SELECT 1 FROM notifications WHERE member_id = :m AND kind = 'quota_near' AND record_type = 'library' AND record_id = :l AND created_at >= CAST(:month AS date)");
+    $out = ['near' => count($near), 'noticed' => 0];
+    foreach ($near as $l) {
+        $owners = [];
+        if ($l['kind'] === 'group') {
+            $g = $pdo->prepare("SELECT gm.member_id FROM group_members gm JOIN members m ON m.id = gm.member_id WHERE gm.group_id = :g AND gm.role = 'owner' AND gm.left_at IS NULL AND m.status = 'active'");
+            $g->execute(['g' => (int) $l['group_id']]);
+            $owners = array_map('intval', $g->fetchAll(PDO::FETCH_COLUMN));
+        } elseif ($l['owner_member_id'] !== null) {
+            $owners = [(int) $l['owner_member_id']];
+        } elseif ($l['created_by'] !== null) {
+            $owners = [(int) $l['created_by']];
+        }
+        $pct = (int) round(100 * (int) $l['used_bytes'] / max(1, (int) $l['quota_bytes']));
+        $any = false;
+        foreach ($owners as $m) {
+            $told->execute(['m' => $m, 'l' => (int) $l['id'], 'month' => $month]);
+            if ($told->fetchColumn()) {
+                continue;
+            }
+            $pdo->prepare('SELECT dc_notify(:m, :k, :t, :b, :rt, :rid, NULL, NULL, NULL, :dd)')->execute(['m' => $m, 'k' => 'quota_near', 't' => $l['name'] . ' is ' . $pct . '% full',
+                'b' => format_bytes((int) $l['used_bytes']) . ' of ' . format_bytes((int) $l['quota_bytes']) . ' used. Clear out what you no longer need, or ask the admin for more room.',
+                'rt' => 'library', 'rid' => (int) $l['id'], 'dd' => 'quota_near:' . (int) $l['id'] . ':' . substr($month, 0, 7) . ':' . $m]);
+            $any = true;
+            $out['noticed']++;
+        }
+        if ($any) {
+            log_activity($pdo, 'quota.near', 'library', (int) $l['id'], ['source' => 'cron', 'actor_member_id' => null, 'library_id' => (int) $l['id'], 'after' => ['pct' => $pct, 'used_bytes' => (int) $l['used_bytes'], 'quota_bytes' => (int) $l['quota_bytes']]]);
+        }
+    }
+    return $out;
+}
+
+/** Proposals nobody decided, the search log, link opens and sent mail past their age (dc_pass_housekeeping): how many rows went. */
+function worker_housekeeping(PDO $pdo): array
+{
+    return ['pruned' => (int) one_value($pdo, 'SELECT dc_pass_housekeeping()')];
 }
 
 /** SLICE 4 — the keyword index repaired: dc_search_catch_up(limit); logged index.catch_up with the count when it did anything. */

@@ -17,6 +17,6 @@ if ($path === '/v1/send' && ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     if (str_contains($to, 'suppressed')) { http_response_code(400); echo json_encode(['error' => 'No deliverable recipients.', 'rejected' => [['email' => $to, 'reason' => 'suppressed:bounce']]]); exit; }
     if (str_contains($to, 'flaky')) { http_response_code(502); echo '{"error":"relay refused"}'; exit; }
     if (str_contains($to, 'rejected')) { echo json_encode(['status' => 'sent', 'accepted' => [], 'rejected' => [['email' => $to, 'reason' => 'invalid_address']]]); exit; }
-    echo json_encode(['status' => 'sent', 'accepted' => [$to], 'rejected' => []]); exit;
+    echo json_encode(['status' => 'sent', 'message_id' => 'fake-' . substr(md5($to . microtime(true) . mt_rand()), 0, 10), 'accepted' => [$to], 'rejected' => []]); exit;
 }
 http_response_code(404);

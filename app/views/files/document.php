@@ -17,7 +17,7 @@ $back = '/documents/' . $id;
 <div class="main-content" id="document-content">
     <?= view('shared/notice.php', ['notice' => $notice]) ?>
     <?php if ($adminView): ?><div class="fs-11 text-muted mb-2" id="document-admin-view">You see this as the admin.</div><?php endif; ?>
-    <?php if ($d['trashed_at'] !== null): ?><div class="alert alert-warning fs-12" id="document-trashed">This document is in the trash.</div><?php endif; ?>
+    <?php if ($d['trashed_at'] !== null): ?><?= view('files/partials/trash-banner.php', ['d' => $d, 'id' => $id, 'may' => $may, 'tz' => $tz, 'window' => trash_window_days(db())]) ?><?php endif; ?>
     <div class="row g-3">
         <div class="col-12 col-lg-8">
             <?= view('files/partials/preview.php', ['d' => $d, 'preview' => $preview, 'extraction' => $extraction]) ?>

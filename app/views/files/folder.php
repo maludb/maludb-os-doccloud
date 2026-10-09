@@ -37,6 +37,7 @@ if ($may['add']) {
                 <?= hx_link('/folders/' . $id . '/move', '<i class="feather-corner-up-right me-1"></i>Move', 'btn btn-light btn-touch', 'id="folder-move-btn"') ?>
             <?php endif; ?>
             <?php if ($may['share']): ?><?= hx_link('/folders/' . $id . '/share', '<i class="feather-share-2 me-1"></i>Share', 'btn btn-light btn-touch', 'id="folder-share-btn"') ?><?= hx_link('/folders/' . $id . '/links', '<i class="feather-link me-1"></i>Links', 'btn btn-light btn-touch', 'id="folder-links-btn"') ?><?php endif; ?>
+            <?php if ($may['manage']): ?><?= hx_link('/f/' . $id . '/trash', '<i class="feather-archive me-1"></i>Trash tab', 'btn btn-light btn-touch', 'id="folder-trash-tab"') ?><?php endif; ?>
             <?php if ($may['manage'] && !$isRoot): ?>
                 <form method="post" action="/folders/trash.php" hx-post="/folders/trash.php" hx-target="#flash" hx-confirm="Send <?= e($folder['name']) ?> and everything in it to the trash? It can be restored for 30 days." class="d-inline"><?= csrf_field() ?><input type="hidden" name="folder" value="<?= $id ?>">
                     <button type="submit" class="btn btn-light btn-touch text-danger" id="folder-trash-btn"><i class="feather-trash-2 me-1"></i>Trash</button></form>
