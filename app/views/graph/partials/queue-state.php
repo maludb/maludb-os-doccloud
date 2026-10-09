@@ -1,0 +1,8 @@
+<?php /** The queue's state (polled). Data: state, running */ $b = $state['budget']; ?>
+<div id="graph-queue-state" class="fs-12">
+    <div class="d-flex flex-wrap gap-2 mb-2"><?php foreach (['queued', 'running', 'failed', 'skipped', 'done'] as $k): ?><span class="badge bg-soft-<?= e(GRAPH_JOB_BADGE[$k]) ?> text-<?= e(GRAPH_JOB_BADGE[$k]) ?>" id="graph-queue-<?= $k ?>"><?= $k ?> <?= (int) $state[$k] ?></span><?php endforeach; ?>
+        <?php if (!$state['available']): ?><span class="badge bg-soft-warning text-warning" id="graph-queue-unavailable">engine unavailable — the queue waits</span><?php endif; ?></div>
+    <div class="progress mb-1" style="height:8px" id="graph-budget-bar" title="<?= e(format_bytes($b['full_chars'])) ?> of <?= e(format_bytes($b['budget_chars'])) ?>"><div class="progress-bar <?= $b['pct'] >= 100 ? 'bg-danger' : ($b['pct'] >= 80 ? 'bg-warning' : 'bg-primary') ?>" style="width:<?= (int) min(100, $b['pct']) ?>%" role="progressbar" aria-valuenow="<?= (int) $b['pct'] ?>" aria-valuemin="0" aria-valuemax="100"></div></div>
+    <div class="text-muted" id="graph-budget-text">This month: <?= e(format_bytes($b['full_chars'])) ?> of <?= e(format_bytes($b['budget_chars'])) ?> of text through the model (<?= e(number_format($b['pct'], 1)) ?>%) · <?= (int) ($b['full_documents'] ?? 0) ?> full, <?= (int) ($b['index_documents'] ?? 0) ?> indexed this month</div>
+    <?php foreach ($running as $j): ?><div class="text-muted mt-1" id="graph-running-<?= (int) $j['id'] ?>">running: <?= e($j['kind']) ?> <?= e($j['document_name'] ?? ('job ' . (int) $j['id'])) ?></div><?php endforeach; ?>
+</div>

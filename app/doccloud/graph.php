@@ -668,7 +668,7 @@ function dc_graph_path(array $a, array $b, int $maxDepth = 6): array
 /** The most connected nodes of the graph (this memory database is DocCloud's alone, so tenant-wide IS the application's). */
 function dc_graph_god_nodes(int $limit = 10): array
 {
-    $r = dc_graph_request('GET', '/v1/graph/god-nodes', ['limit' => max(1, min(100, $limit))]);
+    $r = dc_graph_request('GET', '/v1/graph/god-nodes', ['limit' => max(1, min(500, $limit))]);   // the route admits 1,000; documents share the ranking with subjects
     return $r['ok'] ? dc_graph_scrub(['status' => 'ok', 'http' => $r['http']] + $r['data']) : dc_graph_failed($r);
 }
 

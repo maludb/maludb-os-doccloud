@@ -57,7 +57,7 @@ $back = '/documents/' . $id;
                 <div id="document-access-line"><?= e($accessLine) ?></div>
                 <?php if ($may['share']): ?><?= hx_link('/documents/' . $id . '/share', 'Who can see this and why', 'fw-semibold', 'id="document-access-link"') ?><?php else: ?><?= hx_link('/documents/' . $id . '/share', 'Why you see it', 'fw-semibold', 'id="document-access-link"') ?><?php endif; ?>
             </div></div>
-            <div class="card mb-3" id="document-related"><div class="card-body fs-12"><span class="text-muted">Related documents</span><div id="document-related-line"><?= !empty($d['in_graph']) ? 'In the document graph.' : 'Not in the document graph yet.' ?> (Related documents arrive with slice 5.)</div></div></div>
+            <div class="card mb-3" id="document-related"><div class="card-body fs-12"><span class="text-muted">Related documents</span><?= view('graph/partials/related.php', ['related' => $related, 'subjects' => $graphSubjects, 'docId' => $id]) ?></div></div>
         </div>
     </div>
 </div>

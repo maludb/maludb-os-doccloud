@@ -166,3 +166,11 @@ html.app-skin-dark #record-picker .record-picker-search { background: #0f172a; }
 .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 { font-size: 1.1rem; margin-top: .75rem; }
 .markdown-preview pre { white-space: pre-wrap; }
 #document-preview-pdf { min-height: 360px; }
+
+/* THE DOCUMENT GRAPH (slice 5) */
+.graph-score { display: inline-block; width: 100px; height: 6px; background: #eef2f7; border-radius: 3px; vertical-align: middle; }
+.graph-score-bar { display: block; height: 6px; background: #3454d1; border-radius: 3px; }
+.graph-excerpt mark { background: #fff3bf; padding: 0 2px; }
+#graph-svg a { cursor: pointer; }
+#graph-svg a:hover circle, #graph-svg a:hover rect { stroke: #0f172a; stroke-width: 2; }
+.document-related-card { border: 1px solid #eef2f7; }

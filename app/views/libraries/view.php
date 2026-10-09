@@ -14,7 +14,7 @@ $archived = $lib['archived_at'] !== null;
                 <div class="d-flex flex-wrap gap-1 mb-2">
                     <span class="badge bg-soft-<?= e(LIBRARY_KIND_BADGE[$lib['kind']] ?? 'secondary text-secondary') ?>" id="library-kind"><?= e($lib['kind']) ?></span>
                     <span class="badge bg-soft-<?= e(LEVEL_BADGE[$lib['my_level']] ?? 'secondary') ?> text-<?= e(LEVEL_BADGE[$lib['my_level']] ?? 'secondary') ?>" id="library-my-level"><?= e($lib['my_level']) ?></span>
-                    <span class="badge bg-soft-secondary text-secondary" id="library-policy">graph: <?= e($lib['graph_policy']) ?></span>
+                    <?= hx_link('/graph/admin?library=' . (int) $lib['library_id'], 'graph: ' . e($lib['graph_policy']), 'badge bg-soft-secondary text-secondary text-decoration-none', 'id="library-policy" title="the graph policy"') ?>
                     <?php if ($archived): ?><span class="badge bg-soft-dark text-dark" id="library-archived">archived</span><?php endif; ?>
                 </div>
                 <?php if (($lib['description'] ?? '') !== ''): ?><p class="fs-12 mb-2" id="library-description"><?= nl2br(e($lib['description'])) ?></p><?php endif; ?>

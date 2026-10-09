@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T18:55:05+00:00",
+    "generated_at": "2026-10-09T19:35:34+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -485,8 +485,8 @@
                 "tag",
                 "kind"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "graph-explore": {
             "screen": "graph-explore",
@@ -499,7 +499,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "subject-view": {
@@ -508,7 +508,7 @@
             "section": "The document graph — THE SECOND EXEMPLAR (slice 5)",
             "when": "one subject: its type, its documents I may see, its neighbours",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "graph-admin": {
@@ -520,7 +520,7 @@
                 "folder",
                 "month"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "graph-path": {
@@ -532,7 +532,7 @@
                 "from",
                 "to"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "trash": {
@@ -2774,7 +2774,7 @@
             "who": "graph.manage",
             "agent": true,
             "record_id": "the library or folder",
-            "built": false
+            "built": true
         },
         "graph_budget_set": {
             "action": "graph_budget_set",
@@ -2795,7 +2795,7 @@
             "who": "graph.manage",
             "agent": true,
             "record_id": "the settings",
-            "built": false
+            "built": true
         },
         "graph_model_set": {
             "action": "graph_model_set",
@@ -2828,7 +2828,7 @@
             "who": "graph.manage",
             "agent": true,
             "record_id": "the settings",
-            "built": false
+            "built": true
         },
         "graph_rebuild_all": {
             "action": "graph_rebuild_all",
@@ -2861,7 +2861,7 @@
             "who": "graph.manage",
             "agent": true,
             "record_id": "the library or folder",
-            "built": false
+            "built": true
         },
         "graph_job_retry": {
             "action": "graph_job_retry",
@@ -2882,7 +2882,7 @@
             "who": "graph.manage",
             "agent": true,
             "record_id": "the job",
-            "built": false
+            "built": true
         },
         "graph_job_skip": {
             "action": "graph_job_skip",
@@ -2903,7 +2903,7 @@
             "who": "graph.manage",
             "agent": false,
             "record_id": "the job",
-            "built": false
+            "built": true
         },
         "graph_test_extraction": {
             "action": "graph_test_extraction",
@@ -2924,7 +2924,7 @@
             "who": "graph.manage",
             "agent": false,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "document_trash": {
             "action": "document_trash",

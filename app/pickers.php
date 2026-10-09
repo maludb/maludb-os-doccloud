@@ -10,11 +10,12 @@ declare(strict_types=1);
  * `search` reuses the feature's own list query (find_*() with ILIKE and paging), never a second one; `label` names the chosen record.
  * Slice 1 adds folder (folders the caller may add to; param `library`), library, group, member (people and agents, never a guest; param
  * `group` hides its live members) and department. Slice 2 adds document; slice 3 guest and application; slice 4 adds tag.
- * A short enumeration (a kind, a level, a colour) stays a <select>.
+ * Slice 5 adds subject (the engine's subjects by name, cached 60 s). A short enumeration (a kind, a level, a colour) stays a <select>.
  */
 $files = static function (): void { require_once __DIR__ . '/features/files/handler.php'; };
 $access = static function (): void { require_once __DIR__ . '/features/access/handler.php'; };
 $tags = static function (): void { require_once __DIR__ . '/features/tags/handler.php'; };
+$graph = static function (): void { require_once __DIR__ . '/features/graph/handler.php'; };
 return [
     'folder' => [
         'title' => 'Folders', 'noun' => 'folder', 'roles' => ['library.personal', 'documents.guest'], 'params' => ['library'],
@@ -60,5 +61,10 @@ return [
         'title' => 'Tags', 'noun' => 'tag', 'roles' => ['tags.apply'], 'params' => [],
         'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($tags): array { $tags(); return tags_for_pick($pdo, $q, $params, $page); },
         'label' => static function (PDO $pdo, int $id) use ($tags): ?string { $tags(); return find_tag($pdo, $id)['label'] ?? null; },
+    ],
+    'subject' => [
+        'title' => 'Subjects of the graph', 'noun' => 'subject', 'roles' => ['graph.use'], 'params' => [],
+        'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($graph): array { $graph(); return subjects_for_pick($pdo, $q, $params, $page); },
+        'label' => static function (PDO $pdo, int $id) use ($graph): ?string { $graph(); return subject_label($id); },
     ],
 ];

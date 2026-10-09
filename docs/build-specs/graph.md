@@ -123,4 +123,24 @@ The Clerk's tag proposals from the graph's subjects (8), the API's `/graph/find`
 13. Registry `--check`: 5 screens built, 9 actions, 4 approvals in step.
 
 ## Open questions
-None.
+None open. Decisions taken while finishing the slice (2026-10-09), recorded here the design's way:
+1. **The engine's real shapes, as `tests/phase0/engine/FINDINGS.md` and the live API answer them.** `GET /v1/graph/god-nodes` ranks EVERY node —
+   `{object_kind, object_id, label, degree_out, degree_in, degree_total}` — and documents take most of the top places, so the explorer reads the
+   ranking deep (200–500, the route admits 1,000; `dc_graph_god_nodes()` now passes up to 500) and keeps the subjects whose documents the caller
+   may see. `GET /v1/graph/path` answers `{paths: [{depth, path: ["subject:3", "document:12", "subject:21"]}, …]}`, shortest first: the steps
+   are parsed from those strings and the first path whose documents the caller may all see is shown, else the shortest with its hidden
+   documents named "a document you cannot see".
+2. **A guest holds no `graph.use`** (design §3: Guest = `documents.guest` only), so `/graph`, a subject page and the subject picker are 403 for a
+   guest, exactly as slice 4 ruled for `/search`. What a guest would get through the records tool when granted is proven on the wall itself:
+   `dc_graph_filter()` as the guest over every document the engine holds answers only the document shared with her.
+3. **The graph page reuses slice 4's chips** (`#search-chips`, `#search-chip-<key>`); `search_chips()` builds `/search?…` links, so the page
+   rewrites a chip's × to `/graph/?…` — removing a chip re-runs the graph find, never jumps to the keyword search.
+4. **The budget notice is once a month per threshold by its own bell row** (`notifications.record_type = 'graph'`, `record_id` = 80 or 100):
+   `dc_notify()` dedupes through the outbox, and `graph_budget` is not among the kinds a person mails by default — no outbox row, no dedupe.
+5. **An unknown `?kind=` is dropped; a typed `kind:docx` is a chip that matches nothing** — slice 4's parser, unchanged; the proof types it.
+6. **Views never take a variable named `path`**: `view()` keeps the template's own file path in `$path` and `extract(EXTR_SKIP)` will not
+   overwrite it — the path screen passes `route`.
+7. **The proofs share one scratch database in order** (policy → queue → find → explore → admin → json → browser): the policy proof purges its
+   120,000-character report, the find proof compares the four documents it seeded (another document naming "Acme" rightly matches too), the
+   JSON proof and the runner let the worker settle the queue before the agent's find and before the browser.
+

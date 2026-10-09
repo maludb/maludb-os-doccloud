@@ -13,7 +13,7 @@ declare(strict_types=1);
  * a pass selects by; honoured only when APP_ENV is not prod. Exits 1 when a pass failed.
  *
  * PHASE 0: every pass is a STUB that changes nothing and answers 0 — the slice whose data it touches fills it in (design §10):
- * `upload_sessions_expire`, `extract_text`, `thumbnails` slice 2's; `search_catch_up` slice 4's; `graph_jobs` slice 5's; `versions_expire`,
+ * `upload_sessions_expire`, `extract_text`, `thumbnails` slice 2's; `search_catch_up` slice 4's (built); `graph_jobs` slice 5's (built: app/features/graph/worker_steps.php); `versions_expire`,
  * `trash_purge`, `blobs_free`, `locks_expire`, `quotas` slice 6's; `links_expire`, `requests_close` slice 3's; `exports` slice 2's (zip);
  * `outbox`, `dispatches`, `proposals` slice 8's; `key_usage_prune` slice 7's.
  */
@@ -22,6 +22,7 @@ require_once dirname(__DIR__) . '/app/bootstrap.php';
 require_once dirname(__DIR__) . '/app/features/files/handler.php';          // the store, the gate, the file modules (slice 2)
 require_once dirname(__DIR__) . '/app/features/files/worker_steps.php';
 require_once dirname(__DIR__) . '/app/features/links/worker_steps.php';
+require_once dirname(__DIR__) . '/app/features/graph/worker_steps.php';   // slice 5: the graph jobs
 
 /** The passes, in the order they run. A new pass is a name here and a function worker_pass_<name>(PDO, int $limit, DateTimeImmutable $now): array. */
 const WORKER_PASSES = ['upload_sessions_expire', 'extract_text', 'thumbnails', 'search_catch_up', 'graph_jobs', 'versions_expire', 'trash_purge', 'blobs_free',
@@ -90,7 +91,7 @@ function worker_pass_thumbnails(PDO $pdo, int $limit, DateTimeImmutable $now): a
 /** SLICE 4 — the keyword index's catch-up: documents whose row is missing or older than the document (dc_search_catch_up), 500 a pass. */
 function worker_pass_search_catch_up(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_search_catch_up($pdo, max($limit, 500)); }
 /** SLICE 5 — the graph jobs, one document at a time under the monthly budget (app/doccloud/graph.php): index, full, replace, forget. */
-function worker_pass_graph_jobs(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['done' => 0, 'failed' => 0, 'deferred' => 0, 'stub' => true]; }
+function worker_pass_graph_jobs(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_graph($pdo, min($limit, 10), 50); }
 /** SLICE 6 — versions past the window (versions_keep_days, then the last versions_keep_count) purged; the current always kept. */
 function worker_pass_versions_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['purged' => 0, 'stub' => true]; }
 /** SLICE 6 — documents in the trash longer than trash_days purged (versions, text, the index row, the graph's document forgotten). */
