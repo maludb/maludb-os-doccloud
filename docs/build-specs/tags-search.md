@@ -110,4 +110,24 @@ The graph (5), the Clerk's tag proposals from the graph (8 — `tag_propose` exi
 12. Registry `--check`: 6 screens built, 16 actions, 1 approval in step.
 
 ## Open questions
-None.
+None open. Decisions taken while building (2026-10-09), the design's way:
+1. **The manifest's URLs win over this spec's file list** (the consistency decision): the proposals screen is `/tags/proposals` (`html/tags/proposals/index.php`), the rules
+   `/tags/rules` (every folder with a rule; `?folder=` opens one folder's form — slice 1's `folder_auto_tags_set` posts), saved searches `/search/saved`, the actions
+   `/tags/apply.php`, `/tags/remove.php`, `/tags/proposals/decide.php`, `/tags/propose.php`, `/search/save.php`, `/search/delete.php`; a document's page is `/documents/{id}`.
+2. **`tag_apply` takes `document` or `documents[]`** (the listing's select bar; the documents gained a checkbox), and `tags[]` as a list or a comma string (an agent's
+   shape); a document the caller may not edit is skipped and counted in bulk, a 403 when it is the only one.
+3. **A guest holds no `search.use`** (the roles of design §3), so `/search` is 403 for a guest; `dc_search()` itself walls a guest to what is shared with them (the
+   records tool, when granted) and Shared with me lists it. The Phase 2 tab bar already said so.
+4. **A member cannot see a promote or merge proposal** (`mcp_tag_proposals`: `tags.manage`, or edit on the document for an apply): deciding one answers 404,
+   the same nothing. An apply proposal is decided by whoever may edit the document.
+5. **`tag_proposal_decide` answers `outcome`** (promoted | applied | merged | dismissed) beside `did` (the sentence); the log event is `tag.decide` as the manifest says.
+6. **`tag_update` never changes the slug** (every document carries it); label, colour and kind change. `tag_create` of an existing label answers the existing tag
+   with `existed: true` (a curator asking for managed promotes it).
+7. **The `in:` modifier** takes a folder id or a path fragment matched against the folders the caller may see (first by depth); an unknown fragment is a filter that
+   matches nothing. `tag:` and `kind:` likewise: an unknown value stays a filter that matches nothing, shown as a chip "(unknown)".
+8. **The capped total**: `dc_search()` cuts its candidates at 2,000 before the batch wall (db/016); the page says "about N" when the total reaches the cut.
+9. **The editor is a form**: Enter submits (assets/js/tag-editor.js), the page lands on the document at `#document-tags`; no custom chip widget.
+10. **The folder page shows its rule** as chips on the access line with "Tag on upload / change" for a manager (the rules screen's form).
+11. **The worker's catch-up** runs `dc_search_catch_up(500)` every pass and logs `index.catch_up` only when it repaired something.
+12. **The search report** (`dc_search_gaps`) is proven here through `search_gaps()`; its screen is slice 9's.
+Found on the way: a seed text naming a word the proof negates ("Nothing about Acme here") is a trap — the texts are chosen so each word lands where the check says.

@@ -25,7 +25,7 @@ if ($may['add']) {
     <?= view('shared/notice.php', ['notice' => $notice]) ?>
     <?php if ($may['add']): ?><?= view('files/partials/upload-zone.php', ['folderId' => $id, 'documentId' => null, 'settings' => $uploadSettings, 'open' => $uploadWanted, 'doneUrl' => '/f/' . $id]) ?><?php endif; ?>
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-        <?= view('files/partials/access-line.php', ['line' => $accessLine, 'folderId' => $id, 'may' => $may, 'adminView' => $adminView]) ?>
+        <?= view('files/partials/access-line.php', ['line' => $accessLine, 'folderId' => $id, 'may' => $may, 'adminView' => $adminView, 'autoTags' => pg_text_array((string) ($folder['auto_tags'] ?? '{}'))]) ?>
         <span class="fs-12 text-muted" id="folder-size"><?= e(format_bytes($size['bytes'])) ?> · <?= (int) $size['documents'] ?> document<?= $size['documents'] === 1 ? '' : 's' ?></span>
         <div class="ms-auto d-flex gap-1 flex-wrap" id="folder-actions">
             <?php if ($may['star']): ?>
@@ -46,7 +46,7 @@ if ($may['add']) {
     <div class="d-flex flex-wrap gap-1 mb-2" id="folder-kind-filters">
         <?php foreach ($kinds as $k => $label): ?><?= hx_link('/f/' . $id . ($k === '' ? '' : '?kind=' . $k), e($label), 'btn btn-sm btn-touch ' . (($listing['kind'] ?? '') === $k ? 'btn-primary' : 'btn-light'), 'id="folder-kind-' . ($k === '' ? 'all' : $k) . '"') ?><?php endforeach; ?>
     </div>
-    <?php if ($may['edit'] || $may['manage']): ?><?= view('files/partials/select-bar.php', ['folderId' => $id, 'may' => $may]) ?><?php endif; ?>
+    <?php if ($may['edit'] || $may['manage']): ?><?= view('files/partials/select-bar.php', ['folderId' => $id, 'may' => $may, 'datalist' => $tagDatalist ?? []]) ?><?php endif; ?>
     <?= view('files/partials/listing.php', ['rows' => $listing['rows'], 'tz' => $tz, 'select' => $may['edit'] || $may['manage'], 'stars' => $stars, 'back' => $back, 'sortBase' => $base, 'sort' => $listing['sort'], 'dir' => $listing['dir'],
         'empty' => $listing['kind'] === null ? 'Nothing here yet.' : 'Nothing of that kind here.', 'id' => 'listing-table']) ?>
     <?php if ($listing['pages'] > 1): ?>
@@ -70,6 +70,7 @@ if ($may['add']) {
     w.addEventListener('dc-upload:all-done', function () { var done = document.getElementById('upload-done-btn'); if (done) { done.textContent = 'Done — refresh the listing'; } });
 })();
 </script><?php endif; ?>
+<script src="/assets/js/tag-editor.js"></script>
 <script>
 (function () {
     var bar = document.getElementById('select-bar'); if (!bar) return;

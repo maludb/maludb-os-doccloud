@@ -177,3 +177,15 @@ function worker_locks_expire(PDO $pdo): array
 {
     return ['released' => (int) one_value($pdo, 'SELECT dc_pass_locks_expire()')];
 }
+
+/** SLICE 4 — the keyword index repaired: dc_search_catch_up(limit); logged index.catch_up with the count when it did anything. */
+function worker_search_catch_up(PDO $pdo, int $limit = 500): array
+{
+    $st = $pdo->prepare('SELECT dc_search_catch_up(:lim)');
+    $st->execute(['lim' => $limit]);
+    $n = (int) $st->fetchColumn();
+    if ($n > 0) {
+        log_activity($pdo, 'index.catch_up', 'search', null, ['source' => 'cron', 'actor_member_id' => null, 'after' => ['indexed' => $n]]);
+    }
+    return ['indexed' => $n];
+}

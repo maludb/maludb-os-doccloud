@@ -47,19 +47,18 @@ ok(badge_of($jAdmin) === 'Super-admin' && badge_of($jCurator) === 'Curator' && b
 
 echo "2. The placeholders — a page naming its slice, 501 for JSON and for a POST\n";
 $stubs = trim((string) shell_exec('grep -rl "render_nav_stub(" ' . escapeshellarg(dirname(__DIR__, 2) . '/html') . ' 2>/dev/null | wc -l'));
-ok((int) $stubs === 6, "six controllers call render_nav_stub (slice 1 built My files, Groups, Libraries, Recent, Favourites; slice 3 Shared with me): $stubs");
-$ph = ['tags' => ['/tags/', 'slice 4', 'Tags'], 'search' => ['/search/', 'slice 4', 'Search'],
-       'graph' => ['/graph/', 'slice 5', 'Graph'], 'trash' => ['/trash/', 'slice 6', 'Trash'], 'curate' => ['/curate/', 'slice 9', 'Curate'], 'admin' => ['/admin/', 'slice 9', 'Admin']];
+ok((int) $stubs === 4, "four controllers call render_nav_stub (slice 1 built My files, Groups, Libraries, Recent, Favourites; slice 3 Shared with me; slice 4 Tags and Search): $stubs");
+$ph = ['graph' => ['/graph/', 'slice 5', 'Graph'], 'trash' => ['/trash/', 'slice 6', 'Trash'], 'curate' => ['/curate/', 'slice 9', 'Curate'], 'admin' => ['/admin/', 'slice 9', 'Admin']];
 $bad = [];
 foreach ($ph as $id => [$url, $slice, $title]) {
     $b = page($jAdmin, $url)['body'];
     if (!(str_contains($b, 'id="' . $id . '-coming"') && str_contains($b, $title . ' is not built yet') && str_contains($b, $slice . ' builds this screen') && str_contains($b, '<title>' . $title . ' · DocCloud</title>'))) { $bad[] = $url; }
 }
 ok($bad === [], 'every placeholder: the shell, the header and one card saying which slice builds it' . ($bad ? ' — wrong: ' . implode(', ', $bad) : ''));
-$r = page($jAdmin, '/search/', $json);
+$r = page($jAdmin, '/graph/', $json);
 ok($r['code'] === 501 && (json_decode($r['body'], true)['error']['code'] ?? '') === 'not_built', 'a JSON caller on a placeholder: 501 not_built');
-$r = req('POST', '/search/', ['jar' => $jAdmin, 'form' => ['csrf_token' => page_csrf($jAdmin)]]);
-ok($r['code'] === 501 && str_contains($r['body'], 'This is built by slice 4.'), 'a POST to a placeholder: 501, in words');
+$r = req('POST', '/graph/', ['jar' => $jAdmin, 'form' => ['csrf_token' => page_csrf($jAdmin)]]);
+ok($r['code'] === 501 && str_contains($r['body'], 'This is built by slice 5.'), 'a POST to a placeholder: 501, in words');
 $r = page($jAdmin, '/graph/', ['headers' => ['HX-Request: true']]);
 ok($r['code'] === 200 && str_contains($r['body'], 'id="graph-coming"') && !str_contains($r['body'], '<html') && preg_match('/^HX-Title: Graph/mi', $r['headers']) === 1 && preg_match('/^X-Screen: graph\r?$/mi', $r['headers']) === 1, 'over HTMX a placeholder is the partial with HX-Title and X-Screen, so the tab highlight and the command bar follow');
 $v = (int) one("SELECT count(*) FROM activity_log WHERE action = 'screen.view' AND screen = 'graph'");
@@ -69,7 +68,7 @@ $reg = [];
 foreach (($built['screens'] ?? []) as $s) { $reg[$s['screen'] ?? ''] = $s; }
 $stubIds = array_values(array_filter(array_keys($reg), static fn ($k) => !empty($reg[$k]['stub'])));
 $builtIds = array_values(array_filter(array_keys($reg), static fn ($k) => !empty($reg[$k]['built'])));
-ok(count($stubIds) === 6 && ($reg['home']['built'] ?? null) === true && ($reg['settings-tokens']['built'] ?? null) === true && ($reg['admin']['stub'] ?? null) === true && ($reg['folder']['built'] ?? null) === true, 'the registry marks six screens as stubs and the shell\'s five plus slices 1–3\'s as built, so the voice surface never offers an unbuilt screen (' . count($stubIds) . ' stubs, ' . count($builtIds) . ' built)');
+ok(count($stubIds) === 4 && ($reg['home']['built'] ?? null) === true && ($reg['settings-tokens']['built'] ?? null) === true && ($reg['admin']['stub'] ?? null) === true && ($reg['folder']['built'] ?? null) === true && ($reg['search']['built'] ?? null) === true, 'the registry marks four screens as stubs and the shell\'s five plus slices 1–4\'s as built, so the voice surface never offers an unbuilt screen (' . count($stubIds) . ' stubs, ' . count($builtIds) . ' built)');
 
 echo "3. The menu and the tab bar per role, and no session\n";
 $menu = fn (string $j): array => (preg_match_all('/id="nav-([a-z-]+)"/', page($j, '/')['body'], $m) ? array_values(array_filter($m[1], fn ($i) => !str_starts_with($i, 'library-'))) : []);

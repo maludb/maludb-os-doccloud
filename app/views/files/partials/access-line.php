@@ -3,4 +3,6 @@
     <i class="feather-users"></i><span id="folder-access-text"><?= e($line) ?></span>
     <?php if (!empty($adminView)): ?><span class="badge bg-soft-danger text-danger" id="folder-admin-view">You see this as the admin</span><?php endif; ?>
     <?php if (!empty($may['share'])): ?><?= hx_link('/folders/' . (int) $folderId . '/share', 'Who can see this', 'fw-semibold', 'id="folder-access-link"') ?><?php endif; ?>
+    <?php $rule = $autoTags ?? []; if ($rule !== []): ?><span id="folder-auto-tags"><i class="feather-tag"></i> tags on upload: <?php foreach ($rule as $t): ?><span class="badge bg-soft-secondary text-secondary"><?= e($t) ?></span> <?php endforeach; ?></span><?php endif; ?>
+    <?php if (!empty($may['manage'])): ?><?= hx_link('/tags/rules?folder=' . (int) $folderId, $rule === [] ? 'Tag on upload' : 'change', 'fw-semibold', 'id="folder-auto-tags-link"') ?><?php endif; ?>
 </div>

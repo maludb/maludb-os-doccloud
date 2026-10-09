@@ -51,7 +51,7 @@ $back = '/documents/' . $id;
                     <dt class="col-4 text-muted">Your level</dt><dd class="col-8"><span class="badge bg-soft-<?= e(LEVEL_BADGE[$d['my_level']] ?? 'secondary') ?> text-<?= e(LEVEL_BADGE[$d['my_level']] ?? 'secondary') ?>" id="document-my-level"><?= e($d['my_level']) ?></span></dd>
                 </dl>
                 <div class="mt-2" id="document-description"><span class="text-muted">Description</span><div><?= $d['description'] !== null && $d['description'] !== '' ? nl2br(e($d['description'])) : '<span class="text-muted">—</span>' ?></div></div>
-                <div class="mt-2" id="document-tags"><span class="text-muted">Tags</span><div><?php if ($tags === []): ?><span class="text-muted">none yet</span><?php endif; ?><?php foreach ($tags as $t): ?><span class="badge bg-soft-secondary text-secondary me-1"><?= e($t) ?></span><?php endforeach; ?><span class="fs-11 text-muted d-block">(The tag editor arrives with slice 4.)</span></div></div>
+                <div class="mt-2" id="document-tags"><span class="text-muted">Tags</span><?= view('tags/partials/editor.php', ['documentId' => $id, 'tags' => $documentTags, 'may' => $may['tag'], 'datalist' => $datalist]) ?></div>
             </div></div>
             <div class="card mb-3" id="document-access"><div class="card-body fs-12"><span class="text-muted">Who can see this</span>
                 <div id="document-access-line"><?= e($accessLine) ?></div>
@@ -61,3 +61,4 @@ $back = '/documents/' . $id;
         </div>
     </div>
 </div>
+<script src="/assets/js/tag-editor.js"></script>

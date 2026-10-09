@@ -42,7 +42,7 @@ $initials = static fn (?string $n): string => $n === null || $n === '' ? '' : st
     <tbody>
     <?php foreach ($rows as $r): $rid = (int) $r['id']; $isFolder = $r['kind'] === 'folder'; $url = ($isFolder ? '/f/' : '/documents/') . $rid; $tags = is_array($r['tags']) ? $r['tags'] : pg_text_array((string) ($r['tags'] ?? '{}')); $starred = isset($stars[$isFolder ? 'folder' : 'document'][$rid]); ?>
         <tr id="listing-row-<?= e($r['kind']) ?>-<?= $rid ?>" class="listing-row" data-kind="<?= e($r['kind']) ?>" data-id="<?= $rid ?>">
-            <?php if ($select): ?><td class="listing-select"><?php if ($isFolder): ?><input type="checkbox" class="form-check-input listing-check" name="folder[]" value="<?= $rid ?>" form="select-bar" aria-label="Select <?= e($r['name']) ?>"><?php endif; ?></td><?php endif; ?>
+            <?php if ($select): ?><td class="listing-select"><input type="checkbox" class="form-check-input listing-check" name="<?= $isFolder ? 'folder[]' : 'documents[]' ?>" value="<?= $rid ?>" form="select-bar" aria-label="Select <?= e($r['name']) ?>"></td><?php endif; ?>
             <td class="listing-name">
                 <div class="d-flex align-items-center gap-2 min-w-0">
                     <i class="<?= e(kind_icon($isFolder ? 'folder' : $r['mime_kind'])) ?> <?= $isFolder ? 'text-primary' : 'text-muted' ?> flex-shrink-0"></i>

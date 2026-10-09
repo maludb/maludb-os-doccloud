@@ -87,7 +87,8 @@ function worker_pass_extract_text(PDO $pdo, int $limit, DateTimeImmutable $now):
 /** SLICE 2 — thumbnails for images (GD) and PDFs' first page (pdftoppm). */
 function worker_pass_thumbnails(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_thumbs($pdo, min($limit, 50)); }
 /** SLICE 4 — dc_search_catch_up(): every document whose index row is older than its change. */
-function worker_pass_search_catch_up(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['indexed' => 0, 'stub' => true]; }
+/** SLICE 4 — the keyword index's catch-up: documents whose row is missing or older than the document (dc_search_catch_up), 500 a pass. */
+function worker_pass_search_catch_up(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_search_catch_up($pdo, max($limit, 500)); }
 /** SLICE 5 — the graph jobs, one document at a time under the monthly budget (app/doccloud/graph.php): index, full, replace, forget. */
 function worker_pass_graph_jobs(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['done' => 0, 'failed' => 0, 'deferred' => 0, 'stub' => true]; }
 /** SLICE 6 — versions past the window (versions_keep_days, then the last versions_keep_count) purged; the current always kept. */

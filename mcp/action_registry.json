@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T18:15:23+00:00",
+    "generated_at": "2026-10-09T18:55:05+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -392,8 +392,8 @@
                 "kind",
                 "q"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "tag-view": {
             "screen": "tag-view",
@@ -403,7 +403,7 @@
             "params": [
                 "library"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "tag-add": {
@@ -412,7 +412,7 @@
             "section": "Tags, the keyword index and search (slice 4)",
             "when": "to make a managed tag: label, colour (curators)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "tag-edit": {
@@ -421,7 +421,7 @@
             "section": "Tags, the keyword index and search (slice 4)",
             "when": "to relabel or recolour a tag, or merge it into another",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "tag-proposals": {
@@ -430,7 +430,7 @@
             "section": "Tags, the keyword index and search (slice 4)",
             "when": "the free tags proposed for the vocabulary, the merges and the Clerk's applications: accept or dismiss",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "tag-rules": {
@@ -441,7 +441,7 @@
             "params": [
                 "library"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "search": {
@@ -461,8 +461,8 @@
                 "mine",
                 "shared_with_me"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "saved-searches": {
             "screen": "saved-searches",
@@ -470,7 +470,7 @@
             "section": "Tags, the keyword index and search (slice 4)",
             "when": "my saved searches and the shared ones; run one",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "graph": {
@@ -2432,7 +2432,7 @@
             "who": "tags.apply (managed: tags.manage)",
             "agent": true,
             "record_id": "the tag",
-            "built": false
+            "built": true
         },
         "tag_update": {
             "action": "tag_update",
@@ -2465,7 +2465,7 @@
             "who": "tags.manage",
             "agent": true,
             "record_id": "the tag",
-            "built": false
+            "built": true
         },
         "tag_apply": {
             "action": "tag_apply",
@@ -2492,7 +2492,7 @@
             "who": "tags.apply and edit on the document",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "tag_remove": {
             "action": "tag_remove",
@@ -2519,7 +2519,7 @@
             "who": "tags.apply and edit on the document",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "tag_merge": {
             "action": "tag_merge",
@@ -2546,7 +2546,7 @@
             "who": "tags.manage",
             "agent": true,
             "record_id": "the surviving tag",
-            "built": false
+            "built": true
         },
         "tag_delete": {
             "action": "tag_delete",
@@ -2567,7 +2567,7 @@
             "who": "tags.manage",
             "agent": true,
             "record_id": "the tag",
-            "built": false
+            "built": true
         },
         "tag_propose": {
             "action": "tag_propose",
@@ -2600,7 +2600,7 @@
             "who": "view on the document",
             "agent": true,
             "record_id": "the proposal",
-            "built": false
+            "built": true
         },
         "tag_proposal_decide": {
             "action": "tag_proposal_decide",
@@ -2627,7 +2627,7 @@
             "who": "tags.manage (an apply: edit on the document)",
             "agent": true,
             "record_id": "the proposal",
-            "built": false
+            "built": true
         },
         "tag_archive": {
             "action": "tag_archive",
@@ -2648,7 +2648,7 @@
             "who": "tags.manage",
             "agent": false,
             "record_id": "the tag",
-            "built": false
+            "built": true
         },
         "tag_restore": {
             "action": "tag_restore",
@@ -2669,7 +2669,7 @@
             "who": "tags.manage",
             "agent": false,
             "record_id": "the tag",
-            "built": false
+            "built": true
         },
         "saved_search_save": {
             "action": "saved_search_save",
@@ -2720,7 +2720,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the saved search",
-            "built": false
+            "built": true
         },
         "saved_search_delete": {
             "action": "saved_search_delete",
@@ -2741,7 +2741,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the saved search",
-            "built": false
+            "built": true
         },
         "graph_policy_set": {
             "action": "graph_policy_set",
