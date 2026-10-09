@@ -716,6 +716,18 @@ live in DocCloud — a later decision that would make `document_link` their door
 
 ## 16. State
 
+**2026-10-09 — THE HANDOFF POINT: Phase 2, slices 1–5 BUILT by the planning model** (commits 3d452f2, 9315b00, db91ebc, ab59a23, 58eef53,
+f0f082a; not pushed). Phase 2 the shell (php -S and a real Apache: 161 + 71 + 74 + 44 + 22 + 12 + 14, vhost 47); slice 1 libraries, groups and
+folders, THE CRUD EXEMPLAR (59 + 40 + 54 + 21 + 35 + 24); slice 2 uploads, versions, blobs, serving, preview and extraction, THE FIRST EXEMPLAR
+(45 + 36 + 19 + 28 + 38 + 26 + 18); slice 3 access, sharing, links, requests and the public doors (234 over nine actors); slice 4 tags and keyword
+search (51 + 27 + 13 + 45 + 15 + 31 + 14); slice 5 the document graph, THE SECOND EXEMPLAR (without the engine 31 + 5 + 6 + 5 + 24 + 25 + 17; with
+the real MaluDB API on a scratch memory database 31 + 31 + 27 + 17 + 36 + 27 + 24). db/017–020 appended. Each slice's decisions are under its
+spec's "Open questions". The slice 5 builder was cut off by a usage limit and a second builder finished it (the defects it found: the
+excerpt helper never loaded, the god-nodes field names, the path's string nodes, the chip links, the budget notice's dedupe).
+**Next — Sonnet 5.5 workers, one slice at a time, each verified by the planning model's rerun before the next:** slice 6
+(`trash-locks-quotas-worker.md`), slice 7 (`api-keys-k7.md`), slice 8 (`agents-clerk-notifications.md`), slice 9 (`home-curate-admin.md`),
+then Phase 4 (the two MCP servers, `docs/doccloud-mcp-tool-surface.md`). Phase 5 is the owner's.
+
 **2026-10-09 — Phase 0 COMPLETE and Phase 1 WRITTEN, the same day as the plan** (the owner: "proceed doing the rest of the early tasks … stop
 when we are ready to delegate to Sonnet 5.5" — so Phase 1 was built on and its checkpoint stays open for the owner to read; nothing of it
 is PHP). **Phase 0:** db/001–015 (the kit's five from Knowledge; libraries/groups/folders, the file store, the access rows and the walls,

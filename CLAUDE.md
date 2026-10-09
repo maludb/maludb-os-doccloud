@@ -63,9 +63,10 @@ graph** in a MaluDB memory database of its own. It is what Dropbox, Box and Next
 - Commit after every finished step on `main` in the repository's message style; never push unless the owner asks.
 
 ## State
-2026-10-09 — planned and **APPROVED** (§15); K31 built in the kernel (db/176). **Phase 0 COMPLETE and Phase 1 WRITTEN the same day**
-(design §16: schema db/001–016, the proof 160 + the 200,000-document timing set; the kit 71; the extractor 34; the engine proof 74;
-Phase 1's 55 spec checks; the installer's plan clean). The owner's checkpoint on Phase 1 stays open to read; by the owner's word the build
-goes on to Phase 2, slice 1 and the exemplars (slices 2 and 5, with 3 and 4 between) — the handoff point to Sonnet 5.5. Proofs:
-`bash tests/phase0/run.sh`, `bash tests/phase0/timing.sh`, `bash tests/extract/run.sh`, `bash tests/phase0/engine.sh`,
-`bash tests/phase1/check_specs.sh`.
+2026-10-09 — **THE HANDOFF POINT.** Phase 0, Phase 1, Phase 2 and slices 1–5 built by the planning model and committed (design §16 has the
+counts); slice 1 is the CRUD exemplar, slice 2 (uploads) and slice 5 (the graph) the two exemplars. **Next: Sonnet 5.5 workers build slices
+6–9 and Phase 4, one at a time**, each from its spec and the exemplars' pattern, each proven by `tests/phase3/sliceN/run.sh` with every earlier
+suite re-run green, verified and committed by the planning model before the next. Phase 5 (apply, storage, the memory database and its token,
+K24, DNS/TLS, the hires, the end-to-end proof of design §10) is the owner's. Proofs: `bash tests/phase0/run.sh`, `bash tests/phase0/timing.sh`,
+`bash tests/extract/run.sh`, `bash tests/phase0/engine.sh`, `bash tests/phase1/check_specs.sh`, `bash tests/phase2/run.sh`,
+`bash tests/phase3/slice{1..5}/run.sh` (slice 5 also with `DC_ENGINE=1`) — one at a time, they share ports 8701–8707.
