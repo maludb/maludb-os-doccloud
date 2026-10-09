@@ -158,3 +158,11 @@ html.app-skin-dark #record-picker .record-picker-search { background: #0f172a; }
 }
 .select-bar.d-flex { display: flex !important; }
 .btn-touch.btn-icon { min-width: 44px; }
+
+/* SLICE 2 — the upload drop zone and the progress rows; the preview */
+#drop-zone { border: 2px dashed var(--bs-border-color, #d9dee7); cursor: pointer; transition: border-color .15s; }
+#drop-zone.border-primary { border-color: var(--bs-primary) !important; background: rgba(52, 84, 209, .04); }
+.upload-row .upload-name { max-width: 100%; }
+.markdown-preview h1, .markdown-preview h2, .markdown-preview h3 { font-size: 1.1rem; margin-top: .75rem; }
+.markdown-preview pre { white-space: pre-wrap; }
+#document-preview-pdf { min-height: 360px; }

@@ -8,7 +8,10 @@ $kinds = ['' => 'Everything', 'folder' => 'Folders', 'document' => 'Documents', 
 $actions = '';
 if ($may['add']) {
     $actions .= hx_link('/folders/new?parent=' . $id, '<i class="feather-folder-plus me-1"></i>New folder', 'btn btn-light btn-touch', 'id="folder-new-btn"');
-    $actions .= ' <button type="button" class="btn btn-primary btn-touch" id="folder-upload-btn" disabled title="Uploads arrive with slice 2"><i class="feather-upload me-1"></i>Upload</button>';
+    $actions .= ' ' . hx_link('/f/' . $id . '/upload', '<i class="feather-upload me-1"></i>Upload', 'btn btn-primary btn-touch', 'id="folder-upload-btn"');
+    if ($may['export'] ?? false) {
+        $actions .= ' <form method="post" action="/folders/export.php" hx-post="/folders/export.php" hx-target="#flash" class="d-inline">' . csrf_field() . '<input type="hidden" name="folder" value="' . $id . '"><button type="submit" class="btn btn-light btn-touch" id="folder-export-btn" title="Download this folder as a zip"><i class="feather-package me-1"></i>Zip</button></form>';
+    }
 }
 ?>
 <div class="page-header" id="folder-header">
@@ -20,7 +23,7 @@ if ($may['add']) {
 </div>
 <div class="main-content" id="folder-content">
     <?= view('shared/notice.php', ['notice' => $notice]) ?>
-    <?php if ($uploadWanted): ?><div class="alert alert-info fs-12" id="folder-upload-soon">Uploads arrive with slice 2: the drop zone lands here.</div><?php endif; ?>
+    <?php if ($may['add']): ?><?= view('files/partials/upload-zone.php', ['folderId' => $id, 'documentId' => null, 'settings' => $uploadSettings, 'open' => $uploadWanted, 'doneUrl' => '/f/' . $id]) ?><?php endif; ?>
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
         <?= view('files/partials/access-line.php', ['line' => $accessLine, 'folderId' => $id, 'may' => $may, 'adminView' => $adminView]) ?>
         <span class="fs-12 text-muted" id="folder-size"><?= e(format_bytes($size['bytes'])) ?> · <?= (int) $size['documents'] ?> document<?= $size['documents'] === 1 ? '' : 's' ?></span>
@@ -57,6 +60,16 @@ if ($may['add']) {
     </nav>
     <?php endif; ?>
 </div>
+<?php if ($may['add']): ?><script src="/assets/js/dc-upload.js"></script>
+<script>
+(function () {
+    var w = document.getElementById('upload-zone-wrap'); if (!w || !window.DcUpload) return;
+    DcUpload.mount(w);
+    var content = document.getElementById('folder-content');
+    ['dragenter', 'dragover'].forEach(function (ev) { content.addEventListener(ev, function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0) { e.preventDefault(); w.classList.remove('d-none'); } }); });
+    w.addEventListener('dc-upload:all-done', function () { var done = document.getElementById('upload-done-btn'); if (done) { done.textContent = 'Done — refresh the listing'; } });
+})();
+</script><?php endif; ?>
 <script>
 (function () {
     var bar = document.getElementById('select-bar'); if (!bar) return;

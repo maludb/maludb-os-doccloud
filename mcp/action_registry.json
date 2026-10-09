@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T16:49:41+00:00",
+    "generated_at": "2026-10-09T17:47:38+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -225,7 +225,7 @@
             "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
             "when": "a document: the preview, name, description, tags, owner, path, size, the versions with restore, the lock, who can see it and why, links, comments, related documents, the trail, download",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "document-edit": {
@@ -234,7 +234,7 @@
             "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
             "when": "to rename a document or write its description",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "document-move": {
@@ -243,7 +243,7 @@
             "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
             "when": "to move a document: the picker over folders I may add to",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "document-versions": {
@@ -252,7 +252,7 @@
             "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
             "when": "every version: who, when, size, restore, purge (admin)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "upload": {
@@ -263,7 +263,7 @@
             "params": [
                 "document"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "exports": {
@@ -272,7 +272,7 @@
             "section": "Uploads, versions, serving and preview — THE FIRST EXEMPLAR (slice 2)",
             "when": "my zips: the ones ready to download, the ones still being made, when each expires",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "folder-share": {
@@ -1628,7 +1628,7 @@
             "who": "add on the folder (a version: edit on the document)",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "document_rename": {
             "action": "document_rename",
@@ -1655,7 +1655,7 @@
             "who": "edit on the document",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "document_describe": {
             "action": "document_describe",
@@ -1682,7 +1682,7 @@
             "who": "edit on the document",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "document_move": {
             "action": "document_move",
@@ -1709,7 +1709,7 @@
             "who": "edit on the document and add on the target",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "document_copy": {
             "action": "document_copy",
@@ -1742,7 +1742,7 @@
             "who": "view on the document and add on the target",
             "agent": true,
             "record_id": "the copy",
-            "built": false
+            "built": true
         },
         "version_restore": {
             "action": "version_restore",
@@ -1769,7 +1769,7 @@
             "who": "versions.restore and edit on the document",
             "agent": true,
             "record_id": "the new version",
-            "built": false
+            "built": true
         },
         "version_purge": {
             "action": "version_purge",
@@ -1796,7 +1796,7 @@
             "who": "trash.purge",
             "agent": true,
             "record_id": "the version",
-            "built": false
+            "built": true
         },
         "document_lock": {
             "action": "document_lock",
@@ -1817,7 +1817,7 @@
             "who": "edit on the document",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "document_unlock": {
             "action": "document_unlock",
@@ -1838,7 +1838,7 @@
             "who": "own lock or manage on the document",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "export_folder": {
             "action": "export_folder",
@@ -1859,7 +1859,7 @@
             "who": "export.own and view on the folder",
             "agent": true,
             "record_id": "the export",
-            "built": false
+            "built": true
         },
         "export_documents": {
             "action": "export_documents",
@@ -1880,7 +1880,7 @@
             "who": "export.own and view on each",
             "agent": true,
             "record_id": "the export",
-            "built": false
+            "built": true
         },
         "share_member": {
             "action": "share_member",
@@ -3101,7 +3101,7 @@
             "who": "manage on the document",
             "agent": true,
             "record_id": "the document",
-            "built": false
+            "built": true
         },
         "worker_run": {
             "action": "worker_run",

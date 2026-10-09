@@ -131,4 +131,26 @@ storage directory under `$TMP` through `DC_STORAGE_DIR`; `bin/worker.php` with `
 15. Registry `--check`: 4 screens built, 16 actions built, 1 approval in step.
 
 ## Open questions
-None.
+None open. Decisions taken while building (2026-10-09), the design's way:
+1. **Routes, not actions, carry the parts**: `POST /upload/start` (JSON), `POST /upload/part?session=&n=` (the raw body or a multipart `part`), `POST /upload/finish`; the
+   action `document_upload` is the one-request form (multipart `file`, or `file_base64` + `filename` for an agent that cannot post multipart). The URL form is the
+   vhost's (`/upload/(start|part|finish)`), not a path-parameter form.
+2. **The same-name rule is judged at the START** (409 `name_taken` with `existing_document_id` before any byte moves) **and again at the FINISH** (a race); the
+   browser restarts with `document_id` or `mode: keep_both`, or answers the finish with `conflict: version|keep_both`. A session remembers the answer in db/018's
+   `upload_sessions.mode` and `document_name` (and `source`, `note`), appended columns; `dc_free_name(folder, name)` is the "(2)" rule PHP and the trigger share.
+3. **A start that names a sha256 already stored needs no parts**: `parts_total 0, deduplicated true`, the finish at once — the browser hashes only when it can cheaply.
+4. **Everything is stored; nothing is served inline but the inline-safe kinds** (images, PDF, text kinds, audio, video) — an executable renamed `.pdf` is stored as
+   `other` and served as `application/octet-stream` attachment; `?download=1` forces attachment; a link holder's download honours `allow_download` (slice 3 sets
+   `$_SESSION['link'][id]`); the anonymous answer is `401` WITH a `Location` to the launcher (`header(..., true, 401)` — PHP would make a bare Location a 302).
+5. **The gate URLs**: `/d/{id}` and `/d/{id}/v/{n}` serve bytes, `/d/{id}/thumb` the thumbnail (a generated SVG placeholder before the worker), `/documents/{id}` is the
+   page (the consistency decision) — the slice spec's `/d/{id}/raw` and `/d/{id}/view` forms are not used.
+6. **Extraction never runs the extractor on bytes we do not read**: images are `no_text` and audio, video, archives and unknown kinds `unsupported` without a call (a
+   20 MB binary cost 14 s as "text"); the extractor reads PDF, Office, text kinds and HTML/XML only. A version's file missing is `failed: file missing`.
+7. **Thumbnails are the worker's**, tried once per version (a `.none` marker beside the path stops retries); made after extraction or a minute after the upload.
+8. **CSV previews read the raw bytes** (the first 256 KB; the extractor flattens a CSV into "name: value | …" lines for the index); Markdown through
+   `app/doccloud/markdown.php` (escape-first, a `<script>` stays text); Office and other readable kinds show the extracted text's first 20,000 characters.
+9. **Comments are read-only here** (notes shown; slice 8's composer); tags, "who can see this" and related documents are placeholder lines for slices 4, 3 and 5.
+10. **`document_lock_break`** (slice 6's manifest row) is BUILT here because the lock UI is here; slice 6 proves the expiry pass (built here too: `locks_expire`).
+11. `document_rename` refuses a slash in the name (never `basename()`s it away); `document_copy` names the copy with the free-name rule and copies the tags.
+12. Agents: `document_upload` under a run token stores with `source 'agent'`; the paused actions (`version_purge`) are held by the kernel's hook — the proof checks the
+    registry's category and that an agent without the right gets 403.

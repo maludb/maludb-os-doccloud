@@ -19,6 +19,8 @@ declare(strict_types=1);
  */
 if (PHP_SAPI !== 'cli') { fwrite(STDERR, "CLI only.\n"); exit(1); }
 require_once dirname(__DIR__) . '/app/bootstrap.php';
+require_once dirname(__DIR__) . '/app/features/files/handler.php';          // the store, the gate, the file modules (slice 2)
+require_once dirname(__DIR__) . '/app/features/files/worker_steps.php';
 
 /** The passes, in the order they run. A new pass is a name here and a function worker_pass_<name>(PDO, int $limit, DateTimeImmutable $now): array. */
 const WORKER_PASSES = ['upload_sessions_expire', 'extract_text', 'thumbnails', 'search_catch_up', 'graph_jobs', 'versions_expire', 'trash_purge', 'blobs_free',
@@ -77,12 +79,12 @@ exit($report['errors'] === [] ? 0 : 1);
 
 // ---- the passes (stubs until their slice) ------------------------------------------------------------------------------------------
 
-/** SLICE 2 — upload sessions older than upload_session_hours: their parts removed, the row expired. */
-function worker_pass_upload_sessions_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['expired' => 0, 'stub' => true]; }
-/** SLICE 2 — text extraction for versions whose extracted_status is queued (app/doccloud/extract/), document_text written, the index row refreshed. */
-function worker_pass_extract_text(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['extracted' => 0, 'no_text' => 0, 'failed' => 0, 'stub' => true]; }
+/** SLICE 2 — upload sessions older than upload_session_hours: their parts removed, the row expired (app/features/files/worker_steps.php). */
+function worker_pass_upload_sessions_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_uploads_expire($pdo); }
+/** SLICE 2 — text extraction for pending versions (app/doccloud/extract/), document_text written; the triggers index the document and queue its graph job. */
+function worker_pass_extract_text(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_extract($pdo, min($limit, 50)); }
 /** SLICE 2 — thumbnails for images (GD) and PDFs' first page (pdftoppm). */
-function worker_pass_thumbnails(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['made' => 0, 'stub' => true]; }
+function worker_pass_thumbnails(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_thumbs($pdo, min($limit, 50)); }
 /** SLICE 4 — dc_search_catch_up(): every document whose index row is older than its change. */
 function worker_pass_search_catch_up(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['indexed' => 0, 'stub' => true]; }
 /** SLICE 5 — the graph jobs, one document at a time under the monthly budget (app/doccloud/graph.php): index, full, replace, forget. */
@@ -97,10 +99,10 @@ function worker_pass_blobs_free(PDO $pdo, int $limit, DateTimeImmutable $now): a
 function worker_pass_links_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['expired' => 0, 'stub' => true]; }
 /** SLICE 3 — file requests past their expiry closed. */
 function worker_pass_requests_close(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['closed' => 0, 'stub' => true]; }
-/** SLICE 6 — locks past lock_expires_at released. */
-function worker_pass_locks_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['released' => 0, 'stub' => true]; }
-/** SLICE 2 — queued exports built (a folder as a zip); expired exports' files removed. */
-function worker_pass_exports(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['built' => 0, 'expired' => 0, 'stub' => true]; }
+/** SLICE 2 (the lock UI is there) — locks past lock_expires_at released. */
+function worker_pass_locks_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_locks_expire($pdo); }
+/** SLICE 2 — queued exports built (a zip of what the maker may see); expired exports' files removed. */
+function worker_pass_exports(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_exports($pdo, 5) + worker_exports_expire($pdo); }
 /** SLICE 8 — the outbox: email through MaluMail (malumail_send), texts to members through the kernel (kernel_send_text), retries with backoff. */
 function worker_pass_outbox(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['sent' => 0, 'skipped' => 0, 'retried' => 0, 'failed' => 0, 'stub' => true]; }
 /** SLICE 8 — agent dispatches: a proposal needing a hand → one chat turn (ask_assistant), at most three attempts. */

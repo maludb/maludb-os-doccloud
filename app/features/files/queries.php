@@ -180,3 +180,123 @@ function my_favourite_ids(PDO $pdo): array
     }
     return $out;
 }
+
+// ---- slice 2: documents, versions, text, previews, upload sessions, the document picker ------------------------------------------------
+
+/** One document as the caller sees it (mcp_documents + the current version's filename and extraction state), or null. */
+function find_document(PDO $pdo, int $id): ?array
+{
+    $st = $pdo->prepare('SELECT d.*, v.filename, v.version_no AS current_version_no, v.extracted_status, v.uploaded_at AS current_uploaded_at, f.name AS folder_name, f.parent_id AS folder_parent_id,
+                                (SELECT m.display_name FROM members m WHERE m.id = d.locked_by) AS locked_by_name
+                           FROM mcp_documents d LEFT JOIN document_versions v ON v.id = d.current_version_id LEFT JOIN folders f ON f.id = d.folder_id WHERE d.document_id = :id');
+    $st->execute(['id' => $id]);
+    $r = $st->fetch();
+    return $r === false ? null : $r;
+}
+
+/** Every version of a document the caller may see, newest first, with the uploader's name. */
+function document_versions(PDO $pdo, int $documentId): array
+{
+    $st = $pdo->prepare('SELECT v.*, m.display_name AS uploaded_by_name FROM mcp_document_versions v LEFT JOIN members m ON m.id = v.uploaded_by WHERE v.document_id = :d ORDER BY v.version_no DESC');
+    $st->execute(['d' => $documentId]);
+    return $st->fetchAll();
+}
+
+/** The current version's extracted text (mcp_document_text), or null. */
+function document_text_of(PDO $pdo, int $documentId): ?array
+{
+    $st = $pdo->prepare('SELECT t.* FROM mcp_document_text t JOIN documents d ON d.current_version_id = t.version_id WHERE t.document_id = :d');
+    $st->execute(['d' => $documentId]);
+    $r = $st->fetch();
+    return $r === false ? null : $r;
+}
+
+/**
+ * What the document page shows for this kind: image inline, pdf in the viewer, text / markdown / csv from the extracted text, everything else
+ * the extracted text ("extracted") or nothing ("none"). CSV: the first 200 rows.
+ */
+function document_preview(PDO $pdo, array $doc, ?array $text = null): array
+{
+    $mime = (string) $doc['mime_type'];
+    $kind = (string) $doc['mime_kind'];
+    $filename = (string) ($doc['filename'] ?? $doc['name']);
+    $inlineOk = dc_inline_safe($mime, $filename);
+    if ($kind === 'image' && $inlineOk) {
+        return ['kind' => $kind, 'mode' => 'image'];
+    }
+    if ($kind === 'pdf' && $inlineOk) {
+        return ['kind' => $kind, 'mode' => 'pdf'];
+    }
+    if (in_array($kind, ['audio', 'video'], true) && $inlineOk) {
+        return ['kind' => $kind, 'mode' => $kind];
+    }
+    $text ??= document_text_of($pdo, (int) $doc['document_id']);
+    $body = $text === null ? '' : (string) $text['text'];
+    if ($mime === 'text/csv') {
+        // the extractor flattens a CSV into "name: value | …" lines for the index; the table reads the raw bytes (the first 256 KB)
+        $st = $pdo->prepare('SELECT b.storage_path FROM document_versions v JOIN blobs b ON b.id = v.blob_id WHERE v.id = :v AND v.purged_at IS NULL');
+        $st->execute(['v' => (int) $doc['current_version_id']]);
+        $rel = (string) ($st->fetchColumn() ?: '');
+        $raw = $rel !== '' && is_file(dc_storage_path($rel)) ? (string) @file_get_contents(dc_storage_path($rel), false, null, 0, 262144) : $body;
+        $rows = [];
+        foreach (preg_split('/\r\n|\n|\r/', $raw) ?: [] as $line) {
+            if ($line === '') {
+                continue;
+            }
+            $rows[] = str_getcsv($line);
+            if (count($rows) >= 200) {
+                break;
+            }
+        }
+        if ($rows !== []) {
+            return ['kind' => $kind, 'mode' => 'csv', 'rows' => $rows, 'truncated' => substr_count($raw, "\n") > 200];
+        }
+    }
+    if ($mime === 'text/markdown' && $body !== '') {
+        return ['kind' => $kind, 'mode' => 'markdown', 'text' => $body];
+    }
+    if ($kind === 'text' && $body !== '') {
+        return ['kind' => $kind, 'mode' => 'text', 'text' => mb_substr($body, 0, 200000)];
+    }
+    if ($body !== '') {
+        return ['kind' => $kind, 'mode' => 'extracted', 'text' => mb_substr($body, 0, 20000), 'truncated' => mb_strlen($body) > 20000];
+    }
+    return ['kind' => $kind, 'mode' => 'none', 'status' => $doc['extracted_status'] ?? 'pending', 'error' => $text['error'] ?? null];
+}
+
+/** The sentence of a version's extraction state (the document page; spec §6.3). */
+function extraction_sentence(array $doc, ?array $text): string
+{
+    return match ((string) ($doc['extracted_status'] ?? 'pending')) {
+        'ready' => 'Text: ' . number_format((int) ($text['char_count'] ?? 0)) . ' characters' . (!empty($text['extractor']) ? ' (' . $text['extractor'] . ')' : '') . (!empty($text['truncated']) ? ', cut at the limit' : ''),
+        'no_text' => 'No text to read' . ($doc['mime_kind'] === 'pdf' ? ' (an image-only PDF)' : ($doc['mime_kind'] === 'image' ? ' (an image)' : '')),
+        'unsupported' => 'Not a kind we read (' . ($doc['mime_kind'] ?? 'other') . ')',
+        'failed' => 'Reading the text failed' . (!empty($text['error']) ? ': ' . mb_substr((string) $text['error'], 0, 80) : ''),
+        default => 'Text not read yet (within the minute)',
+    };
+}
+
+/** My open and recent upload sessions (the upload screen's "still arriving" list). */
+function my_upload_sessions(PDO $pdo, ?int $folderId = null): array
+{
+    $st = $pdo->prepare("SELECT * FROM mcp_upload_sessions WHERE member_id = app_current_member_id() AND (:f::bigint IS NULL OR folder_id = :f) AND created_at > now() - interval '1 day' ORDER BY created_at DESC LIMIT 100");
+    $st->execute(['f' => $folderId]);
+    return $st->fetchAll();
+}
+
+/** The document picker's search: documents I may see, by name; params folder (its subtree), library. */
+function documents_for_pick(PDO $pdo, string $q, array $params, int $page, int $per = 25): array
+{
+    $args = ['q' => '%' . $q . '%'];
+    $where = "d.trashed_at IS NULL AND (:q = '%%' OR d.name ILIKE :q)";
+    if (!empty($params['folder'])) {
+        $where .= ' AND d.folder_id IN (SELECT dc_folder_subtree_ids(:folder))';
+        $args['folder'] = (int) $params['folder'];
+    }
+    if (!empty($params['library'])) {
+        $where .= ' AND d.library_id = :library';
+        $args['library'] = (int) $params['library'];
+    }
+    return pick_page($pdo, 'SELECT d.document_id AS id, d.name AS label, d.mime_kind, d.byte_size, d.folder_id FROM mcp_documents d WHERE ' . $where . ' ORDER BY lower(d.name)', $args, $page, $per,
+        static fn (array $r): array => ['id' => (int) $r['id'], 'label' => $r['label'], 'detail' => $r['mime_kind'] . ' · ' . format_bytes((int) $r['byte_size']), 'badge' => null, 'color' => null]);
+}

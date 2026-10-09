@@ -16,6 +16,10 @@ require_once dirname(__DIR__) . '/libraries/queries.php';
 require_once dirname(__DIR__) . '/libraries/write.php';
 require_once dirname(__DIR__) . '/groups/queries.php';
 require_once dirname(__DIR__) . '/groups/write.php';
+require_once __DIR__ . '/upload.php';
+require_once __DIR__ . '/documents.php';
+require_once __DIR__ . '/versions.php';
+require_once __DIR__ . '/exports.php';
 
 /** The level's sentence when a person holds less than a handler needs. */
 const DC_LEVEL_WORDS = ['view' => 'see', 'upload' => 'add to', 'edit' => 'change', 'manage' => 'manage'];
@@ -155,4 +159,40 @@ function kind_icon(?string $kind): string
         'folder' => 'feather-folder', 'image' => 'feather-image', 'pdf' => 'feather-file-text', 'office' => 'feather-file-text', 'text' => 'feather-file-text',
         'audio' => 'feather-music', 'video' => 'feather-film', 'archive' => 'feather-archive', default => 'feather-file',
     };
+}
+
+/** An UploadRefused becomes the answer: JSON {error: {code, message, ...extra}} with its status; a browser the sentence (a 409 names the document). */
+function upload_refused(UploadRefused $e): never
+{
+    emit_action_status(false, ['error' => $e->getMessage(), 'code' => $e->reason] + $e->extra);
+    if (wants_json()) {
+        json_response(['ok' => false, 'error' => ['code' => $e->reason, 'message' => $e->getMessage()] + $e->extra], $e->status);
+    }
+    refuse($e->status, $e->getMessage());
+}
+
+/** Where a raw-body request's bytes go: a temp file in the store's uploads/ (never memory), or the uploaded `part`/`file` field's tmp_name. */
+function request_bytes_to_file(string $field = 'part'): ?string
+{
+    if (isset($_FILES[$field]) && is_uploaded_file($_FILES[$field]['tmp_name'])) {
+        return $_FILES[$field]['tmp_name'];
+    }
+    $ct = (string) ($_SERVER['CONTENT_TYPE'] ?? '');
+    if (str_starts_with($ct, 'multipart/form-data') || str_starts_with($ct, 'application/x-www-form-urlencoded')) {
+        return null;
+    }
+    $dir = dc_storage_path('uploads/tmp');
+    if (!is_dir($dir) && !@mkdir($dir, 0750, true) && !is_dir($dir)) {
+        return null;
+    }
+    $tmp = $dir . '/' . bin2hex(random_bytes(8));
+    $in = fopen('php://input', 'rb');
+    $out = fopen($tmp, 'wb');
+    if ($in === false || $out === false) {
+        return null;
+    }
+    stream_copy_to_stream($in, $out);
+    fclose($in);
+    fclose($out);
+    return $tmp;
 }

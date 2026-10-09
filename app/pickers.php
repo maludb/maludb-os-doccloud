@@ -34,6 +34,11 @@ return [
         'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($files): array { $files(); return members_for_pick_search($pdo, $q, $params, $page); },
         'label' => static function (PDO $pdo, int $id): ?string { $st = $pdo->prepare('SELECT display_name FROM mcp_members WHERE member_id = :id'); $st->execute(['id' => $id]); $v = $st->fetchColumn(); return $v === false ? null : (string) $v; },
     ],
+    'document' => [
+        'title' => 'Documents', 'noun' => 'document', 'roles' => ['library.personal', 'documents.guest'], 'params' => ['folder', 'library'],
+        'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($files): array { $files(); return documents_for_pick($pdo, $q, $params, $page); },
+        'label' => static function (PDO $pdo, int $id) use ($files): ?string { $files(); return find_document($pdo, $id)['name'] ?? null; },
+    ],
     'department' => [
         'title' => 'Departments', 'noun' => 'department', 'roles' => ['groups.manage'], 'params' => [],
         'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($files): array { $files(); return departments_for_pick($pdo, $q, $params, $page); },
