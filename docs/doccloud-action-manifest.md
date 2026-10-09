@@ -116,6 +116,7 @@ Screens:
 
 | Screen id | URL | When the user wants… |
 | --- | --- | --- |
+| `my-files` | `/files` | My files: the person's own library — sends the browser to the `folder` screen at its root (`/f/{root}`); Phase 2's placeholder until slice 1 |
 | `library-list` | `/libraries` | the libraries I reach as cards: kind, used of quota, policy (params: `kind`) |
 | `library-view` | `/libraries/{id}` | a library at a glance: its root folder, counts, quota, policy, its group or owner |
 | `library-add` | `/libraries/new` | to make a shared library: a name, who gets what by default (curators) |

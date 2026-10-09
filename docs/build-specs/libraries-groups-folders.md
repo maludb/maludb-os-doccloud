@@ -110,10 +110,10 @@ Also: `my_favourites`, `recent_documents` (the surface's rows this slice's scree
 `storage_by_library`, `quota_state`, `my_level`, `find_folders` (the resolver), `find_members`, `find_departments`.
 
 ## Manifest rows claimed
-Screens (15): `library-list`, `library-view`, `library-add`, `library-edit`, `group-list`, `group-view`, `group-add`, `group-edit`, `group-members`, `folder`, `folder-add`, `folder-edit`, `folder-move`, `recent`, `favourites`
+Screens (16): `my-files`, `library-list`, `library-view`, `library-add`, `library-edit`, `group-list`, `group-view`, `group-add`, `group-edit`, `group-members`, `folder`, `folder-add`, `folder-edit`, `folder-move`, `recent`, `favourites`
 Actions (21): `library_create`, `library_update`, `library_everyone_set`, `library_delete`, `group_create`, `group_update`, `group_member_add`, `group_member_remove`, `group_owner_set`, `group_archive`, `group_restore`, `group_delete`, `folder_create`, `folder_rename`, `folder_update`, `folder_auto_tags_set`, `folder_move`, `folder_trash`, `folder_restore`, `favourite_add`, `favourite_remove`
 
-Folded (the manifest's rule, one key per form): a folder's colour is a field of `folder_update`; a library's archive and restore are the `archived` field of `library_update`; a group's member level is a field of `group_update`. *My files* is the `folder` screen opened at the personal library's root (`/folders/{root}`, the nav item `/f/{root}`).
+Folded (the manifest's rule, one key per form): a folder's colour is a field of `folder_update`; a library's archive and restore are the `archived` field of `library_update`; a group's member level is a field of `group_update`. *My files* is the `folder` screen opened at the personal library's root: the screen `my-files` (`/files`, `html/files/index.php`, Phase 2's placeholder) becomes a redirect to `/f/{root}` — the nav item keeps `/files/` so the shell needs no per-member URL.
 
 ## Activity log events
 `library.create|update|everyone_set|archive|restore|delete|admin_view`, `group.create|update|level_set|member_add|member_remove|owner_set|archive|restore|delete`,

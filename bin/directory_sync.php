@@ -53,6 +53,17 @@ try {
         $next = $doc['next'] ?? $next;
         $wasFull = $wasFull || !empty($doc['full']);
     }
+    // every synced active non-external human has a personal library before they look for it; department groups follow the directory (sso-shell.md)
+    $made = $pdo->query("SELECT m.id, dc_library_ensure_personal(m.id) AS library_id FROM members m
+                          WHERE m.member_kind = 'human' AND NOT m.is_external AND m.status = 'active' AND m.capability IS NOT NULL
+                            AND NOT EXISTS (SELECT 1 FROM libraries l WHERE l.kind = 'personal' AND l.owner_member_id = m.id)")->fetchAll();
+    foreach ($made as $row) {
+        if ($row['library_id'] !== null) {
+            log_activity($pdo, 'library.create', 'library', (int) $row['library_id'], ['actor_member_id' => null, 'library_id' => (int) $row['library_id'], 'after' => ['kind' => 'personal', 'owner_member_id' => (int) $row['id']]]);
+        }
+    }
+    $counts['libraries'] = count($made);
+    $counts['group_members'] = (int) $pdo->query('SELECT dc_groups_sync_departments()')->fetchColumn();
     $pdo->prepare('UPDATE directory_sync_state SET next_cursor = COALESCE(:n, next_cursor), full_at = CASE WHEN :full THEN now() ELSE full_at END,
                           last_run_at = now(), last_error = NULL, updated_at = now() WHERE id = 1')
         ->execute(['n' => $next, 'full' => $wasFull ? 't' : 'f']);
@@ -66,5 +77,5 @@ try {
 if (array_sum($counts) > 0 || $wasFull) {
     log_activity($pdo, 'directory.sync', null, null, ['actor_member_id' => null, 'after' => $counts + ['full' => $wasFull]]);
 }
-printf("applied %d members, %d departments, %d memberships, %d holdings%s; cursor %s\n", $counts['members'], $counts['departments'],
-    $counts['memberships'], $counts['access'], $wasFull ? ' (full)' : '', $next ?? '(unchanged)');
+printf("applied %d members, %d departments, %d memberships, %d holdings, %d personal libraries made, %d group memberships followed%s; cursor %s\n", $counts['members'], $counts['departments'],
+    $counts['memberships'], $counts['access'], $counts['libraries'], $counts['group_members'], $wasFull ? ' (full)' : '', $next ?? '(unchanged)');

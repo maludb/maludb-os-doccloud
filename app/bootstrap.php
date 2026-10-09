@@ -86,7 +86,12 @@ require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/directory.php';
 require_once __DIR__ . '/mail.php';
 require_once __DIR__ . '/api/kernel.php';
-// The shell's navigation (app/features/shell/nav.php) is Phase 2's; the kit stands without it.
+require_once __DIR__ . '/switcher.php';                 // the application switcher (the kernel's app switcher): os_my_applications(), the header's Helpdesk button and menu
+require_once __DIR__ . '/picker.php';                   // the record picker: picker_field(), picker_source() — the registry is app/pickers.php
+require_once __DIR__ . '/doccloud/store.php';           // the blob store: the ONE module that touches the disk
+require_once __DIR__ . '/doccloud/gate.php';            // the walls as PHP uses them: require_document_level(), require_folder_level()
+require_once __DIR__ . '/features/shell/nav.php';
+require_once __DIR__ . '/features/shell/queries.php';
 
 // A JSON caller (the kernel's actions server, an approval replay) never receives PHP's own
 // error output — a 500 it can parse instead of an HTML fragment.
@@ -114,7 +119,7 @@ if (PHP_SAPI !== 'cli') {
     ]);
     ini_set('session.use_strict_mode', '1');
     ini_set('session.use_only_cookies', '1');
-    session_name('INVSID');
+    session_name('DCSID');
     session_start();
 
     if (empty($_SESSION['csrf_token'])) {

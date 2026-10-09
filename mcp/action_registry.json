@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T15:29:14+00:00",
+    "generated_at": "2026-10-09T16:06:48+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -20,7 +20,7 @@
                 "kind"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "recent": {
             "screen": "recent",
@@ -29,7 +29,7 @@
             "when": "what I opened or changed lately",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "favourites": {
             "screen": "favourites",
@@ -38,7 +38,7 @@
             "when": "my favourites: documents and folders",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "notifications": {
             "screen": "notifications",
@@ -46,7 +46,7 @@
             "section": "Home, me and the shell (Phase 2 and slice 9)",
             "when": "my notices, unread first",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "activity": {
@@ -55,7 +55,7 @@
             "section": "Home, me and the shell (Phase 2 and slice 9)",
             "when": "my own trail here",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "settings": {
@@ -64,7 +64,7 @@
             "section": "Home, me and the shell (Phase 2 and slice 9)",
             "when": "my preferences: notification kinds and channels",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "settings-tokens": {
@@ -73,8 +73,17 @@
             "section": "Home, me and the shell (Phase 2 and slice 9)",
             "when": "my MCP tokens and my API keys: mint (shown once), rotate, revoke",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
+        },
+        "my-files": {
+            "screen": "my-files",
+            "url": "/files",
+            "section": "Libraries, groups and folders (slice 1)",
+            "when": "My files: the person's own library — sends the browser to the `folder` screen at its root (`/f/{root}`); Phase 2's placeholder until slice 1",
+            "params": [],
+            "built": false,
+            "stub": true
         },
         "library-list": {
             "screen": "library-list",
@@ -85,7 +94,7 @@
                 "kind"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "library-view": {
             "screen": "library-view",
@@ -127,7 +136,7 @@
                 "kind"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "group-view": {
             "screen": "group-view",
@@ -384,7 +393,7 @@
                 "q"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "tag-view": {
             "screen": "tag-view",
@@ -453,7 +462,7 @@
                 "shared_with_me"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "saved-searches": {
             "screen": "saved-searches",
@@ -477,7 +486,7 @@
                 "kind"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "graph-explore": {
             "screen": "graph-explore",
@@ -535,7 +544,7 @@
                 "folder"
             ],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-quotas": {
             "screen": "admin-quotas",
@@ -608,7 +617,7 @@
             "when": "the curate area: groups, shared libraries, tags and rules, ownership, the storage report, the search report, the Clerk's proposals",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "curate-ownership": {
             "screen": "curate-ownership",
@@ -650,7 +659,7 @@
             "when": "the admin area: settings, quotas, the graph, links, libraries, keys, agents, connections, the worker",
             "params": [],
             "built": false,
-            "stub": false
+            "stub": true
         },
         "admin-settings": {
             "screen": "admin-settings",
@@ -733,7 +742,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the prefs",
-            "built": false
+            "built": true
         },
         "notification_read": {
             "action": "notification_read",
@@ -802,7 +811,7 @@
             "who": "own",
             "agent": false,
             "record_id": "the token",
-            "built": false
+            "built": true
         },
         "token_revoke": {
             "action": "token_revoke",
@@ -823,7 +832,7 @@
             "who": "own",
             "agent": false,
             "record_id": "the token",
-            "built": false
+            "built": true
         },
         "key_mint": {
             "action": "key_mint",

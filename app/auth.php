@@ -121,6 +121,13 @@ function has_right(string $right): bool
     return $cache[$right] ??= db_bool(db(), 'SELECT dc_has_right(:r)', ['r' => $right]);
 }
 
+/** A guest: external, holding Guest and nothing above it (db/004) — reaches only what is shared with them. */
+function is_guest(): bool
+{
+    static $v = null;
+    return $v ??= db_bool(db(), 'SELECT dc_is_guest()');
+}
+
 /** Someone who belongs here: active, admitted and not a guest (db/004) — the `everyone` principal reaches exactly these. */
 function is_member_here(): bool
 {

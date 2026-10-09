@@ -19,4 +19,11 @@ try {
 if ((string) env('MALUDB_API_URL', '') !== '' && (string) env('MALUDB_API_TOKEN', '') !== '') {
     $out['maludb'] = 'ok';
 }
+// the store and the document graph are WIRED, not used (sso-shell.md): the store must be writable; the graph answers unavailable without its token
+require_once dirname(__DIR__, 3) . '/app/doccloud/graph.php';
+$out['storage'] = dc_storage_state();
+$out['graph'] = dc_graph_available() ? 'ok' : 'unavailable';
+if ($out['storage'] !== 'ok') {
+    $out['ok'] = false;
+}
 api_json($out, $out['ok'] ? 200 : 503);

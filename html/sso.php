@@ -68,6 +68,14 @@ try {
     if (array_key_exists('roles', $claims)) {
         mirror_apply_roles($pdo, $memberId, is_array($claims['roles']) ? $claims['roles'] : []);
     }
+    // the personal library exists before the person looks for it (sso-shell.md; a guest gets none — dc_library_ensure_personal answers NULL)
+    $before = (int) ($pdo->query('SELECT count(*) FROM libraries WHERE kind = \'personal\'')->fetchColumn());
+    $libSt = $pdo->prepare('SELECT dc_library_ensure_personal(:m)');
+    $libSt->execute(['m' => $memberId]);
+    $personalLibrary = $libSt->fetchColumn();
+    if ($personalLibrary !== null && $personalLibrary !== false && (int) $pdo->query('SELECT count(*) FROM libraries WHERE kind = \'personal\'')->fetchColumn() > $before) {
+        log_activity($pdo, 'library.create', 'library', (int) $personalLibrary, ['actor_member_id' => $memberId, 'library_id' => (int) $personalLibrary, 'after' => ['kind' => 'personal', 'owner_member_id' => $memberId]]);
+    }
     $pdo->commit();
 } catch (Throwable $e) {
     $pdo->rollBack();

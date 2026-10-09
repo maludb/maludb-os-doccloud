@@ -63,12 +63,10 @@ function ask_assistant(PDO $pdo, int $memberId, string $utterance, array $contex
 /** A tool `{entity}_{verb}` that succeeded refreshes the screens listening for `{entity}Changed` (chat-actions, Pattern D). */
 function assistant_refresh_events(array $actions): array
 {
-    $families = ['product' => 'product', 'variant' => 'product', 'identifier' => 'product', 'bundle' => 'product', 'price' => 'product',
-        'location' => 'location', 'stock' => 'stock', 'receipt' => 'stock', 'transfer' => 'stock', 'adjustment' => 'stock', 'count' => 'stock',
-        'supplier' => 'supplier', 'source' => 'source', 'listing' => 'listing', 'match' => 'listing', 'offer' => 'listing', 'watch' => 'watch',
-        'customer' => 'customer', 'order' => 'order', 'line' => 'order', 'payment' => 'order', 'shipment' => 'order',
-        'purchase' => 'purchase_order', 'po' => 'purchase_order', 'return' => 'return', 'feed' => 'feed', 'key' => 'feed',
-        'settings' => 'settings', 'token' => 'token', 'notification' => 'notification', 'export' => 'export', 'agent' => 'agent', 'buyer' => 'proposal'];
+    $families = ['library' => 'library', 'group' => 'group', 'folder' => 'folder', 'document' => 'document', 'version' => 'document', 'tag' => 'tag', 'share' => 'access',
+        'access' => 'access', 'link' => 'link', 'request' => 'link', 'graph' => 'graph', 'note' => 'note', 'favourite' => 'favourite', 'saved' => 'search', 'clerk' => 'proposal',
+        'export' => 'export', 'ownership' => 'document', 'quota' => 'library', 'settings' => 'settings', 'prefs' => 'prefs', 'token' => 'token', 'key' => 'token',
+        'notification' => 'notification', 'agent' => 'agent', 'dispatch' => 'agent', 'worker' => 'worker'];
     $events = [];
     foreach ($actions as $a) {
         if (($a['status'] ?? '') === 'ok' && preg_match('/^([a-z]+)(?:_[a-z_]+)?$/', (string) ($a['tool'] ?? ''), $m) && isset($families[$m[1]])) {

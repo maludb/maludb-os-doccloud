@@ -83,7 +83,7 @@ check "$(curl -s $APP/api/v1/health | php -r 'echo json_decode(stream_get_conten
 url27=$(php bin/dev_handoff.php 27)
 check "$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' -c "$TMP/jar27" "$url27")" "302 $APP/" "a signed hand-off token opens a session (302 to /)"
 home27=$(curl -s -b "$TMP/jar27" "$APP/")
-has "$home27" 'id="home-member">SMOKE Marco<' "the home placeholder names the signed-in member"
+has "$home27" 'id="header-user-name">SMOKE Marco<' "the home names the signed-in member in its header (the shell since Phase 2)"
 has "$home27" 'Curator' "…and the roles the kernel sent"
 check "$(curl -s -o /dev/null -w '%{http_code}' "$url27")" "403" "the same token a second time is refused (replay)"
 check "$(curl -s -o /dev/null -w '%{http_code}' "$(HANDOFF_TTL=-120 php bin/dev_handoff.php 26)")" "403" "an expired token is refused"
@@ -137,7 +137,7 @@ check "$(curl -s -o /dev/null -w '%{http_code}' -b "$TMP/jar27" "$APP/")" "302" 
 check "$(curl -s -o /dev/null -w '%{http_code}' -X POST --data-urlencode "notice=27.1.doccloud.deadbeef" "$APP/sso/logout")" "204" "a bad notice also answers 204 and changes nothing"
 check "$(curl -s -o /dev/null -w '%{http_code}' -b "$TMP/jar29" "$APP/")" "200" "Ann, signed on earlier, is let in while her grant stands"
 php -r '$s = json_decode(file_get_contents(getenv("FAKE_KERNEL_STATE")), true); $s["incremental"] = ["schema" => "os.directory-changes/1", "since" => "2026-01-01T00:00:00.000000Z", "next" => "2026-01-02T00:00:00.000000Z", "full" => false, "members" => [], "departments" => [], "memberships" => [], "deleted_departments" => [], "scopes" => [], "access" => [["member_id" => 29, "capability" => null, "roles" => [], "scopes" => []]]]; file_put_contents(getenv("FAKE_KERNEL_STATE"), json_encode($s));'
-php bin/directory_sync.php >/dev/null 2>&1; check "$?" "0" "the change feed applies through the kernel's internal API (the fake kernel)"
+php bin/directory_sync.php >"$TMP/sync2.out" 2>&1; rc=$?; [ "$rc" = 0 ] || cat "$TMP/sync2.out"; check "$rc" "0" "the change feed applies through the kernel's internal API (the fake kernel)"
 check "$(curl -s -o /dev/null -w '%{http_code}' -b "$TMP/jar29" "$APP/")" "302" "a grant the kernel revoked shuts the door within one sync"
 check "$(sql "select ended_by from member_sessions where member_id = 29 order by created_at desc limit 1") $(sql "select capability is null from members where id = 29")" "directory t" "…the session ended by the directory and the mirror holds no grant"
 check "$(curl -s -o /dev/null -w '%{http_code}' "$(HANDOFF_NO_GRANT=1 php bin/dev_handoff.php 29)")" "403" "…and a hand-off whose claims now carry no grant is refused (the kernel's claims are the authority)"

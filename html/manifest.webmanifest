@@ -1,7 +1,7 @@
 {
-  "name": "Inventory",
-  "short_name": "Inventory",
-  "description": "What the business sells and where it can get it — the catalog, the stock, the sources, the orders.",
+  "name": "DocCloud",
+  "short_name": "DocCloud",
+  "description": "The business's files: libraries, folders and documents with every version, shared with people and groups, found by name, tag, keyword or the document graph.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
