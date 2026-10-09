@@ -8,13 +8,35 @@ declare(strict_types=1);
  *           'search' => fn(PDO, string $q, array $params, int $page): array{rows, total, page, page_size, pages},   rows: [id, label, detail?, badge?, color?]
  *           'label'  => fn(PDO, int $id): ?string]
  * `search` reuses the feature's own list query (find_*() with ILIKE and paging), never a second one; `label` names the chosen record.
- *
- * Empty in the Phase 2 shell. The slices add (see docs/doccloud-design.md and the ten slice specs):
- *   base     — slice 1, a form that chooses a doccloud base (copy a guideline set from, share with, move a source to, a key's base)
- *   source   — slice 2, a source (reprocess, supersede with, attach a section's source)
- *   section  — slice 2/5, a section (pin an answer to, link a guideline to)
- *   guideline— slice 3, a guideline (copy from another base, compile)
- *   person   — slice 1/8, a member or agent (share a folder with, add to a group) — over the directory mirror, never a select of everyone
- * A short enumeration (a kind, a status, a role, a guideline type) stays a <select>.
+ * Slice 1 adds folder (folders the caller may add to; param `library`), library, group, member (people and agents, never a guest; param
+ * `group` hides its live members) and department. Later slices add document (2), tag (4), link and request (3), saved_search (4).
+ * A short enumeration (a kind, a level, a colour) stays a <select>.
  */
-return [];
+$files = static function (): void { require_once __DIR__ . '/features/files/handler.php'; };
+return [
+    'folder' => [
+        'title' => 'Folders', 'noun' => 'folder', 'roles' => ['library.personal', 'documents.guest'], 'params' => ['library'],
+        'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($files): array { $files(); return folders_for_pick($pdo, $q, $params, $page); },
+        'label' => static function (PDO $pdo, int $id) use ($files): ?string { $files(); $f = find_folder($pdo, $id); return $f === null ? null : (folder_path_text($pdo, $id) ?: $f['name']); },
+    ],
+    'library' => [
+        'title' => 'Libraries', 'noun' => 'library', 'roles' => ['library.personal', 'documents.guest'], 'params' => [],
+        'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($files): array { $files(); return libraries_for_pick($pdo, $q, $params, $page); },
+        'label' => static function (PDO $pdo, int $id) use ($files): ?string { $files(); return find_library($pdo, $id)['name'] ?? null; },
+    ],
+    'group' => [
+        'title' => 'Groups', 'noun' => 'group', 'roles' => ['library.personal'], 'params' => [],
+        'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($files): array { $files(); return groups_for_pick($pdo, $q, $params, $page); },
+        'label' => static function (PDO $pdo, int $id) use ($files): ?string { $files(); return find_group($pdo, $id)['name'] ?? null; },
+    ],
+    'member' => [
+        'title' => 'People and agents', 'noun' => 'person', 'roles' => ['library.personal'], 'params' => ['group'],
+        'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($files): array { $files(); return members_for_pick_search($pdo, $q, $params, $page); },
+        'label' => static function (PDO $pdo, int $id): ?string { $st = $pdo->prepare('SELECT display_name FROM mcp_members WHERE member_id = :id'); $st->execute(['id' => $id]); $v = $st->fetchColumn(); return $v === false ? null : (string) $v; },
+    ],
+    'department' => [
+        'title' => 'Departments', 'noun' => 'department', 'roles' => ['groups.manage'], 'params' => [],
+        'search' => static function (PDO $pdo, string $q, array $params, int $page) use ($files): array { $files(); return departments_for_pick($pdo, $q, $params, $page); },
+        'label' => static function (PDO $pdo, int $id): ?string { $st = $pdo->prepare('SELECT name FROM mcp_departments WHERE department_id = :id'); $st->execute(['id' => $id]); $v = $st->fetchColumn(); return $v === false ? null : (string) $v; },
+    ],
+];

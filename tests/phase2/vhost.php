@@ -14,13 +14,14 @@ foreach (['/sso' => 403, '/sso/logout' => 405] as $path => $want) {
 }
 ok(page($j, '/settings/tokens/')['code'] === 200 && page($j, '/settings/tokens')['code'] === 200, '/settings/tokens/ and /settings/tokens both reach settings/tokens/index.php');
 ok(page($j, '/settings/')['code'] === 200 && page($j, '/settings')['code'] === 200, '/settings/ and /settings both reach settings/index.php');
-foreach (['files', 'shared', 'groups', 'libraries', 'tags', 'search', 'graph', 'trash', 'curate'] as $d) {
-    ok(page($j, "/$d/")['code'] === 200 && page($j, "/$d")['code'] === 200, "/$d/ and /$d both reach $d/index.php (the placeholder)");
+foreach (['shared', 'groups', 'libraries', 'tags', 'search', 'graph', 'trash', 'curate'] as $d) {
+    ok(page($j, "/$d/")['code'] === 200 && page($j, "/$d")['code'] === 200, "/$d/ and /$d both reach $d/index.php");
 }
-ok(page($j, '/recent')['code'] === 200 && page($j, '/favourites')['code'] === 200, '/recent and /favourites reach recent.php and favourites.php (the placeholders)');
+ok(page($j, '/files/')['code'] === 302 && page($j, '/files')['code'] === 302, '/files/ and /files both reach files/index.php (slice 1: a 302 to the personal root)');
+ok(page($j, '/recent')['code'] === 200 && page($j, '/favourites')['code'] === 200, '/recent and /favourites reach recent.php and favourites.php');
 ok(page($j, '/admin/')['code'] === 403 && page($j, '/admin')['code'] === 403, '/admin/ and /admin resolve to admin/index.php (403 for a curator, by the right)');
 ok(page($j, '/activity')['code'] === 200 && page($j, '/notifications')['code'] === 200, '/activity and /notifications resolve to their own files');
-ok(page($j, '/groups/new')['code'] === 404 && page($j, '/groups/1')['code'] === 404 && page($j, '/groups/1/edit')['code'] === 404, '/groups/new, /groups/1 and /groups/1/edit are rewritten to form.php and view.php, which slice 1 builds: 404 until then');
+ok(page($j, '/groups/new')['code'] === 200 && page($j, '/groups/999999')['code'] === 404 && page($j, '/groups/999999/edit')['code'] === 404, '/groups/new, /groups/{id} and /groups/{id}/edit are rewritten to form.php and view.php (slice 1): the form answers, an unknown group is Not found');
 ok(page($j, '/folders/1')['code'] === 404 && page($j, '/documents/1')['code'] === 404, '/folders/{id} and /documents/{id} are rewritten to their view.php: 404 until slices 1 and 2');
 ok(page($j, '/f/1')['code'] === 404 && page($j, '/f/1/share')['code'] === 404, '/f/{id} and /f/{id}/share are rewritten to f/index.php and f/share.php: 404 until slices 1 and 3');
 ok(req('GET', '/d/1')['code'] === 404 && req('GET', '/d/1/v/2')['code'] === 404 && req('GET', '/d/1/thumb')['code'] === 404, '/d/{id}, /d/{id}/v/{n} and /d/{id}/thumb are rewritten to d/index.php and d/thumb.php: 404 until slice 2');

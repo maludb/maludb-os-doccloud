@@ -1,0 +1,108 @@
+<?php
+/** Slice 1 proof — libraries: the cards, a shared library made by a curator and seen by a member, everyone level (free down, paused up for an agent — the kernel's hook; the handler admits the agent), the refusals, archive and restore, delete rules, the admin's logged view (spec "Proof" 5, 6, 9, 10). */
+require __DIR__ . '/lib.php';
+$seed = seed_store();
+
+echo "1. The cards\n";
+$b = page(actor(26), '/libraries')['body'];
+$lib26 = (int) one("SELECT id FROM libraries WHERE kind = 'personal' AND owner_member_id = 26");
+$libBoard = (int) one('SELECT id FROM libraries WHERE group_id = :g', ['g' => $seed['group']]);
+ok(str_contains($b, 'id="library-card-' . $lib26 . '"') && str_contains($b, 'id="library-card-' . $libBoard . '"'), 'Priya\'s cards: her personal library and the Board\'s');
+ok(!str_contains($b, 'id="library-card-' . (int) one("SELECT id FROM libraries WHERE kind = 'personal' AND owner_member_id = 30") . '"') && !str_contains($b, 'id="library-new-btn"'), 'not Dana\'s personal library; no New shared library button for a Member');
+ok(preg_match('/id="library-card-' . $lib26 . '".*?<span class="badge[^>]*>personal<.*?<span class="badge[^>]*>manage</s', $b) === 1, 'the personal card wears "personal" and "manage"');
+$b = page(actor(1), '/libraries')['body'];
+$lib30 = (int) one("SELECT id FROM libraries WHERE kind = 'personal' AND owner_member_id = 30");
+ok(str_contains($b, 'id="library-card-' . $lib30 . '"') && str_contains($b, 'admin view'), 'the admin sees every library, personal ones marked admin view');
+ok(str_contains(page(actor(27), '/libraries')['body'], 'id="library-new-btn"'), 'a curator sees New shared library');
+
+echo "2. A shared library made by a curator\n";
+$r = post(26, '/libraries/save.php', ['name' => 'Priya shared']);
+ok($r['code'] === 403 && str_contains($r['body'], 'You may not manage shared libraries.'), 'a member without libraries.shared is refused 403 in words');
+$r = post(29, '/libraries/save.php', ['name' => 'Guest shared']);
+ok($r['code'] === 403, 'a guest too');
+$r = post(27, '/libraries/save.php', ['name' => '']);
+ok($r['code'] === 422 && str_contains($r['body'], 'Give the library a name.'), 'an empty name is refused');
+$r = post(27, '/libraries/save.php', ['name' => 'SMOKE Policies', 'description' => 'Handbooks and policies', 'everyone_level' => 'view']);
+$pol = (int) one("SELECT id FROM libraries WHERE kind = 'shared' AND name = 'SMOKE Policies'");
+ok($r['code'] === 302 && $pol > 0 && str_ends_with($r['location'], '/libraries/' . $pol . '?notice=created'), 'library_create lands on the library');
+$polRoot = (int) one('SELECT root_folder_id FROM libraries WHERE id = :id', ['id' => $pol]);
+ok($polRoot > 0 && one('SELECT name FROM folders WHERE id = :id', ['id' => $polRoot]) === 'SMOKE Policies', 'its root folder exists, named after it');
+$ev = last_event('library.create');
+ok((int) $ev['library_id'] === $pol && json_decode($ev['after'], true)['everyone_level'] === 'view', 'library.create logged with library_id and the everyone level');
+$b = page(actor(26), '/libraries')['body'];
+ok(str_contains($b, 'id="library-card-' . $pol . '"'), 'a member lists the shared library');
+$b = page(actor(26), '/f/' . $polRoot)['body'];
+ok(page(actor(26), '/f/' . $polRoot)['code'] === 200 && str_contains($b, 'id="folder-access-text">Everyone · view<') && !str_contains($b, 'id="folder-new-btn"'), '...and views its root ("Everyone · view"), with no New folder');
+ok(page(actor(29), '/f/' . $polRoot)['code'] === 404 && !str_contains(page(actor(29), '/libraries')['code'] === 200 ? page(actor(29), '/libraries')['body'] : '', 'library-card-' . $pol), 'a guest sees nothing of it');
+$v = page(actor(26), '/libraries/' . $pol)['body'];
+ok(str_contains($v, 'id="library-everyone">Everyone may view<') && !str_contains($v, 'id="library-everyone-form"') && !str_contains($v, 'id="library-edit-btn"'), 'the library view shows the everyone level; a member gets no form and no Edit');
+$v = page(actor(27), '/libraries/' . $pol)['body'];
+ok(str_contains($v, 'id="library-everyone-form"') && str_contains($v, 'id="library-edit-btn"') && str_contains($v, 'id="library-archive-btn"'), 'the curator gets the everyone form, Edit and Archive');
+
+echo "3. The everyone level\n";
+$r = post(27, '/libraries/everyone.php', ['library' => $pol, 'everyone_level' => 'edit']);
+ok($r['code'] === 302 && one('SELECT everyone_level FROM libraries WHERE id = :id', ['id' => $pol]) === 'edit', 'library_everyone_set raises it to edit for a person');
+ok(json_decode(last_event('library.everyone_set')['before'], true)['everyone_level'] === 'view' && json_decode(last_event('library.everyone_set')['after'], true)['everyone_level'] === 'edit', 'library.everyone_set logged before/after');
+ok(level_of(26, 'folder', $polRoot) === 'edit', 'a member now edits in it');
+$r = post_agent(40, 501, '/libraries/everyone.php', ['library' => $pol, 'everyone_level' => 'none']);
+ok($r['code'] === 403, 'an agent without libraries.shared (Seamus, a Member) is refused the action');
+$reg = json_decode((string) file_get_contents(dirname(__DIR__, 3) . '/mcp/action_registry.json'), true);
+$act = null;
+foreach ($reg['actions'] as $a) { if (($a['action'] ?? '') === 'library_everyone_set') { $act = $a; } }
+ok($act !== null && $act['approval'] === 'external_send' && $act['built'] === true, 'library_everyone_set is registered as external_send: the kernel pauses an agent before the handler is called');
+$r = post(27, '/libraries/everyone.php', ['library' => $pol, 'everyone_level' => 'none']);
+ok($r['code'] === 302 && level_of(26, 'folder', $polRoot) === 'none', 'set to none, a member is out (free for a person)');
+$r = post(27, '/libraries/everyone.php', ['library' => $pol, 'everyone_level' => 'owner']);
+ok($r['code'] === 422 && str_contains($r['body'], 'none, view, upload or edit'), 'an unknown level is refused');
+$r = post(27, '/libraries/everyone.php', ['library' => $libBoard, 'everyone_level' => 'view']);
+ok($r['code'] === 422 && str_contains($r['body'], 'Only a shared library'), 'a group library has no everyone level');
+post(27, '/libraries/everyone.php', ['library' => $pol, 'everyone_level' => 'view']);
+
+echo "4. Update, archive, restore\n";
+$r = post(27, '/libraries/save.php', ['library' => $pol, 'name' => 'SMOKE Policies and handbooks', 'description' => 'Everything official']);
+ok($r['code'] === 302 && one('SELECT name FROM libraries WHERE id = :id', ['id' => $pol]) === 'SMOKE Policies and handbooks' && one('SELECT name FROM folders WHERE id = :id', ['id' => $polRoot]) === 'SMOKE Policies and handbooks', 'library_update renames it and its root');
+$r = post(27, '/libraries/save.php', ['library' => $pol, 'everyone_level' => 'edit']);
+ok($r['code'] === 422 && str_contains($r['body'], 'its own action'), 'the everyone level is not a field of library_update');
+$r = post(27, '/libraries/save.php', ['library' => $libBoard, 'name' => 'Other']);
+ok($r['code'] === 403 && str_contains($r['body'], 'follows its group'), 'a group library is not renamed here (rename the group)');
+$r = post(27, '/libraries/save.php', ['library' => $pol, 'archived' => 'yes']);
+ok($r['code'] === 302 && one('SELECT archived_at IS NOT NULL FROM libraries WHERE id = :id', ['id' => $pol]) === true && last_event('library.archive') !== null, 'archived through the archived field; logged library.archive');
+ok(level_of(26, 'folder', $polRoot) === 'none' && !str_contains(page(actor(26), '/libraries')['body'], 'library-card-' . $pol), 'archived: a member loses it and its card');
+$r = post(27, '/libraries/save.php', ['library' => $pol, 'archived' => 'no']);
+ok($r['code'] === 302 && one('SELECT archived_at IS NULL FROM libraries WHERE id = :id', ['id' => $pol]) === true && level_of(26, 'folder', $polRoot) === 'view', 'restored: the member is back');
+
+echo "5. Delete rules\n";
+$r = post(27, '/libraries/delete.php', ['library' => $lib26, 'confirm_name' => 'SMOKE Priya']);
+ok($r['code'] === 404, 'a curator cannot even name another\'s personal library (Not found)');
+$r = post(1, '/libraries/delete.php', ['library' => $lib26, 'confirm_name' => (string) one('SELECT name FROM libraries WHERE id = :id', ['id' => $lib26])]);
+ok($r['code'] === 422 && str_contains($r['body'], 'never deleted'), 'the admin: a personal library is never deleted');
+$r = post(27, '/libraries/delete.php', ['library' => $libBoard, 'confirm_name' => 'SMOKE Board']);
+ok($r['code'] === 422 && str_contains($r['body'], 'goes with its group'), 'a group library goes with its group');
+$r = post(27, '/libraries/delete.php', ['library' => $pol, 'confirm_name' => 'wrong']);
+ok($r['code'] === 422 && str_contains($r['body'], 'Type the library'), 'the name must be typed');
+pdo()->exec("SELECT set_config('app.member_id', '27', false)");
+$sha = hash('sha256', 'pol-doc');
+$blob = q('SELECT blob_id FROM dc_blob_claim(:s, 100)', ['s' => $sha])[0]['blob_id'];
+$doc = (int) q('SELECT document_id FROM dc_version_add(NULL, :f, :n, :b, :n, :m, 100, :s, 27)', ['f' => $polRoot, 'n' => 'handbook.pdf', 'b' => $blob, 'm' => 'application/pdf', 's' => $sha])[0]['document_id'];
+$r = post(27, '/libraries/delete.php', ['library' => $pol, 'confirm_name' => 'SMOKE Policies and handbooks']);
+ok($r['code'] === 422 && str_contains($r['body'], 'still holds documents'), 'a library holding a document is not deleted');
+pdo()->exec("DELETE FROM documents WHERE id = $doc");
+$r = post(27, '/libraries/delete.php', ['library' => $pol, 'confirm_name' => 'SMOKE Policies and handbooks']);
+ok($r['code'] === 302 && one('SELECT count(*) FROM libraries WHERE id = :id', ['id' => $pol]) === 0 && one('SELECT count(*) FROM folders WHERE id = :id', ['id' => $polRoot]) === 0 && last_event('library.delete') !== null, 'empty, it is deleted with its root; logged library.delete');
+
+echo "6. The admin's view of a personal library is logged once per session\n";
+$since = last_activity_id();
+[$jAdmin, ] = sign_on(1);
+page($jAdmin, '/libraries/' . $lib26);
+page($jAdmin, '/libraries/' . $lib26);
+page($jAdmin, '/f/' . root_of(26));
+$rows = activity('library.admin_view', $since);
+ok(count($rows) === 1 && (int) $rows[0]['library_id'] === $lib26, 'three looks at Priya\'s library in one session: library.admin_view logged once');
+page($jAdmin, '/libraries/' . (int) one("SELECT id FROM libraries WHERE kind = 'personal' AND owner_member_id = 27"));
+ok(count(activity('library.admin_view', $since)) === 2, 'another library: a second row');
+[$jAdmin2, ] = sign_on(1);
+page($jAdmin2, '/libraries/' . $lib26);
+ok(count(activity('library.admin_view', $since)) === 3, 'a new session: logged again');
+page(actor(27), '/libraries/' . $libBoard);
+ok(count(activity('library.admin_view', $since)) === 3, 'a curator opening a library they are in logs no admin view');
+finish();

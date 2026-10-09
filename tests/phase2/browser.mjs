@@ -99,12 +99,12 @@ const smallControls = (page, scope) => page.evaluate((s) => [...document.querySe
   ok((await page.locator('#notice-banner').innerText()).includes('Saved'), 'saving the settings lands back on them with the notice');
   ok(!(await page.isChecked('#prefs-field-email')), 'and email stayed off');
   await page.click('#tab-files');
-  await page.waitForURL(BASE + '/files/');
-  await page.waitForSelector('#files-coming');
-  ok((await page.title()).startsWith('My files') && (await page.locator('#files-coming').innerText()).includes('slice 1'), 'the Files tab opens the My files placeholder (slice 1), title "' + (await page.title()) + '"');
-  ok(await page.evaluate(() => document.querySelector('#tab-files').classList.contains('active') && document.getElementById('page-content').dataset.screen === 'files'), 'the tab is highlighted and the screen stamped files');
-  ok((await overflow(page)).sw === 375, 'no sideways scroll on the placeholder');
-  await page.screenshot({ path: `${SHOTS}/phone-placeholder-files.png` });
+  await page.waitForURL(/\/f\/\d+$/);
+  await page.waitForSelector('#folder-content');
+  ok((await page.title()).startsWith('SMOKE Dana') && await shown(page, '#listing-empty'), 'the Files tab opens the personal library\'s root (slice 1: My files → /f/{root}), empty, title "' + (await page.title()) + '"');
+  ok(await page.evaluate(() => document.querySelector('#tab-files').classList.contains('active') && document.getElementById('page-content').dataset.screen === 'folder'), 'the tab is highlighted and the screen stamped folder');
+  ok((await overflow(page)).sw === 375, 'no sideways scroll on My files');
+  await page.screenshot({ path: `${SHOTS}/phone-my-files.png` });
   await page.goto(BASE + '/activity', { waitUntil: 'networkidle' });
   ok((await overflow(page)).sw === 375, 'no sideways scroll on My activity');
   await page.goto(BASE + '/notifications', { waitUntil: 'networkidle' });

@@ -39,7 +39,7 @@ function db_bool(PDO $pdo, string $sql, array $args = []): bool
 function db_message(Throwable $e, string $fallback): string
 {
     error_log('db error: ' . $e->getMessage());
-    if (!($e instanceof PDOException) || (string) $e->getCode() !== 'P0001') {
+    if (!($e instanceof PDOException) || !in_array((string) $e->getCode(), ['P0001', '23514'], true)) {        // a RAISE, or a RAISE with ERRCODE check_violation (the walls' triggers)
         return $fallback;
     }
     $text = $e->getMessage();

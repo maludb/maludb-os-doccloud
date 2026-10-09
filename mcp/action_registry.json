@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T16:06:48+00:00",
+    "generated_at": "2026-10-09T16:49:41+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -28,8 +28,8 @@
             "section": "Home, me and the shell (Phase 2 and slice 9)",
             "when": "what I opened or changed lately",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "favourites": {
             "screen": "favourites",
@@ -37,8 +37,8 @@
             "section": "Home, me and the shell (Phase 2 and slice 9)",
             "when": "my favourites: documents and folders",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "notifications": {
             "screen": "notifications",
@@ -82,8 +82,8 @@
             "section": "Libraries, groups and folders (slice 1)",
             "when": "My files: the person's own library — sends the browser to the `folder` screen at its root (`/f/{root}`); Phase 2's placeholder until slice 1",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "library-list": {
             "screen": "library-list",
@@ -93,8 +93,8 @@
             "params": [
                 "kind"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "library-view": {
             "screen": "library-view",
@@ -102,7 +102,7 @@
             "section": "Libraries, groups and folders (slice 1)",
             "when": "a library at a glance: its root folder, counts, quota, policy, its group or owner",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "library-add": {
@@ -111,7 +111,7 @@
             "section": "Libraries, groups and folders (slice 1)",
             "when": "to make a shared library: a name, who gets what by default (curators)",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "library-edit": {
@@ -122,7 +122,7 @@
             "params": [
                 "everyone_level"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "group-list": {
@@ -135,8 +135,8 @@
                 "mine",
                 "kind"
             ],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "group-view": {
             "screen": "group-view",
@@ -144,7 +144,7 @@
             "section": "Libraries, groups and folders (slice 1)",
             "when": "one group: its members and owners, its library, its default level",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "group-add": {
@@ -155,7 +155,7 @@
             "params": [
                 "department"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "group-edit": {
@@ -164,7 +164,7 @@
             "section": "Libraries, groups and folders (slice 1)",
             "when": "to rename a group, set its description or default level",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "group-members": {
@@ -173,7 +173,7 @@
             "section": "Libraries, groups and folders (slice 1)",
             "when": "who is in a group: add people and agents with the picker, make an owner, remove",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "folder": {
@@ -187,7 +187,7 @@
                 "kind",
                 "q"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "folder-add": {
@@ -198,7 +198,7 @@
             "params": [
                 "parent"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "folder-edit": {
@@ -207,7 +207,7 @@
             "section": "Libraries, groups and folders (slice 1)",
             "when": "to rename a folder, set its colour or auto-tags",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "folder-move": {
@@ -216,7 +216,7 @@
             "section": "Libraries, groups and folders (slice 1)",
             "when": "to move a folder: the picker over folders I may edit",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "document": {
@@ -940,7 +940,7 @@
             "who": "view",
             "agent": true,
             "record_id": "the favourite",
-            "built": false
+            "built": true
         },
         "favourite_remove": {
             "action": "favourite_remove",
@@ -967,7 +967,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the favourite",
-            "built": false
+            "built": true
         },
         "library_create": {
             "action": "library_create",
@@ -1012,7 +1012,7 @@
             "who": "libraries.shared",
             "agent": true,
             "record_id": "the library",
-            "built": false
+            "built": true
         },
         "library_update": {
             "action": "library_update",
@@ -1051,7 +1051,7 @@
             "who": "libraries.shared on a shared library or the admin",
             "agent": true,
             "record_id": "the library",
-            "built": false
+            "built": true
         },
         "library_everyone_set": {
             "action": "library_everyone_set",
@@ -1078,7 +1078,7 @@
             "who": "libraries.shared on a shared library",
             "agent": true,
             "record_id": "the library",
-            "built": false
+            "built": true
         },
         "library_delete": {
             "action": "library_delete",
@@ -1105,7 +1105,7 @@
             "who": "libraries.shared or the admin",
             "agent": true,
             "record_id": "the library",
-            "built": false
+            "built": true
         },
         "group_create": {
             "action": "group_create",
@@ -1156,7 +1156,7 @@
             "who": "groups.manage",
             "agent": true,
             "record_id": "the group",
-            "built": false
+            "built": true
         },
         "group_update": {
             "action": "group_update",
@@ -1213,7 +1213,7 @@
             "who": "groups.manage or a group owner",
             "agent": true,
             "record_id": "the group",
-            "built": false,
+            "built": true,
             "partial": true
         },
         "group_member_add": {
@@ -1247,7 +1247,7 @@
             "who": "groups.manage or a group owner (a custom group only)",
             "agent": true,
             "record_id": "the group",
-            "built": false
+            "built": true
         },
         "group_member_remove": {
             "action": "group_member_remove",
@@ -1274,7 +1274,7 @@
             "who": "groups.manage or a group owner (a custom group only)",
             "agent": true,
             "record_id": "the group",
-            "built": false
+            "built": true
         },
         "group_owner_set": {
             "action": "group_owner_set",
@@ -1307,7 +1307,7 @@
             "who": "groups.manage or a group owner",
             "agent": true,
             "record_id": "the group",
-            "built": false
+            "built": true
         },
         "group_archive": {
             "action": "group_archive",
@@ -1328,7 +1328,7 @@
             "who": "groups.manage",
             "agent": true,
             "record_id": "the group",
-            "built": false
+            "built": true
         },
         "group_restore": {
             "action": "group_restore",
@@ -1349,7 +1349,7 @@
             "who": "groups.manage",
             "agent": true,
             "record_id": "the group",
-            "built": false
+            "built": true
         },
         "group_delete": {
             "action": "group_delete",
@@ -1382,7 +1382,7 @@
             "who": "groups.manage",
             "agent": true,
             "record_id": "the group",
-            "built": false
+            "built": true
         },
         "folder_create": {
             "action": "folder_create",
@@ -1421,7 +1421,7 @@
             "who": "add on the parent",
             "agent": true,
             "record_id": "the folder",
-            "built": false
+            "built": true
         },
         "folder_rename": {
             "action": "folder_rename",
@@ -1448,7 +1448,7 @@
             "who": "edit on the folder",
             "agent": true,
             "record_id": "the folder",
-            "built": false
+            "built": true
         },
         "folder_update": {
             "action": "folder_update",
@@ -1465,13 +1465,7 @@
                     "name": "colour",
                     "required": false,
                     "repeated": false,
-                    "hint": ""
-                },
-                {
-                    "name": "description",
-                    "required": false,
-                    "repeated": false,
-                    "hint": ""
+                    "hint": "one of eight hex colours or empty for none"
                 }
             ],
             "undo": "restore prior",
@@ -1481,7 +1475,7 @@
             "who": "edit on the folder",
             "agent": true,
             "record_id": "the folder",
-            "built": false
+            "built": true
         },
         "folder_auto_tags_set": {
             "action": "folder_auto_tags_set",
@@ -1508,7 +1502,7 @@
             "who": "manage on the folder",
             "agent": true,
             "record_id": "the folder",
-            "built": false
+            "built": true
         },
         "folder_move": {
             "action": "folder_move",
@@ -1535,7 +1529,7 @@
             "who": "edit on the folder and add on the target",
             "agent": true,
             "record_id": "the folder",
-            "built": false
+            "built": true
         },
         "folder_trash": {
             "action": "folder_trash",
@@ -1556,7 +1550,7 @@
             "who": "manage on the folder",
             "agent": true,
             "record_id": "the folder",
-            "built": false
+            "built": true
         },
         "folder_restore": {
             "action": "folder_restore",
@@ -1577,7 +1571,7 @@
             "who": "manage on the folder or trash.own",
             "agent": true,
             "record_id": "the folder",
-            "built": false
+            "built": true
         },
         "document_upload": {
             "action": "document_upload",

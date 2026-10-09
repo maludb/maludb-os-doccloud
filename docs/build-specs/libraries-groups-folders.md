@@ -78,8 +78,9 @@ slice 4's search results, slice 6's trash): one row shape, a `rows` array of `dc
 - **Favourites** (`favourite_add`, `favourite_remove`): a folder or a document the caller may see.
 
 ## Files (exactly these)
-- `html/files/index.php` (`folder` (My files)) · `html/f/index.php` (`folder`, routed from `/f/{id}` by `tests/dev_router.php` and the vhost) · `html/f/form.php`
-  (`folder-add` / `folder-edit`) · `move.php` (`folder-move`) · `save.php` · `rename.php` · `move-save.php` · `colour.php` · `auto-tags.php`
+- `html/files/index.php` (`my-files`: the 302) · `html/f/index.php` (the `/f/{id}` door → `folders/view.php`) · `html/folders/view.php` (`folder`) ·
+  `form.php` (`folder-add` / `folder-edit`) · `move.php` (`folder-move` on GET, `folder_move` on POST) · `save.php` (`folder_create`, `folder_rename`, `folder_update`) ·
+  `trash.php` · `restore.php` · `auto-tags.php` *(built as the manifest names them — "Decisions taken", 1)*
 - `html/libraries/index.php` (`library-list`) · `view.php` (`library-view`) · `form.php` (`library-add` / `library-edit`) · `save.php` · `everyone.php` · `archive.php` ·
   `restore.php` · `delete.php`
 - `html/groups/index.php` (`group-list`) · `view.php` (`group-view`) · `form.php` (`group-add` / `group-edit`) · `save.php` · `level.php` · `archive.php` · `restore.php` ·
@@ -145,4 +146,25 @@ members through `bin/dev_handoff.php`; curl with signed action and run tokens; P
 15. Registry `--check`: 12 screens built, 24 actions built, the placeholders for My files/Groups/Libraries/Recent/Favourites removed, 2 approvals in step.
 
 ## Open questions
-None.
+None open. **Decisions taken while building (2026-10-09), the design's way:**
+1. **Files follow the manifest, not the list above**: the folder handlers live under `html/folders/` (`view.php`, `form.php`, `move.php` — a GET screen and the
+   POST action in one file, which `exit`s after rendering —, `save.php`, `trash.php`, `restore.php`, `auto-tags.php`); `html/f/index.php` is the `/f/{id}` door
+   and simply requires `folders/view.php`. The listing partial and the crumbs are `app/views/files/partials/{listing,crumbs,access-line,select-bar}.php`.
+2. **The picker sources are singular** — `folder`, `library`, `group`, `member`, `department` — as the plugin's exemplar names them (`supplier`, `item`).
+3. **A folder has no description** (db/006): the manifest's `folder_update` row carries `colour` only (auto-tags are `folder_auto_tags_set`, manage).
+4. **A curator reaches every shared library through `library_from_request()`** — archived ones too, else nobody could restore one (the base level of an
+   archived library is 0 by design); everyone else by their base level; the admin everything, logged.
+5. **A root folder**: never renamed here (the library's name), never moved, never trashed; its editors still get the select bar to move what is in it.
+6. **Levels and codes**: `folder_at_level()` / `document_at_level()` (the slice's readers in `app/features/files/handler.php`) answer 404 for `none` and
+   **403 in words** for a level below the one needed ("You may not add to this folder."), as the manifest's conventions say; the shell's
+   `require_folder_level()` (404 for both) stays for the later slices that prefer the same nothing.
+7. **The database's `check_violation` RAISEs** (the folder triggers: under itself, across libraries, a root, the depth) reach the caller as a 422 in the
+   database's words: `dc_guard()` and `db_message()` read `23514` beside `P0001`.
+8. **A group's library is read from the base table** in `find_group()` / `find_groups()` — `mcp_libraries` hides an archived group's library, and the
+   delete rule must still count its documents (a cascade would have taken them).
+9. **`group_delete` needs the group archived AND its library empty** (trashed documents count); the last owner never steps down; a department group's
+   `group_restore` re-syncs its members.
+10. **Phase 2's proofs** were updated for the five screens now real (`/files/` a 302, `/groups/new` answering, the five picker sources); the layout's
+    `afterSwap` map sends the folder, library and group screens to their nav items and highlights a library's sidebar entry for any folder in it.
+11. `library_everyone_set` pauses for an agent **in the kernel** (the registry's `external_send`): the handler admits the agent once the kernel has
+    approved; there is no second pause here (the fake kernel of the proofs has no hook, so the proof checks the registry's category).

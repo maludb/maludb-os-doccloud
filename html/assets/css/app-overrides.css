@@ -140,3 +140,21 @@ html.app-skin-dark #record-picker .record-picker-search { background: #0f172a; }
 .header-apps-menu { min-width: 260px; }
 .header-apps-menu .header-apps-list { max-height: calc(100vh - 260px); overflow-y: auto; }
 .header-apps-menu .dropdown-item.active { background: var(--bs-primary-bg-subtle, rgba(59, 130, 246, .12)); color: inherit; cursor: default; }
+
+/* THE LISTING TABLE (slice 1, app/views/files/partials/listing.php): a table at a desktop; at a phone the kind, size, modified and tag
+   columns hide and the name cell carries them beneath the name — one row shape for a folder, Recent, Favourites, Shared, search, trash. */
+.listing-table td { vertical-align: middle; }
+.listing-table thead { display: none; }
+@media (min-width: 768px) { .listing-table thead { display: table-header-group; } }
+.listing-table .listing-select { width: 2.25rem; }
+.listing-table .listing-owner { white-space: nowrap; }
+.listing-table .listing-name a { max-width: 100%; }
+@media (max-width: 767.98px) {
+    .listing-table { table-layout: fixed; width: 100%; }
+    .listing-table .listing-select { width: 2rem; padding-left: .5rem; padding-right: 0; }
+    .listing-table .listing-owner { width: 2.75rem; padding-left: 0; }
+    .listing-table td:last-child { width: 2.75rem; padding-left: 0; padding-right: .5rem; }
+    .listing-table .listing-name { word-break: break-word; }
+}
+.select-bar.d-flex { display: flex !important; }
+.btn-touch.btn-icon { min-width: 44px; }

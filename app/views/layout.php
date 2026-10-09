@@ -75,7 +75,7 @@ $groups = nav_groups();
                         <?php if ($groupLabel === 'DocCloud' && $myLibs !== []): ?>
                             <li class="nxl-item nxl-caption"><label>Your libraries</label></li>
                             <?php foreach ($myLibs as $l): $lid = (int) $l['library_id']; $lu = '/f/' . (int) $l['root_folder_id']; ?>
-                                <li class="nxl-item" id="nav-library-<?= $lid ?>"><a class="nxl-link<?= $here === $lu ? ' active' : '' ?>" href="<?= e($lu) ?>" hx-get="<?= e($lu) ?>" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="<?= e($lu) ?>"><span class="nxl-micon"><i class="<?= e($libIcon[$l['kind']] ?? 'feather-folder') ?>"></i></span><span class="nxl-mtext"><?= e($l['name']) ?></span></a></li>
+                                <li class="nxl-item" id="nav-library-<?= $lid ?>"><a class="nxl-link<?= $here === $lu || $activeNav === 'library-' . $lid ? ' active' : '' ?>" href="<?= e($lu) ?>" hx-get="<?= e($lu) ?>" hx-target="#page-content" hx-swap="innerHTML" hx-push-url="<?= e($lu) ?>"><span class="nxl-micon"><i class="<?= e($libIcon[$l['kind']] ?? 'feather-folder') ?>"></i></span><span class="nxl-mtext"><?= e($l['name']) ?></span></a></li>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     <?php endforeach; ?>
@@ -236,7 +236,9 @@ $groups = nav_groups();
             }
             if (!e.detail || !e.detail.target || e.detail.target.id !== 'page-content') return;
             var screen = pc.dataset.screen || '';
-            var navId = { 'dashboard': 'home', 'settings': 'my-settings', 'settings-tokens': 'tokens', 'activity': 'activity', 'tokens': 'tokens', 'notifications': 'notifications', 'my-files': 'files', 'shared-with-me': 'shared' }[screen] || screen;
+            var navId = { 'dashboard': 'home', 'settings': 'my-settings', 'settings-tokens': 'tokens', 'activity': 'activity', 'tokens': 'tokens', 'notifications': 'notifications', 'my-files': 'files', 'shared-with-me': 'shared',
+                          'folder': 'files', 'folder-add': 'files', 'folder-edit': 'files', 'folder-move': 'files', 'library-list': 'libraries', 'library-view': 'libraries', 'library-add': 'libraries', 'library-edit': 'libraries',
+                          'group-list': 'groups', 'group-view': 'groups', 'group-add': 'groups', 'group-edit': 'groups', 'group-members': 'groups' }[screen] || screen;
             document.querySelectorAll('.nxl-navbar .nxl-link, #app-tabbar .app-tab').forEach(function (a) { a.classList.remove('active'); });
             var link = document.querySelector('#nav-' + navId + ' .nxl-link');
             if (link) { link.classList.add('active'); }

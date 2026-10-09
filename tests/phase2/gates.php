@@ -16,7 +16,7 @@ $all = 'admin curator member bea guest';
 $members = 'admin curator member bea';
 $matrix = [
     '/' => $all, '/shared/' => $all, '/activity' => $all, '/notifications' => $all, '/settings/' => $all, '/settings/tokens/' => $all,
-    '/files/' => $members, '/groups/' => $members, '/libraries/' => $members, '/recent' => $members, '/favourites' => $members, '/tags/' => $members, '/search/' => $members,
+    '/groups/' => $members, '/libraries/' => $members, '/recent' => $members, '/favourites' => $members, '/tags/' => $members, '/search/' => $members,
     '/graph/' => $members, '/trash/' => $members,
     '/curate/' => 'admin curator', '/admin/' => 'admin',
 ];
@@ -40,14 +40,15 @@ ok($wrong === [], "$n role × screen checks (" . count($matrix) . ' screens × 5
 $r = page($jCurator, '/admin/');
 ok(str_contains($r['body'], 'You may not change the settings.') && str_contains($r['body'], 'id="message-text"'), 'a refusal says what the person may not do, in words ("You may not change the settings.")');
 $r = page($jGuest, '/files/');
-ok($r['code'] === 403 && str_contains($r['body'], 'You may not keep a library of your own.'), 'a guest on My files: 403 in words (no personal library)');
+ok($r['code'] === 302 && str_ends_with($r['location'], '/shared/'), 'a guest on My files is sent to Shared with me (no personal library; slice 1)');
+$r = page($jMember, '/files/');
+ok($r['code'] === 302 && preg_match('#/f/\d+$#', $r['location']) === 1, 'a member on My files is sent to their personal root (slice 1)');
 ok(badge_of($jAdmin) === 'Super-admin' && badge_of($jCurator) === 'Curator' && badge_of($jMember) === 'Member' && badge_of($jBea) === 'Member' && badge_of($jGuest) === 'Guest', 'the header badge reads the highest role held: Super-admin, Curator, Member, Member (by capability), Guest');
 
 echo "2. The placeholders — a page naming its slice, 501 for JSON and for a POST\n";
 $stubs = trim((string) shell_exec('grep -rl "render_nav_stub(" ' . escapeshellarg(dirname(__DIR__, 2) . '/html') . ' 2>/dev/null | wc -l'));
-ok((int) $stubs === 12, "twelve controllers call render_nav_stub: $stubs");
-$ph = ['files' => ['/files/', 'slice 1', 'My files'], 'shared' => ['/shared/', 'slice 3', 'Shared with me'], 'groups' => ['/groups/', 'slice 1', 'Groups'], 'libraries' => ['/libraries/', 'slice 1', 'Libraries'],
-       'recent' => ['/recent', 'slice 1', 'Recent'], 'favourites' => ['/favourites', 'slice 1', 'Favourites'], 'tags' => ['/tags/', 'slice 4', 'Tags'], 'search' => ['/search/', 'slice 4', 'Search'],
+ok((int) $stubs === 7, "seven controllers call render_nav_stub (slice 1 built My files, Groups, Libraries, Recent, Favourites): $stubs");
+$ph = ['shared' => ['/shared/', 'slice 3', 'Shared with me'], 'tags' => ['/tags/', 'slice 4', 'Tags'], 'search' => ['/search/', 'slice 4', 'Search'],
        'graph' => ['/graph/', 'slice 5', 'Graph'], 'trash' => ['/trash/', 'slice 6', 'Trash'], 'curate' => ['/curate/', 'slice 9', 'Curate'], 'admin' => ['/admin/', 'slice 9', 'Admin']];
 $bad = [];
 foreach ($ph as $id => [$url, $slice, $title]) {
@@ -68,7 +69,7 @@ $reg = [];
 foreach (($built['screens'] ?? []) as $s) { $reg[$s['screen'] ?? ''] = $s; }
 $stubIds = array_values(array_filter(array_keys($reg), static fn ($k) => !empty($reg[$k]['stub'])));
 $builtIds = array_values(array_filter(array_keys($reg), static fn ($k) => !empty($reg[$k]['built'])));
-ok(count($stubIds) === 12 && ($reg['home']['built'] ?? null) === true && ($reg['settings-tokens']['built'] ?? null) === true && ($reg['admin']['stub'] ?? null) === true, 'the registry marks twelve screens as stubs and the shell\'s five as built, so the voice surface never offers an unbuilt screen (' . count($stubIds) . ' stubs, ' . count($builtIds) . ' built)');
+ok(count($stubIds) === 7 && ($reg['home']['built'] ?? null) === true && ($reg['settings-tokens']['built'] ?? null) === true && ($reg['admin']['stub'] ?? null) === true && ($reg['folder']['built'] ?? null) === true, 'the registry marks seven screens as stubs and the shell\'s five plus slice 1\'s sixteen as built, so the voice surface never offers an unbuilt screen (' . count($stubIds) . ' stubs, ' . count($builtIds) . ' built)');
 
 echo "3. The menu and the tab bar per role, and no session\n";
 $menu = fn (string $j): array => (preg_match_all('/id="nav-([a-z-]+)"/', page($j, '/')['body'], $m) ? array_values(array_filter($m[1], fn ($i) => !str_starts_with($i, 'library-'))) : []);

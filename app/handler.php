@@ -123,7 +123,7 @@ function dc_guard(PDO $pdo, callable $step): mixed
             }
             refuse($m === 'Not found.' ? 404 : 422, $m);
         }
-        if ($e instanceof PDOException && (string) $e->getCode() === 'P0001') {
+        if ($e instanceof PDOException && in_array((string) $e->getCode(), ['P0001', '23514'], true)) {          // a RAISE (a trigger's ERRCODE check_violation too)
             refuse(422, db_message($e, 'That could not be done.'));
         }
         if ($e instanceof PDOException && (string) $e->getCode() === '23505') {

@@ -149,7 +149,7 @@ Actions (base `/libraries/`, groups under `/groups/`, folders under `/folders/`)
 | `group_delete` | `/groups/delete.php` | **group** (an archived group — its library's documents are transferred to new_owner first), **new_owner**, **confirm_name** | — | ✔ | deletion | `group.delete` | groups.manage | yes | the group |
 | `folder_create` | `/folders/save.php` | **name**, **parent** (the folder to make it in), colour (a hex colour), auto_tags[] | folder_trash | | | `folder.create` | add on the parent | yes | the folder |
 | `folder_rename` | `/folders/save.php` | **folder**, **name** | restore prior | | | `folder.rename` | edit on the folder | yes | the folder |
-| `folder_update` | `/folders/save.php` | **folder**, colour, description | restore prior | | | `folder.update` | edit on the folder | yes | the folder |
+| `folder_update` | `/folders/save.php` | **folder**, colour (one of eight hex colours or empty for none) | restore prior | | | `folder.update` | edit on the folder | yes | the folder |
 | `folder_auto_tags_set` | `/folders/auto-tags.php` | **folder**, auto_tags[] (slugs applied to every document added under it — empty to clear) | restore prior | | | `folder.auto_tags` | manage on the folder | yes | the folder |
 | `folder_move` | `/folders/move.php` | **folder**, **target_folder** (in the same library) | folder_move | | | `folder.move` | edit on the folder and add on the target | yes | the folder |
 | `folder_trash` | `/folders/trash.php` | **folder** (its subtree goes with it — 30 days to restore) | folder_restore | ✔ | | `folder.trash` | manage on the folder | yes | the folder |
