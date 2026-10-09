@@ -43,4 +43,5 @@
             </div>
         </div>
     </div>
+    <div class="mt-3" id="tokens-keys"><?= view('settings/partials/keys.php', ['keys' => $keys, 'once' => $once, 'defaults' => $defaults, 'tz' => $tz]) ?></div>
 </div>

@@ -84,6 +84,7 @@ function worker_queues(PDO $pdo): array
         'blobs_to_free' => $q('SELECT count(*) FROM blobs WHERE ref_count = 0 AND deleted_at IS NULL'),
         'trash_due' => $q("SELECT count(*) FROM documents WHERE trashed_at IS NOT NULL AND trashed_at < now() - make_interval(days => dc_setting_int('trash_days')::integer)"),
         'locks_stale' => $q('SELECT count(*) FROM documents WHERE locked_by IS NOT NULL AND lock_expires_at <= now()'),
+        'key_buckets_old' => $q("SELECT count(*) FROM key_usage WHERE (bucket_kind = 'minute' AND bucket_start < now() - interval '1 day') OR (bucket_kind = 'day' AND bucket_start < now() - interval '35 days')"),
     ];
 }
 

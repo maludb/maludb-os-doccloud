@@ -14,7 +14,7 @@ if ($label === '' || mb_strlen($label) > 80) {
 }
 $scope = request_string('scope', 'mcp') ?: 'mcp';
 if ($scope !== 'mcp') {
-    refuse(422, 'A person\'s own token reads with the scope mcp; an API key (acting as you) is minted on the Keys screen (slice 7).');
+    refuse(422, 'A person\'s own token reads with the scope mcp; an API key (acting as you) is minted on the API keys screen (/settings/keys/).');
 }
 $minted = mint_token($pdo, (int) current_member_id(), $label, $scope);
 log_activity($pdo, 'token.mint', 'mcp_access_token', $minted['id'], ['after' => ['label' => $label, 'scope' => $scope]]);

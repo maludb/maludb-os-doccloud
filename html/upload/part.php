@@ -13,7 +13,7 @@ if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['POST', 'PUT'], true)) {
 $_SERVER['REQUEST_METHOD'] = 'POST';
 $GLOBALS['__raw_body_request'] = true;
 require_login();
-if (!is_action_authed()) {
+if (!is_action_authed() && empty($GLOBALS['__api_token_authed'])) {
     $tok = (string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_GET['csrf_token'] ?? ''));
     if ($tok === '' || !hash_equals(csrf_token(), $tok)) {
         refuse(403, 'The form expired. Reload and try again.');

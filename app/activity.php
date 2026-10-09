@@ -104,5 +104,7 @@ function request_route(): string
 {
     $method = $_SERVER['REQUEST_METHOD'] ?? (PHP_SAPI === 'cli' ? 'CLI' : 'GET');
     $path = parse_url($_SERVER['REQUEST_URI'] ?? ($_SERVER['SCRIPT_NAME'] ?? ''), PHP_URL_PATH) ?: '';
+    // a link's token (/s/, /r/) and a signed download's signature (/x/) are credentials: never in a log row (design §6.4)
+    $path = preg_replace(['#^/([sr])/[a-f0-9]{48}#', '#^(/x/[0-9]+/[0-9]+/[0-9]+/[a-z][a-z0-9_]*)/[a-f0-9]{64}#'], ['/$1/…', '$1/…'], $path) ?? $path;
     return trim($method . ' ' . $path);
 }

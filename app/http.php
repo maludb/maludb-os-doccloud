@@ -28,8 +28,20 @@ function wants_json(): bool
     return $wants;
 }
 
+/** Thrown by json_response() while the token API runs an action handler (app/api/routes.php api_run_handler): the handler's answer, not yet sent. */
+final class ApiCaptured extends RuntimeException
+{
+    public function __construct(public readonly array $payload, public readonly int $status)
+    {
+        parent::__construct('captured');
+    }
+}
+
 function json_response(array $payload, int $status = 200): never
 {
+    if (!empty($GLOBALS['__api_capture'])) {
+        throw new ApiCaptured($payload, $status);       // the API reshapes a handler's answer into its own (slice 7)
+    }
     $GLOBALS['__json_sent'] = true;
     while (ob_get_level() > 0) {
         ob_end_clean();
@@ -322,8 +334,8 @@ function verify_csrf(): void
     if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
         return;
     }
-    if (is_action_authed()) {
-        return;                     // the signed action token is the CSRF protection
+    if (is_action_authed() || !empty($GLOBALS['__api_token_authed'])) {
+        return;                     // the signed action token, or an API key in the Authorization header, is the CSRF protection (a cookie is never involved)
     }
     $sent = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
     if (!hash_equals(csrf_token(), (string) $sent)) {

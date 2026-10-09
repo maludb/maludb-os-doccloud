@@ -128,6 +128,14 @@ function api_rate_limit(): void
     $st->execute(['t' => $key['token_id']]);
     $r = $st->fetch();
     if ($r === false || !$r['ok']) {
+        $hit = (string) ($r['limit_hit'] ?? '');
+        if (in_array($hit, ['minute', 'day'], true)) {
+            // logged ONCE per bucket (the first refusal of that minute or day): a flood of 429s is one row, the count is on the keys screen (key_usage.refused)
+            $n = (int) one_value(db(), "SELECT refused FROM key_usage WHERE token_id = :t AND bucket_kind = :k AND bucket_start = date_trunc(:k, now())", ['t' => $key['token_id'], 'k' => $hit]);
+            if ($n === 1) {
+                log_activity(db(), 'key.rate_limited', 'mcp_access_token', $key['token_id'], ['after' => ['key_label' => $key['label'], 'limit' => $hit, 'retry_after' => (int) ($r['retry_after'] ?? 0)]]);
+            }
+        }
         header('Retry-After: ' . max(1, (int) ($r['retry_after'] ?? 60)));
         api_error('rate_limited', 'Too many calls (' . ($r['limit_hit'] ?? 'limit') . ').', 429);
     }

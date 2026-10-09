@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T21:10:20+00:00",
+    "generated_at": "2026-10-09T22:07:41+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -577,7 +577,7 @@
                 "member",
                 "status"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-connections": {
@@ -586,7 +586,7 @@
             "section": "The API, keys and K7 (slice 7)",
             "when": "which siblings may read which folders through the kernel: the application rows, the kernel's connections, the reads",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "proposals": {
@@ -871,7 +871,7 @@
             "who": "own",
             "agent": false,
             "record_id": "the key",
-            "built": false
+            "built": true
         },
         "key_rotate": {
             "action": "key_rotate",
@@ -892,7 +892,7 @@
             "who": "own",
             "agent": false,
             "record_id": "the new key",
-            "built": false
+            "built": true
         },
         "key_revoke": {
             "action": "key_revoke",
@@ -913,7 +913,7 @@
             "who": "own or links.all",
             "agent": false,
             "record_id": "the key",
-            "built": false
+            "built": true
         },
         "favourite_add": {
             "action": "favourite_add",

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *
  * Every step is timed: one `worker_passes` row per pass with `steps = {name: {count, ms[, error]}}`, `cron.run` logged with the totals, a step that throws caught, logged
  * `cron.step_failed` with its name, and the pass goes on. DC_WORKER_FAIL=<step> (honoured when APP_ENV is not prod) makes that step throw, for the proof.
- * Still STUBS (a pass that changes nothing and answers 0 — the slice whose data it touches fills it in, design §10): `dispatches`, `proposals` slice 8's; `key_usage_prune` slice 7's.
+ * Still STUBS (a pass that changes nothing and answers 0 — the slice whose data it touches fills it in, design §10): `dispatches`, `proposals` slice 8's.
  */
 if (PHP_SAPI !== 'cli') { fwrite(STDERR, "CLI only.\n"); exit(1); }
 require_once dirname(__DIR__) . '/app/bootstrap.php';
@@ -127,4 +127,4 @@ function worker_pass_quota_watch(PDO $pdo, int $limit, DateTimeImmutable $now): 
 /** SLICE 8 — the Clerk's standing proposals the worker can make without a model (a free tag used by three people, a link opened from many addresses). */
 function worker_pass_proposals(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['proposed' => 0, 'stub' => true]; }
 /** SLICE 7 — dc_prune_key_usage(): minute buckets older than a day, day buckets older than 35 days. */
-function worker_pass_key_usage_prune(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['pruned' => 0, 'stub' => true]; }
+function worker_pass_key_usage_prune(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['pruned' => (int) one_value($pdo, 'SELECT dc_prune_key_usage()')]; }

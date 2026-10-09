@@ -34,7 +34,7 @@ $hb = json_decode($h['body'], true) ?: [];
 ok($h['code'] === 200 && ($hb['application'] ?? '') === 'doccloud', '/api/v1/health answers');
 ok(($hb['storage'] ?? '') === 'ok' && ($hb['graph'] ?? '') === 'unavailable', 'health says storage: ok and graph: unavailable (no token in the proof)');
 ok(req('GET', '/api/v1/health.php')['code'] === 200, '/api/v1/health.php answers too');
-ok(req('POST', '/api/v1/upload')['code'] === 401 && req('GET', '/api/v1/documents/1')['code'] === 404 && req('POST', '/api/v1/search')['code'] === 404, 'the token API: /api/v1/upload answers 401 with no key (slice 2); /documents/{id} and /search are 404 until slice 7');
+ok(req('POST', '/api/v1/upload')['code'] === 401 && req('GET', '/api/v1/documents/1')['code'] === 401 && req('POST', '/api/v1/search')['code'] === 401 && req('GET', '/api/v1/shares/read.php')['code'] !== 200, 'the token API: /api/v1/upload, /documents/{id} and /search answer 401 with no key (slices 2 and 7); the K7 door answers nothing to a GET');
 ok(req('GET', '/api/v1/other')['code'] === 404 && req('GET', '/api/')['code'] === 404, 'anything else under /api is 404');
 $p = req('GET', '/pick/?source=x');
 ok($p['code'] === 302 && $p['location'] === LAUNCHER, '/pick/ without a session goes to the launcher');

@@ -3,7 +3,7 @@
  * Router for `php -S 127.0.0.1:8707 -t html tests/dev_router.php` — the vhost's rewrites (deploy/apache-doccloud.conf), so the
  * proofs run without Apache: /sso, /sso/logout, /api/v1/health and the token API, the two doors /s/{token} (a link) and /r/{token} (a
  * file request) → s/index.php and r/index.php, the gated document door /d/{id} (+ /v/{n}, /thumb) → d/index.php, the picker /pick/, a folder /f/{id} → f/index.php, a page of a record
- * (/f/12/share) and the canonical URLs (/x/new, /x/{id}/edit, /x/{id}, /x → x.php or x/index.php). A rewrite to a file its slice has
+ * (/f/12/share), the token API (/api/v1/folders/{id}, /documents/{id}/download, /upload/{session}/{n} …), the signed download /x/… and the canonical URLs (/x/new, /x/{id}/edit, /x/{id}, /x → x.php or x/index.php). A rewrite to a file its slice has
  * not built yet answers 404, as Apache does. Anything that is a real file is served as it is.
  */
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -26,6 +26,9 @@ elseif (preg_match('#^/f/([0-9]+)$#', $path, $m)) { $set(['id' => $m[1]]); $targ
 elseif (preg_match('#^/f/([0-9]+)/([a-z_-]+)$#', $path, $m)) { $set(['id' => $m[1]]); $target = '/f/' . $m[2] . '.php'; }
 elseif (preg_match('#^/exports/([0-9]+)$#', $path, $m)) { $set(['id' => $m[1]]); $target = '/exports/download.php'; }
 elseif (preg_match('#^/upload/(start|part|finish)$#', $path, $m)) { $target = '/upload/' . $m[1] . '.php'; }
+elseif (preg_match('#^/x/[0-9]+/[0-9]+/[0-9]+/[a-z][a-z0-9_]*/[a-f0-9]{64}$#', $path)) { $target = '/x/index.php'; }
+elseif (preg_match('#^/api/v1/upload/([0-9]+)/finish$#', $path, $m)) { $set(['session' => $m[1]]); $target = '/api/v1/upload/finish.php'; }
+elseif (preg_match('#^/api/v1/upload/([0-9]+)/([0-9]+)$#', $path, $m)) { $set(['session' => $m[1], 'n' => $m[2]]); $target = '/api/v1/upload/part.php'; }
 elseif (preg_match('#^/api/v1/([a-z_]+)/([0-9]+)(?:/([a-z_]+))?$#', $path, $m)) { $set(['id' => $m[2], 'do' => $m[3] ?? '']); $target = '/api/v1/' . $m[1] . '.php'; }
 elseif (preg_match('#^/api/v1/([a-z_]+)(?:/([a-z_]+))?$#', $path, $m) && $path !== '/api/v1/health') { $target = '/api/v1/' . $m[1] . (isset($m[2]) ? '/' . $m[2] : '') . '.php'; }
 elseif (preg_match('#^/(.+)/([0-9]+)/([a-z_-]+)$#', $path, $m) && is_file($root . '/' . $m[1] . '/' . $m[3] . '.php')) { $target = '/' . $m[1] . '/' . $m[3] . '.php'; $set(['id' => $m[2]]); }
