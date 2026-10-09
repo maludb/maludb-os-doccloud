@@ -1,0 +1,458 @@
+{
+  "schema": "maludb-os.application/1",
+  "catalog_key": "doccloud",
+  "name": "DocCloud",
+  "description": "The business's document cloud — what Dropbox, Box and Nextcloud are to a business: libraries (personal, group, shared) of folders and documents with every version kept and the bytes stored once, group libraries that outlive their members, sharing to people, groups, departments and agents with inheritance down the tree and, through expiring links and file requests, the outside; tags, a keyword search over the words of every document, and a dedicated knowledge graph for finding documents that is kept apart from what the agents remember and never searched by the default ask-me-anything. Every search answers only what the asker may see. The DocCloud Expert finds, files and explains access in the command bar; the Filing Clerk reports every Monday what the store needs a hand with.",
+  "business_area": "Operations",
+  "category": "storage",
+  "icon": "feather-hard-drive",
+  "version": "0.1.0",
+  "criticality": "medium",
+  "vhost": {
+    "label": "doccloud",
+    "document_root": "html",
+    "internal_port_env": "APP_INTERNAL_PORT"
+  },
+  "database": {
+    "suffix": "doccloud",
+    "migrations": "db",
+    "roles": {
+      "rw": "doccloud_rw",
+      "records_ro": "doccloud_records_ro",
+      "activity_ro": "doccloud_activity_ro"
+    }
+  },
+  "env": {
+    "required": [
+      "APP_NAME",
+      "APP_URL",
+      "DB_HOST",
+      "DB_PORT",
+      "DB_NAME",
+      "DB_USER",
+      "DB_PASSWORD",
+      "MCP_RECORDS_DB_USER",
+      "MCP_RECORDS_DB_PASSWORD",
+      "MCP_ACTIVITY_DB_USER",
+      "MCP_ACTIVITY_DB_PASSWORD",
+      "APP_INTERNAL_PORT",
+      "MCP_RECORDS_PORT",
+      "MCP_ACTIVITY_PORT",
+      "ACTION_TOKEN_KEY",
+      "ACTIONS_RELAY_KEY",
+      "OS_APPLICATION_TOKEN",
+      "OS_INTERNAL_URL",
+      "OS_LAUNCHER_URL",
+      "APP_KEY",
+      "MALUDB_API_URL",
+      "MALUDB_API_TOKEN"
+    ],
+    "optional": [
+      "MALUMAIL_API_KEY",
+      "MAIL_FROM",
+      "MAIL_FROM_NAME",
+      "MALUDB_DC_API_URL",
+      "MALUDB_DC_API_TOKEN",
+      "DC_STORAGE_DIR",
+      "DC_MAX_DOCUMENT_BYTES",
+      "DC_PDFTOTEXT",
+      "DC_PDFTOPPM"
+    ]
+  },
+  "services": [
+    "deploy/doccloud-records-mcp.service",
+    "deploy/doccloud-activity-mcp.service",
+    "deploy/doccloud-activity-ingest.service",
+    "deploy/doccloud-activity-ingest.timer",
+    "deploy/doccloud-directory-sync.service",
+    "deploy/doccloud-directory-sync.timer",
+    "deploy/doccloud-worker.service",
+    "deploy/doccloud-worker.timer"
+  ],
+  "endpoints": [
+    {
+      "name": "Web UI",
+      "kind": "ui",
+      "path": "/",
+      "auth_kind": "none",
+      "agent_reachable": false
+    },
+    {
+      "name": "Health",
+      "kind": "http_api",
+      "path": "/api/v1/health",
+      "auth_kind": "none",
+      "agent_reachable": false
+    },
+    {
+      "name": "Shared link",
+      "kind": "ui",
+      "path": "/s/",
+      "auth_kind": "none",
+      "agent_reachable": false
+    },
+    {
+      "name": "File request",
+      "kind": "ui",
+      "path": "/r/",
+      "auth_kind": "none",
+      "agent_reachable": false
+    },
+    {
+      "name": "Documents API",
+      "kind": "http_api",
+      "path": "/api/v1/",
+      "auth_kind": "bearer",
+      "agent_reachable": false
+    },
+    {
+      "name": "Records MCP",
+      "kind": "mcp",
+      "path": "/mcp/records",
+      "auth_kind": "bearer",
+      "agent_reachable": true,
+      "mcp_surface_version": 1
+    },
+    {
+      "name": "Activity MCP",
+      "kind": "mcp",
+      "path": "/mcp/activity",
+      "auth_kind": "bearer",
+      "agent_reachable": true,
+      "mcp_surface_version": 1
+    }
+  ],
+  "actions": {
+    "manifest": "docs/doccloud-action-manifest.md",
+    "registry": "mcp/action_registry.json",
+    "base_url_env": "APP_INTERNAL_PORT"
+  },
+  "skills": [
+    "skills/doccloud-basics",
+    "skills/finding-documents",
+    "skills/sharing-well",
+    "skills/tagging",
+    "skills/file-an-incoming-document",
+    "skills/propose-tags-from-the-graph",
+    "skills/share-a-folder-with-a-group",
+    "skills/monday-store-report",
+    "skills/clean-up-duplicates"
+  ],
+  "sso": {
+    "path": "/sso",
+    "logout_path": "/sso/logout"
+  },
+  "directory": {
+    "reads": true,
+    "writes": false
+  },
+  "assistant": {
+    "command_bar": true,
+    "agent": "expert"
+  },
+  "roles": [
+    {
+      "key": "guest",
+      "name": "Guest",
+      "description": "An external: nothing by default; reaches only the folders and documents shared to them by name, and may upload or edit where the share says so.",
+      "capability": "read",
+      "is_admin": false,
+      "rights": [
+        "documents.guest"
+      ]
+    },
+    {
+      "key": "user",
+      "name": "Member",
+      "description": "Everyone inside the business: a personal library, uploads, folders, tags, sharing inside the business, links and file requests, the search and the graph.",
+      "capability": "write",
+      "is_admin": false,
+      "rights": [
+        "library.personal",
+        "documents.upload",
+        "documents.edit",
+        "documents.share",
+        "links.make",
+        "requests.make",
+        "tags.apply",
+        "search.use",
+        "graph.use",
+        "versions.restore",
+        "trash.own",
+        "export.own"
+      ]
+    },
+    {
+      "key": "curator",
+      "name": "Curator",
+      "description": "Makes groups and shared libraries, keeps the tag vocabulary and auto-tag rules, transfers a leaver's documents, reads the storage and search reports.",
+      "capability": "write",
+      "is_admin": false,
+      "rights": [
+        "library.personal",
+        "documents.upload",
+        "documents.edit",
+        "documents.share",
+        "links.make",
+        "requests.make",
+        "tags.apply",
+        "search.use",
+        "graph.use",
+        "versions.restore",
+        "trash.own",
+        "export.own",
+        "groups.manage",
+        "libraries.shared",
+        "tags.manage",
+        "ownership.transfer",
+        "reports.storage",
+        "reports.search"
+      ]
+    },
+    {
+      "key": "admin",
+      "name": "DocCloud admin",
+      "description": "Every library including personal ones (logged), the settings, quotas, the versions and trash windows, the graph policy, budget and model, every link, purge, the costs. A super-admin holds this role.",
+      "capability": "admin",
+      "is_admin": true,
+      "rights": [
+        "library.personal",
+        "documents.upload",
+        "documents.edit",
+        "documents.share",
+        "links.make",
+        "requests.make",
+        "tags.apply",
+        "search.use",
+        "graph.use",
+        "versions.restore",
+        "trash.own",
+        "export.own",
+        "groups.manage",
+        "libraries.shared",
+        "tags.manage",
+        "ownership.transfer",
+        "reports.storage",
+        "reports.search",
+        "settings.manage",
+        "quotas.manage",
+        "retention.manage",
+        "graph.manage",
+        "links.all",
+        "trash.purge",
+        "agents.settings",
+        "costs.read",
+        "library.admin_view"
+      ]
+    }
+  ],
+  "shares": [
+    {
+      "tool": "folders_index",
+      "description": "The folders shared with the requesting application: id, path, document count, updated (os.doccloud-folders/1)",
+      "scoped": false
+    },
+    {
+      "tool": "documents_index",
+      "description": "The documents of a folder shared with the requesting application, its subtree included: id, name, kind, size, sha256, tags, owner, version, updated — paged, with `since` (os.doccloud-documents/1)",
+      "scoped": false
+    },
+    {
+      "tool": "document_text",
+      "description": "The extracted text of one document in a shared folder, with its pages, at most 5 MB — Knowledge's feed (os.doccloud-text/1)",
+      "scoped": false,
+      "timeout_seconds": 60
+    },
+    {
+      "tool": "document_link",
+      "description": "A signed ten-minute download URL for one document in a shared folder; the bytes never cross the kernel's JSON and the open is logged under the consumer (os.doccloud-link/1)",
+      "scoped": false
+    }
+  ],
+  "reads": [],
+  "agents": [
+    {
+      "key": "expert",
+      "job_description": "os/expert.md",
+      "access_capability": "write",
+      "hired_on_install": true,
+      "roles": [
+        "user"
+      ],
+      "tool_grants": {
+        "Records MCP": [
+          "find_libraries",
+          "get_library",
+          "folder_listing",
+          "get_folder",
+          "folder_path",
+          "find_groups",
+          "get_group",
+          "group_members",
+          "my_groups",
+          "get_document",
+          "find_documents",
+          "document_versions",
+          "document_text",
+          "document_page",
+          "document_excerpt",
+          "locked_documents",
+          "trash",
+          "trash_due",
+          "access_list",
+          "access_explain",
+          "my_level",
+          "shared_with_me",
+          "my_shares",
+          "stale_guest_shares",
+          "find_links",
+          "links_expiring",
+          "links_suspicious",
+          "find_requests",
+          "find_tags",
+          "tag_proposals",
+          "documents_by_tag",
+          "untagged",
+          "search",
+          "saved_searches",
+          "run_saved_search",
+          "graph_find",
+          "graph_related",
+          "document_subjects",
+          "graph_subjects",
+          "get_subject",
+          "subject_neighbors",
+          "graph_path",
+          "clerk_proposals",
+          "find_keys",
+          "find_notes",
+          "find_members",
+          "find_departments",
+          "records_search"
+        ],
+        "Activity MCP": [
+          "record_history",
+          "actor_timeline",
+          "recent_activity",
+          "activity_search"
+        ],
+        "Actions MCP": [
+          "document_upload",
+          "folder_create",
+          "document_rename",
+          "document_move",
+          "document_copy",
+          "document_describe",
+          "tag_apply",
+          "tag_remove",
+          "tag_propose",
+          "share_member",
+          "share_group",
+          "share_department",
+          "share_agent",
+          "document_trash",
+          "document_restore",
+          "document_lock",
+          "document_unlock",
+          "saved_search_save",
+          "link_make",
+          "request_make",
+          "share_guest",
+          "share_application"
+        ]
+      },
+      "skills": [
+        "skills/doccloud-basics",
+        "skills/finding-documents",
+        "skills/sharing-well",
+        "skills/tagging",
+        "skills/file-an-incoming-document",
+        "skills/propose-tags-from-the-graph",
+        "skills/share-a-folder-with-a-group"
+      ]
+    },
+    {
+      "key": "clerk",
+      "job_description": "os/clerk.md",
+      "access_capability": "write",
+      "hired_on_install": true,
+      "roles": [
+        "user"
+      ],
+      "duty": {
+        "name": "The Monday store report",
+        "schedule_cron": "50 6 * * 1"
+      },
+      "tool_grants": {
+        "Records MCP": [
+          "find_libraries",
+          "get_library",
+          "folder_listing",
+          "get_document",
+          "find_documents",
+          "untagged",
+          "duplicates",
+          "stale_guest_shares",
+          "links_expiring",
+          "links_suspicious",
+          "find_requests",
+          "trash_due",
+          "locked_documents",
+          "extraction_failures",
+          "quota_state",
+          "graph_usage",
+          "storage_by_library",
+          "find_tags",
+          "tag_proposals",
+          "clerk_proposals",
+          "graph_find",
+          "graph_subjects",
+          "document_subjects",
+          "find_members",
+          "find_groups"
+        ],
+        "Activity MCP": [
+          "record_history",
+          "recent_activity"
+        ],
+        "Actions MCP": [
+          "clerk_propose",
+          "tag_propose",
+          "notification"
+        ]
+      },
+      "skills": [
+        "skills/doccloud-basics",
+        "skills/tagging",
+        "skills/monday-store-report",
+        "skills/clean-up-duplicates",
+        "skills/propose-tags-from-the-graph"
+      ]
+    }
+  ],
+  "approvals": [
+    { "action": "agents_settings_save", "category": "other" },
+    { "action": "document_purge", "category": "deletion" },
+    { "action": "folder_delete", "category": "deletion" },
+    { "action": "graph_budget_set", "category": "other" },
+    { "action": "graph_model_set", "category": "other" },
+    { "action": "graph_policy_set", "category": "other" },
+    { "action": "graph_rebuild_all", "category": "other" },
+    { "action": "group_delete", "category": "deletion" },
+    { "action": "library_delete", "category": "deletion" },
+    { "action": "library_everyone_set", "category": "external_send" },
+    { "action": "link_make", "category": "external_send" },
+    { "action": "link_revoke", "category": "deletion" },
+    { "action": "link_rotate", "category": "external_send" },
+    { "action": "ownership_transfer", "category": "deletion" },
+    { "action": "quota_set", "category": "other" },
+    { "action": "request_make", "category": "external_send" },
+    { "action": "retention_set", "category": "other" },
+    { "action": "settings_save", "category": "other" },
+    { "action": "share_application", "category": "external_send" },
+    { "action": "share_guest", "category": "external_send" },
+    { "action": "tag_delete", "category": "deletion" },
+    { "action": "trash_purge", "category": "deletion" },
+    { "action": "version_purge", "category": "deletion" }
+  ]
+}

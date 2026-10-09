@@ -1,0 +1,20 @@
+{
+  "schema": "maludb-os.registry/1",
+  "app_key": "doccloud",
+  "name": "DocCloud",
+  "note": "The installer (bin/app_install.php, step 'registry') writes mcp/registries/doccloud.json in the kernel from this file's `resolve` block plus mcp/action_registry.json (Phase 1). Each resolve tool answers a plain LIST of rows carrying id_field and label_field when given `q` alone (docs/doccloud-mcp-tool-surface.md, the resolution table). The tools are the Phase 1 tool surface's names; Phase 4 builds them (mcp/records_server.py). version, blob, access row, upload session, proposal payloads, dispatch, notification, token and subject ids are ids only, never resolved by name. A repeated param (tags, members) is never resolved.",
+  "resolve": {
+    "document":   {"tool": "find_documents",  "query_param": "q", "id_field": "document_id", "label_field": "name",         "params": ["document", "file"]},
+    "folder":     {"tool": "find_folders",    "query_param": "q", "id_field": "folder_id",   "label_field": "path",         "params": ["folder", "parent", "target_folder", "to_folder"]},
+    "library":    {"tool": "find_libraries",  "query_param": "q", "id_field": "library_id",  "label_field": "name",         "params": ["library"]},
+    "group":      {"tool": "find_groups",     "query_param": "q", "id_field": "group_id",    "label_field": "name",         "params": ["group"]},
+    "tag":        {"tool": "find_tags",       "query_param": "q", "id_field": "tag_id",      "label_field": "label",        "params": ["tag"]},
+    "link":       {"tool": "find_links",      "query_param": "q", "id_field": "link_id",     "label_field": "label",         "params": ["link"]},
+    "request":    {"tool": "find_requests",   "query_param": "q", "id_field": "link_id",     "label_field": "label",         "params": ["request"]},
+    "saved_search": {"tool": "saved_searches", "query_param": "q", "id_field": "saved_search_id", "label_field": "name",    "params": ["saved_search"]},
+    "proposal":   {"tool": "clerk_proposals", "query_param": "q", "id_field": "proposal_id", "label_field": "title",        "params": ["proposal"]},
+    "api_key":    {"tool": "find_keys",       "query_param": "q", "id_field": "key_id",      "label_field": "label",        "params": ["api_key"]},
+    "member":     {"tool": "find_members",    "query_param": "q", "id_field": "member_id",   "label_field": "display_name", "params": ["member", "person", "owner", "agent", "guest", "expert", "clerk", "new_owner"]},
+    "department": {"tool": "find_departments","query_param": "q", "id_field": "department_id","label_field": "name",        "params": ["department"]}
+  }
+}

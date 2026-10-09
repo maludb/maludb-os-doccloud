@@ -1,0 +1,10 @@
+[Unit]
+Description=DocCloud worker: upload-session expiry, text extraction, thumbnails, the keyword index catch-up, graph jobs under the budget, versions and trash windows, blob freeing, link and lock expiry, exports, the outbox, quotas, proposals, dispatch retries (one pass)
+After=network.target postgresql.service
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory={{APP_DIR}}
+ExecStart=/usr/bin/php {{APP_DIR}}/bin/worker.php

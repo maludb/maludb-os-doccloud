@@ -1,0 +1,12 @@
+config/.env
+config/local.php
+config/*.pw
+mcp/venv/
+mcp/__pycache__/
+__pycache__/
+*.pyc
+logs/
+storage/
+tests/phase0/engine/scratch/
+.DS_Store
+*.swp
