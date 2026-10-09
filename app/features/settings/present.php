@@ -25,6 +25,12 @@ function present_notification(array $n): array
 /** The screen a notification points at, by the record it names (null when none). Phase 3's slices add their screens. */
 function notification_record_url(array $n): ?string
 {
+    if (in_array($n['kind'] ?? '', ['proposal', 'monday_note'], true)) {
+        return '/curate/proposals';                                       // the Clerk's notices open the proposals (slice 8)
+    }
+    if (($n['kind'] ?? '') === 'graph_budget') {
+        return '/graph/admin';
+    }
     $id = ($n['record_id'] ?? null) !== null ? (int) $n['record_id'] : null;
     if ($id === null) {
         return null;
@@ -39,3 +45,8 @@ function notification_record_url(array $n): ?string
         default => null,
     };
 }
+
+/** The icon of a notification kind on the bell's page (slice 8: "the kinds' icons"). */
+const NOTICE_ICONS = ['share_received' => 'feather-share-2', 'request_received' => 'feather-upload-cloud', 'link_opened' => 'feather-link', 'version_added' => 'feather-copy', 'comment' => 'feather-message-square',
+    'lock_broken' => 'feather-unlock', 'export_ready' => 'feather-download', 'quota_near' => 'feather-hard-drive', 'proposal' => 'feather-inbox', 'monday_note' => 'feather-clipboard',
+    'ownership_received' => 'feather-user-check', 'graph_budget' => 'feather-share-2', 'extraction_failed' => 'feather-alert-triangle'];

@@ -74,8 +74,8 @@ echo "3. The menu and the tab bar per role, and no session\n";
 $menu = fn (string $j): array => (preg_match_all('/id="nav-([a-z-]+)"/', page($j, '/')['body'], $m) ? array_values(array_filter($m[1], fn ($i) => !str_starts_with($i, 'library-'))) : []);
 $groups = fn (string $j): array => (preg_match_all('/nxl-caption"><label>([^<]+)</', page($j, '/')['body'], $m) ? $m[1] : []);
 $seed = seed_store();                                                       // the browser proof seeded it already; idempotent
-$full = ['home', 'files', 'shared', 'groups', 'libraries', 'recent', 'favourites', 'tags', 'search', 'graph', 'trash', 'my-settings', 'notifications', 'tokens', 'activity'];
-ok($menu($jMember) === $full && $groups($jMember) === ['Your libraries', 'Me'], 'a Member sees the eleven items, Your libraries, then Me — no Curate, no Admin: ' . implode(', ', $menu($jMember)));
+$full = ['home', 'files', 'shared', 'groups', 'libraries', 'recent', 'favourites', 'tags', 'search', 'graph', 'trash', 'my-settings', 'notifications', 'proposals', 'tokens', 'activity'];
+ok($menu($jMember) === $full && $groups($jMember) === ['Your libraries', 'Me'], 'a Member sees the eleven items, Your libraries, then Me — no Curate, no Admin (slice 8 added Proposals to Me): ' . implode(', ', $menu($jMember)));
 ok($menu($jGuest) === ['home', 'shared', 'my-settings', 'notifications', 'tokens', 'activity'] && $groups($jGuest) === ['Me'], 'a guest sees Home, Shared with me and Me only — no My files, Groups, Tags, Graph, Trash, and no Your libraries');
 ok(in_array('curate', $menu($jCurator), true) && !in_array('admin', $menu($jCurator), true) && $groups($jCurator) === ['Your libraries', 'Me', 'Curate'], 'a curator sees Curate, not Admin');
 ok(in_array('admin', $menu($jAdmin), true) && in_array('curate', $menu($jAdmin), true) && $groups($jAdmin) === ['Your libraries', 'Me', 'Curate', 'Admin'], 'the admin sees Curate and Admin');

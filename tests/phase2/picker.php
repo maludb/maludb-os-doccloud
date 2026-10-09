@@ -47,7 +47,7 @@ $r = req('POST', '/pick/', ['jar' => $jAdmin, 'form' => ['source' => 'anything']
 ok($r['code'] === 404, 'a search is a GET; a POST with a source the registry lacks is the same 404 (nothing is chosen or written)');
 
 echo "3. The registry and the log\n";
-ok(array_keys(require $root . '/app/pickers.php') === ['folder', 'library', 'group', 'member', 'document', 'guest', 'application', 'department', 'tag', 'subject'], 'app/pickers.php holds slice 1\'s five sources, slice 2\'s document, slice 3\'s guest and application, slice 4\'s tag and slice 5\'s subject');
+ok(array_keys(require $root . '/app/pickers.php') === ['folder', 'library', 'group', 'member', 'document', 'guest', 'application', 'department', 'tag', 'agent', 'subject'], 'app/pickers.php holds slice 1\'s five sources, slice 2\'s document, slice 3\'s guest and application, slice 4\'s tag slice 5\'s subject and slice 8\'s agent');
 $before = last_activity_id();
 page($jAdmin, '/pick/?source=anything');
 ok(last_activity_id() === $before, 'a search is not an action: nothing is written to the activity log');

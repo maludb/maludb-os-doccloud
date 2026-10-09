@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T22:07:41+00:00",
+    "generated_at": "2026-10-09T22:58:16+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -596,9 +596,11 @@
             "when": "the Clerk's proposals for me (or every one for a curator): accept or dismiss",
             "params": [
                 "kind",
-                "status"
+                "status",
+                "mine",
+                "folder"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-agents": {
@@ -607,7 +609,7 @@
             "section": "Agents, the Clerk and notifications (slice 8)",
             "when": "the agents this application declares, which member is the expert and which the Clerk, their dispatches, retry",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "curate": {
@@ -3188,10 +3190,10 @@
             "confirm": false,
             "approval": null,
             "log_event": "clerk.propose",
-            "who": "an agent (the Clerk) or agents.settings",
+            "who": "the Clerk (dc_is_clerk)",
             "agent": true,
             "record_id": "the proposal",
-            "built": false
+            "built": true
         },
         "clerk_proposal_decide": {
             "action": "clerk_proposal_decide",
@@ -3211,6 +3213,12 @@
                     "hint": "accept or dismiss"
                 },
                 {
+                    "name": "tags",
+                    "required": false,
+                    "repeated": true,
+                    "hint": "which of a tags proposal's suggestions — all by default"
+                },
+                {
                     "name": "note",
                     "required": false,
                     "repeated": false,
@@ -3224,7 +3232,7 @@
             "who": "own (for me) or groups.manage",
             "agent": true,
             "record_id": "the proposal",
-            "built": false
+            "built": true
         },
         "notification": {
             "action": "notification",
@@ -3233,9 +3241,15 @@
             "params": [
                 {
                     "name": "member",
-                    "required": true,
+                    "required": false,
                     "repeated": false,
-                    "hint": "the recipient — or group for every owner of it"
+                    "hint": "the recipient — one of member or group"
+                },
+                {
+                    "name": "group",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "every owner of it — one of member or group"
                 },
                 {
                     "name": "title",
@@ -3260,10 +3274,10 @@
             "confirm": false,
             "approval": null,
             "log_event": "notification.send",
-            "who": "an agent or agents.settings",
+            "who": "the Clerk or agents.settings",
             "agent": true,
             "record_id": "the notification",
-            "built": false
+            "built": true
         },
         "dispatch_retry": {
             "action": "dispatch_retry",
@@ -3280,11 +3294,11 @@
             "undo": null,
             "confirm": false,
             "approval": null,
-            "log_event": "agent.dispatch",
+            "log_event": "agent.retry",
             "who": "agents.settings",
             "agent": true,
             "record_id": "the dispatch",
-            "built": false
+            "built": true
         },
         "tags_propose_request": {
             "action": "tags_propose_request",
@@ -3305,7 +3319,7 @@
             "who": "edit on the folder",
             "agent": false,
             "record_id": "the dispatch",
-            "built": false
+            "built": true
         },
         "agents_settings_save": {
             "action": "agents_settings_save",
@@ -3323,6 +3337,30 @@
                     "required": false,
                     "repeated": false,
                     "hint": "an agent member — empty for none"
+                },
+                {
+                    "name": "untagged_batch_size",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 1000"
+                },
+                {
+                    "name": "duplicate_copies",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "2 to 100"
+                },
+                {
+                    "name": "dispatch_retry_minutes",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 1440"
+                },
+                {
+                    "name": "clerk_report_enabled",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "yes or no"
                 }
             ],
             "undo": "restore prior",
@@ -3332,7 +3370,7 @@
             "who": "agents.settings",
             "agent": true,
             "record_id": "the settings",
-            "built": false
+            "built": true
         },
         "dispatch_cancel": {
             "action": "dispatch_cancel",
@@ -3353,7 +3391,7 @@
             "who": "agents.settings",
             "agent": false,
             "record_id": "the dispatch",
-            "built": false
+            "built": true
         },
         "settings_save": {
             "action": "settings_save",

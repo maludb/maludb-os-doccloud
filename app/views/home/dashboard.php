@@ -39,6 +39,7 @@ $fmtBytes = static function (?int $b): string { if ($b === null) { return ''; } 
         <h5 class="mb-0" id="home-libraries-title">Your libraries</h5>
         <?php if ($may['curate']): ?><?= hx_link('/groups/new', '<i class="feather-plus me-1"></i>Create a group', 'btn btn-light btn-touch', 'id="home-create-group-btn"') ?><?php endif; ?>
     </div>
+    <?= view('home/partials/clerk-note.php', ['note' => $s['clerk_note'], 'open' => $s['proposals_open'], 'tz' => $tz]) ?>
     <div class="row g-3" id="home-libraries-list">
     <?php foreach ($libraries as $l): $lid = (int) $l['library_id']; $root = (int) $l['root_folder_id']; $pct = $l['quota_bytes'] !== null ? min(100, (int) round(100 * (int) $l['used_bytes'] / max(1, (int) $l['quota_bytes']))) : null; ?>
         <div class="col-md-6 col-xl-4"><div class="card h-100 mb-0" id="home-library-<?= $lid ?>"><div class="card-body">

@@ -24,6 +24,7 @@ if ($may['add']) {
 <div class="main-content" id="folder-content">
     <?= view('shared/notice.php', ['notice' => $notice]) ?>
     <?php if ($may['add']): ?><?= view('files/partials/upload-zone.php', ['folderId' => $id, 'documentId' => null, 'settings' => $uploadSettings, 'open' => $uploadWanted, 'doneUrl' => '/f/' . $id]) ?><?php endif; ?>
+    <?php if (isset($strip)): ?><?= view('files/partials/proposals-strip.php', $strip + ['folderId' => $id]) ?><?php endif; ?>
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
         <?= view('files/partials/access-line.php', ['line' => $accessLine, 'folderId' => $id, 'may' => $may, 'adminView' => $adminView, 'autoTags' => pg_text_array((string) ($folder['auto_tags'] ?? '{}')), 'graphPolicy' => $graphPolicy ?? null, 'mayPolicy' => $mayPolicy ?? false]) ?>
         <span class="fs-12 text-muted" id="folder-size"><?= e(format_bytes($size['bytes'])) ?> · <?= (int) $size['documents'] ?> document<?= $size['documents'] === 1 ? '' : 's' ?></span>

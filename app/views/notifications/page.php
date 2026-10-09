@@ -19,7 +19,7 @@
         <?php foreach ($rows as $n): $id = (int) $n['notification_id']; $unread = $n['read_at'] === null; ?>
             <div class="card mb-2<?= $unread ? ' border-primary' : '' ?>" id="notification-<?= $id ?>">
                 <div class="card-body d-flex align-items-start gap-3 py-3">
-                    <span class="avatar-text avatar-md rounded <?= $unread ? 'bg-soft-primary text-primary' : '' ?>"><i class="feather-bell"></i></span>
+                    <span class="avatar-text avatar-md rounded <?= $unread ? 'bg-soft-primary text-primary' : '' ?>"><i class="<?= e(NOTICE_ICONS[$n['kind']] ?? 'feather-bell') ?>"></i></span>
                     <div class="min-w-0 flex-grow-1">
                         <div class="fw-semibold"><?= ($u = notification_record_url($n)) !== null ? hx_link(with_back($u, '/notifications'), e($n['title']), 'text-dark') : e($n['title']) ?></div>
                         <?php if (($n['body'] ?? '') !== ''): ?><div class="fs-12 text-muted"><?= e($n['body']) ?></div><?php endif; ?>

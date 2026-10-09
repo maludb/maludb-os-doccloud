@@ -28,6 +28,7 @@ function nav_groups(): array
         'Me' => [
             ['my-settings',   '/settings/',        'feather-settings', 'My settings',   $all],
             ['notifications', '/notifications',    'feather-bell',     'Notifications', $all],
+            ['proposals',     '/curate/proposals', 'feather-inbox',    'Proposals',     'library.personal'],
             ['tokens',        '/settings/tokens/', 'feather-key',      'Tokens',        $all],
             ['activity',      '/activity',         'feather-list',     'My activity',   $all],
         ],

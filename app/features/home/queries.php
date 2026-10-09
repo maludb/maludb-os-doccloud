@@ -19,7 +19,10 @@ function home_summary(PDO $pdo, int $memberId): array
             $personal = $l;
         }
     }
+    $note = $pdo->query("SELECT notification_id, title, body, created_at, read_at FROM mcp_notifications WHERE kind = 'monday_note' ORDER BY created_at DESC, notification_id DESC LIMIT 1")->fetch();
     return [
+        'clerk_note' => $note === false || $guest ? null : $note,
+        'proposals_open' => $guest ? 0 : (int) one_value($pdo, "SELECT count(*) FROM mcp_clerk_proposals WHERE status = 'proposed' AND for_member_id = app_current_member_id()"),
         'libraries' => $libraries,
         'recent' => $recent,
         'shared_count' => $sharedCount,

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *
  * Every step is timed: one `worker_passes` row per pass with `steps = {name: {count, ms[, error]}}`, `cron.run` logged with the totals, a step that throws caught, logged
  * `cron.step_failed` with its name, and the pass goes on. DC_WORKER_FAIL=<step> (honoured when APP_ENV is not prod) makes that step throw, for the proof.
- * Still STUBS (a pass that changes nothing and answers 0 — the slice whose data it touches fills it in, design §10): `dispatches`, `proposals` slice 8's.
+ * Slice 8 made `dispatches` (the expert's chat turns) and `proposals` (the Clerk's Monday sweep) real.
  */
 if (PHP_SAPI !== 'cli') { fwrite(STDERR, "CLI only.\n"); exit(1); }
 require_once dirname(__DIR__) . '/app/bootstrap.php';
@@ -25,6 +25,7 @@ require_once dirname(__DIR__) . '/app/features/graph/worker_steps.php';   // sli
 
 require_once dirname(__DIR__) . '/app/features/admin/queries.php';      // WORKER_PASSES (passes.php): the passes, in the order they run; worker_step_count() (slice 6)
 require_once dirname(__DIR__) . '/app/features/outbox/sender.php';      // slice 6: the outbox
+require_once dirname(__DIR__) . '/app/features/agents/handler.php';     // slice 8: the dispatch loop, the Clerk's Monday sweep, the notifications wrapper
 
 $only = [];
 $limit = 200;
@@ -89,7 +90,7 @@ echo json_encode($report, JSON_UNESCAPED_SLASHES) . "\n";
 $pdo->query("SELECT pg_advisory_unlock(hashtext('doccloud_worker'))");
 exit($report['errors'] === [] ? 0 : 1);
 
-// ---- the passes (stubs until their slice) ------------------------------------------------------------------------------------------
+// ---- the passes (each its slice's) ------------------------------------------------------------------------------------------
 
 /** SLICE 2 — upload sessions older than upload_session_hours: their parts removed, the row expired (app/features/files/worker_steps.php). */
 function worker_pass_upload_sessions_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_uploads_expire($pdo); }
@@ -120,11 +121,11 @@ function worker_pass_exports(PDO $pdo, int $limit, DateTimeImmutable $now): arra
 function worker_pass_outbox(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_outbox($pdo); }
 /** SLICE 6 — the housekeeping: old proposals, search log, link opens and sent mail pruned. */
 function worker_pass_housekeeping(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_housekeeping($pdo); }
-/** SLICE 8 — agent dispatches: a proposal needing a hand → one chat turn (ask_assistant), at most three attempts. */
-function worker_pass_dispatches(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['dispatched' => 0, 'retried' => 0, 'stub' => true]; }
+/** SLICE 8 — agent dispatches: the triggers (40 untagged in a folder, uploads on a request, a file kept five times) → one chat turn each as the expert (ask_assistant), three attempts an interval apart. */
+function worker_pass_dispatches(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_dispatches($pdo, min($limit, 10)); }
 /** SLICE 6 — libraries at 90% of their quota: their owners told once a month (quota_near). */
 function worker_pass_quota_watch(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_quota_watch($pdo); }
-/** SLICE 8 — the Clerk's standing proposals the worker can make without a model (a free tag used by three people, a link opened from many addresses). */
-function worker_pass_proposals(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['proposed' => 0, 'stub' => true]; }
+/** SLICE 8 — the Clerk's Monday store report without a model: from Monday 07:00 (org time) dc_clerk_report() → proposals, the Monday notes; once an ISO week. */
+function worker_pass_proposals(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_proposals($pdo, $now); }
 /** SLICE 7 — dc_prune_key_usage(): minute buckets older than a day, day buckets older than 35 days. */
 function worker_pass_key_usage_prune(PDO $pdo, int $limit, DateTimeImmutable $now): array { return ['pruned' => (int) one_value($pdo, 'SELECT dc_prune_key_usage()')]; }

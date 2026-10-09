@@ -321,19 +321,19 @@ Screens:
 
 | Screen id | URL | When the user wants… |
 | --- | --- | --- |
-| `proposals` | `/curate/proposals` | the Clerk's proposals for me (or every one for a curator): accept or dismiss (params: `kind`, `status`) |
+| `proposals` | `/curate/proposals` | the Clerk's proposals for me (or every one for a curator): accept or dismiss (params: `kind`, `status`, `mine`, `folder`) |
 | `admin-agents` | `/admin/agents` | the agents this application declares, which member is the expert and which the Clerk, their dispatches, retry |
 
 Actions (base `/curate/proposals/`, agents under `/agents/`):
 
 | Action | File | Params | Undo | Confirm | Agent approval | Log | Who | Agent | record_id |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `clerk_propose` | `/agents/propose.php` | **kind** (untagged or duplicate or stale_share or link_expiring or link_suspicious or request_open or trash_due or locked or no_text or quota or budget or orphaned or tags), **title** (up to 200 characters), **for_member** (whose decision it is), document, folder, library, link, payload (a JSON object — the facts), note | — | | | `clerk.propose` | an agent (the Clerk) or agents.settings | yes | the proposal |
-| `clerk_proposal_decide` | `/curate/proposals/decide.php` | **proposal**, **decision** (accept or dismiss), note (why) | — | | | `clerk.decide` | own (for me) or groups.manage | yes | the proposal |
-| `notification` | `/agents/notify.php` | **member** (the recipient — or group for every owner of it), **title** (up to 200 characters), **body** (Markdown up to 4000 characters), kind (monday_note or proposal) | — | | | `notification.send` | an agent or agents.settings | yes | the notification |
-| `dispatch_retry` | `/admin/agents/retry.php` | **dispatch** (a failed or refused one) | — | | | `agent.dispatch` | agents.settings | yes | the dispatch |
+| `clerk_propose` | `/agents/propose.php` | **kind** (untagged or duplicate or stale_share or link_expiring or link_suspicious or request_open or trash_due or locked or no_text or quota or budget or orphaned or tags), **title** (up to 200 characters), **for_member** (whose decision it is), document, folder, library, link, payload (a JSON object — the facts), note | — | | | `clerk.propose` | the Clerk (dc_is_clerk) | yes | the proposal |
+| `clerk_proposal_decide` | `/curate/proposals/decide.php` | **proposal**, **decision** (accept or dismiss), tags[] (which of a tags proposal's suggestions — all by default), note (why) | — | | | `clerk.decide` | own (for me) or groups.manage | yes | the proposal |
+| `notification` | `/agents/notify.php` | member (the recipient — one of member or group), group (every owner of it — one of member or group), **title** (up to 200 characters), **body** (Markdown up to 4000 characters), kind (monday_note or proposal) | — | | | `notification.send` | the Clerk or agents.settings | yes | the notification |
+| `dispatch_retry` | `/admin/agents/retry.php` | **dispatch** (a failed or refused one) | — | | | `agent.retry` | agents.settings | yes | the dispatch |
 | `tags_propose_request` | `/agents/propose-tags.php` | **folder** (its untagged documents — the expert proposes tags from the graph) | — | | | `agent.dispatch` | edit on the folder | people | the dispatch |
-| `agents_settings_save` | `/admin/agents/save.php` | expert (an agent member — empty for none), clerk (an agent member — empty for none) | restore prior | | other | `agents_settings.save` | agents.settings | yes | the settings |
+| `agents_settings_save` | `/admin/agents/save.php` | expert (an agent member — empty for none), clerk (an agent member — empty for none), untagged_batch_size (1 to 1000), duplicate_copies (2 to 100), dispatch_retry_minutes (1 to 1440), clerk_report_enabled (yes or no) | restore prior | | other | `agents_settings.save` | agents.settings | yes | the settings |
 | `dispatch_cancel` | `/admin/agents/cancel.php` | **dispatch** (a sent or awaiting one — nothing is sent again) | — | ✔ | | `agent.dispatch_cancel` | agents.settings | people | the dispatch |
 
 ## Home, curate, admin, reports and tokens (slice 9)

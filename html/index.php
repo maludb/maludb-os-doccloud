@@ -15,6 +15,7 @@ if (wants_json()) {
             'level' => $l['level'], 'used_bytes' => (int) $l['used_bytes'], 'quota_bytes' => $l['quota_bytes'] === null ? null : (int) $l['quota_bytes'], 'graph_policy' => $l['graph_policy']], $s['libraries']),
         'recent' => array_map(static fn (array $d): array => ['document_id' => (int) $d['document_id'], 'name' => $d['name'], 'folder_id' => (int) $d['folder_id'], 'mime_kind' => $d['mime_kind'],
             'updated_at' => json_ts($d['updated_at']), 'last_opened_at' => json_ts($d['last_opened_at'] ?? null)], $s['recent']),
+        'proposals_open' => (int) $s['proposals_open'], 'clerk_note' => $s['clerk_note'] === null ? null : ['title' => $s['clerk_note']['title'], 'body' => $s['clerk_note']['body'], 'created_at' => json_ts($s['clerk_note']['created_at'])],
         'may' => $s['may'],
     ]);
 }
