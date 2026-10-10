@@ -254,11 +254,15 @@ function dc_blob_unlink(string $relative): bool { return store_unlink($relative)
 
 /**
  * Stream a stored file to the browser: ranges (206/416), the disposition (inline only when inline_ok), nosniff, Cache-Control private,
- * an ETag of the sha256, a sandboxing CSP on inline kinds. $opts: filename, mime, inline (bool), sha256, byte_size. Exits.
+ * an ETag of the sha256, a sandboxing CSP on inline kinds. The session is released first (a stream must not hold its lock). $opts: filename,
+ * mime, inline (bool), sha256, byte_size. Exits.
  */
 function store_stream(string $relative, array $opts): never
 {
     $path = dc_storage_path($relative);
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();      // a playing video or a long download must not hold the session's lock: the person's other pages would wait on it
+    }
     if (!is_file($path)) {
         http_response_code(404);
         header('Content-Type: text/plain; charset=utf-8');
@@ -328,53 +332,163 @@ function store_stream(string $relative, array $opts): never
 }
 
 /**
- * A thumbnail (320 px, JPEG): images through GD; a PDF's first page through pdftoppm when present. Returns the relative path or null
- * (no thumbnail for this kind, or the tool missing). Never throws.
+ * A thumbnail (320 px on the longer side, JPEG) and what the bytes told us (docs/build-specs/grid-and-media.md): images through GD, turned
+ * upright by a JPEG's EXIF orientation (ffmpeg when GD cannot read the format, e.g. TIFF); a PDF's first page through pdftoppm; a video's frame
+ * 10% in (at most 5 s) through ffmpeg, with its length from ffprobe. Returns ['state' => made|none|no_tool, 'path' => relative|null,
+ * 'duration_ms' => int|null]: none = not possible for these bytes, no_tool = the tool is missing (the worker retries once it exists).
+ * Never throws; the tools run under timeout, niced, one thread, the input an argument — the bytes are a person's upload.
  */
-function dc_make_thumbnail(string $relative, string $mime, int $documentId, int $versionId): ?string
+function dc_make_thumb(string $relative, string $mime, int $documentId, int $versionId): array
 {
+    $result = ['state' => 'none', 'path' => null, 'duration_ms' => null];
     try {
         $src = dc_storage_path($relative);
         $relOut = 'thumbs/' . $documentId . '/' . $versionId . '.jpg';
         $out = dc_storage_path($relOut);
         $dir = dirname($out);
-        if (!is_dir($dir) && !@mkdir($dir, 0750, true) && !is_dir($dir)) {
-            return null;
+        if (!is_file($src) || (!is_dir($dir) && !@mkdir($dir, 0750, true) && !is_dir($dir))) {
+            return $result;
         }
-        if (str_starts_with($mime, 'image/') && $mime !== 'image/svg+xml' && function_exists('imagecreatefromstring')) {
-            $data = (string) @file_get_contents($src, false, null, 0, 50 * 1048576);
-            $img = @imagecreatefromstring($data);
-            if ($img === false) {
-                return null;
+        $made = static function () use (&$result, $relOut): array { $result['state'] = 'made'; $result['path'] = $relOut; return $result; };
+        if (str_starts_with($mime, 'image/') && $mime !== 'image/svg+xml') {
+            if (function_exists('imagecreatefromstring') && dc_thumb_gd($src, $out, $mime)) {
+                return $made();
             }
-            $w = imagesx($img);
-            $h = imagesy($img);
-            $scale = min(1, 320 / max(1, max($w, $h)));
-            $tw = max(1, (int) round($w * $scale));
-            $th = max(1, (int) round($h * $scale));
-            $t = imagecreatetruecolor($tw, $th);
-            $white = imagecolorallocate($t, 255, 255, 255);
-            imagefill($t, 0, 0, $white);
-            imagecopyresampled($t, $img, 0, 0, 0, 0, $tw, $th, $w, $h);
-            $okj = imagejpeg($t, $out, 82);
-            imagedestroy($t);
-            imagedestroy($img);
-            return $okj ? $relOut : null;
+            $ff = dc_tool('ffmpeg');
+            if ($ff === null) {
+                return ['state' => 'no_tool'] + $result;
+            }
+            return dc_thumb_ffmpeg($ff, $src, $out, 0.0) ? $made() : $result;
         }
         if ($mime === 'application/pdf') {
-            $tool = (string) (env('DC_PDFTOPPM', '') ?: trim((string) shell_exec('command -v pdftoppm 2>/dev/null')));
-            if ($tool === '') {
-                return null;
+            $tool = dc_tool('pdftoppm');
+            if ($tool === null) {
+                return ['state' => 'no_tool'] + $result;
             }
             $prefix = sys_get_temp_dir() . '/dcthumb-' . getmypid() . '-' . $versionId;
-            exec(escapeshellcmd($tool) . ' -f 1 -l 1 -scale-to 320 -jpeg -singlefile ' . escapeshellarg($src) . ' ' . escapeshellarg($prefix) . ' 2>/dev/null', $o, $rc);
+            exec(dc_timeout_prefix(60) . escapeshellarg($tool) . ' -f 1 -l 1 -scale-to 320 -jpeg -singlefile ' . escapeshellarg($src) . ' ' . escapeshellarg($prefix) . ' 2>/dev/null', $o, $rc);
             if ($rc === 0 && is_file($prefix . '.jpg') && @rename($prefix . '.jpg', $out)) {
-                return $relOut;
+                return $made();
             }
             @unlink($prefix . '.jpg');
+            return $result;
+        }
+        if (str_starts_with($mime, 'video/')) {
+            $ff = dc_tool('ffmpeg');
+            $probe = dc_tool('ffprobe');
+            if ($ff === null) {
+                return ['state' => 'no_tool'] + $result;
+            }
+            $seconds = null;
+            if ($probe !== null) {
+                $line = trim((string) shell_exec(dc_timeout_prefix(20) . escapeshellarg($probe) . ' -v error -show_entries format=duration -of default=nw=1:nk=1 ' . escapeshellarg($src) . ' 2>/dev/null'));
+                if (is_numeric($line) && (float) $line >= 0) {
+                    $seconds = (float) $line;
+                    $result['duration_ms'] = (int) round($seconds * 1000);
+                }
+            }
+            $at = $seconds !== null && $seconds > 0 ? min(5.0, $seconds * 0.1) : 1.0;
+            if (dc_thumb_ffmpeg($ff, $src, $out, $at) || ($at > 0 && dc_thumb_ffmpeg($ff, $src, $out, 0.0))) {
+                return $made();
+            }
+            return $result;
         }
     } catch (Throwable $e) {
         error_log('thumbnail: ' . $e->getMessage());
     }
-    return null;
+    return $result;
+}
+
+/** The old name (slice 2): the relative path of a made thumbnail, or null. */
+function dc_make_thumbnail(string $relative, string $mime, int $documentId, int $versionId): ?string
+{
+    return dc_make_thumb($relative, $mime, $documentId, $versionId)['path'];
+}
+
+/** A tool's absolute path (DC_FFMPEG, DC_FFPROBE, DC_PDFTOPPM override), or null when it is not installed. */
+function dc_tool(string $name): ?string
+{
+    static $found = [];
+    if (!array_key_exists($name, $found)) {
+        $p = trim((string) env('DC_' . strtoupper($name), ''));
+        if ($p === '') {
+            $p = trim((string) shell_exec('command -v ' . escapeshellarg($name) . ' 2>/dev/null'));
+        }
+        $found[$name] = $p !== '' && is_executable($p) ? $p : null;
+    }
+    return $found[$name];
+}
+
+/** "timeout N nice -n 10 " when coreutils has them (it does on Ubuntu); empty otherwise. */
+function dc_timeout_prefix(int $seconds): string
+{
+    static $t = null;
+    $t ??= is_executable('/usr/bin/timeout') && is_executable('/usr/bin/nice');
+    return $t ? '/usr/bin/timeout ' . $seconds . ' /usr/bin/nice -n 10 ' : '';
+}
+
+/** One frame through ffmpeg (seek $at seconds, scale into 320 × 320), written atomically. */
+function dc_thumb_ffmpeg(string $ffmpeg, string $src, string $out, float $at): bool
+{
+    $tmp = $out . '.tmp-' . getmypid() . '.jpg';
+    exec(dc_timeout_prefix(60) . escapeshellarg($ffmpeg) . ' -nostdin -v error -threads 1 -ss ' . sprintf('%.3F', max(0, $at)) . ' -i ' . escapeshellarg($src)
+        . ' -frames:v 1 -vf ' . escapeshellarg('scale=w=320:h=320:force_original_aspect_ratio=decrease') . ' -q:v 4 -y ' . escapeshellarg($tmp) . ' 2>/dev/null', $o, $rc);
+    if ($rc === 0 && is_file($tmp) && filesize($tmp) > 0 && @rename($tmp, $out)) {
+        return true;
+    }
+    @unlink($tmp);
+    return false;
+}
+
+/** The EXIF orientation of a JPEG (1 upright … 8), 1 when there is none or it cannot be read. */
+function dc_exif_orientation(string $path, string $mime): int
+{
+    if ($mime !== 'image/jpeg' || !function_exists('exif_read_data')) {
+        return 1;
+    }
+    $exif = @exif_read_data($path);
+    $o = is_array($exif) ? (int) ($exif['Orientation'] ?? 1) : 1;
+    return $o >= 1 && $o <= 8 ? $o : 1;
+}
+
+/** A GD thumbnail, upright, written atomically. False when GD cannot read the bytes. */
+function dc_thumb_gd(string $src, string $out, string $mime): bool
+{
+    $data = (string) @file_get_contents($src, false, null, 0, 50 * 1048576);
+    $img = $data === '' ? false : @imagecreatefromstring($data);
+    unset($data);
+    if ($img === false) {
+        return false;
+    }
+    $o = dc_exif_orientation($src, $mime);
+    if ($o !== 1) {
+        if (in_array($o, [2, 4], true)) {
+            imageflip($img, $o === 2 ? IMG_FLIP_HORIZONTAL : IMG_FLIP_VERTICAL);
+        } else {
+            $turned = imagerotate($img, match ($o) { 3 => 180, 8 => 90, default => -90 }, 0);   // 5, 6, 7: a quarter turn clockwise first
+            if ($turned !== false) {
+                imagedestroy($img);
+                $img = $turned;
+            }
+            if ($o === 5 || $o === 7) {
+                imageflip($img, $o === 5 ? IMG_FLIP_HORIZONTAL : IMG_FLIP_VERTICAL);
+            }
+        }
+    }
+    $w = imagesx($img);
+    $h = imagesy($img);
+    $scale = min(1, 320 / max(1, max($w, $h)));
+    $tw = max(1, (int) round($w * $scale));
+    $th = max(1, (int) round($h * $scale));
+    $t = imagecreatetruecolor($tw, $th);
+    imagefill($t, 0, 0, imagecolorallocate($t, 255, 255, 255));
+    imagecopyresampled($t, $img, 0, 0, 0, 0, $tw, $th, $w, $h);
+    $tmp = $out . '.tmp-' . getmypid() . '.jpg';
+    $ok = imagejpeg($t, $tmp, 82) && @rename($tmp, $out);
+    imagedestroy($t);
+    imagedestroy($img);
+    if (!$ok) {
+        @unlink($tmp);
+    }
+    return $ok;
 }

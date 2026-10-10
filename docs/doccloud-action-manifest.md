@@ -362,3 +362,15 @@ Actions (base `/admin/`, curate under `/curate/`):
 | `note_add` | `/notes/add.php` | document or folder (one of them), **body** (up to 4000 characters) | note_delete | | | `note.add` | view on the thing | yes | the note |
 | `note_delete` | `/notes/delete.php` | **note** | — | | | `note.delete` | own or manage on the thing | yes | the note |
 | `storage_export` | `/curate/storage/export.php` | report (storage or search), format (csv) | — | | | `report.export` | reports.storage or reports.search | yes | the file |
+
+## The grid, thumbnails, video and hidden previews (2026-10-10, docs/build-specs/grid-and-media.md)
+
+The folder screen's grid is the `folder` screen with `?view=grid` (remembered per browser); the document page's player and placeholder are the
+`document` screen. No new screen. Hiding a preview is a property of the document for everyone (the owner, 2026-10-10), never a wall.
+
+Actions (base `/documents/`):
+
+| Action | File | Params | Undo | Confirm | Agent approval | Log | Who | Agent | record_id |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `document_preview_hide` | `preview-hide.php` | **document** (an image or a video — everyone then sees a placeholder) | document_preview_show | | | `document.preview_hide` | documents.edit and edit on the document | yes | the document |
+| `document_preview_show` | `preview-show.php` | **document** (an image or a video whose preview is hidden) | document_preview_hide | | | `document.preview_show` | documents.edit and edit on the document | yes | the document |

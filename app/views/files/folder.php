@@ -1,9 +1,11 @@
-<?php /** The folder screen. Data: folder, fv (mcp_folders row), library, crumbs, listing, accessLine, size, may, stars, tz, notice, uploadWanted, adminView */
+<?php /** The folder screen. Data: folder, fv (mcp_folders row), library, crumbs, listing, accessLine, size, may, stars, tz, notice, uploadWanted, adminView, layout (list|grid) */
 $id = (int) $folder['id'];
 $isRoot = $folder['parent_id'] === null;
 $back = '/f/' . $id;
 $base = '/f/' . $id . ($listing['kind'] !== null ? '?kind=' . rawurlencode($listing['kind']) : '');
 $starred = isset($stars['folder'][$id]);
+$layout = $layout ?? 'list';
+$layoutUrl = static fn (string $v): string => '/f/' . $id . '?' . http_build_query(array_filter(['view' => $v, 'sort' => $listing['sort'] !== 'name' ? $listing['sort'] : null, 'dir' => $listing['dir'] !== 'asc' ? $listing['dir'] : null, 'kind' => $listing['kind']]));
 $kinds = ['' => 'Everything', 'folder' => 'Folders', 'document' => 'Documents', 'image' => 'Images', 'pdf' => 'PDFs', 'office' => 'Office', 'text' => 'Text', 'audio' => 'Audio', 'video' => 'Video', 'archive' => 'Archives'];
 $actions = '';
 if ($may['add']) {
@@ -45,12 +47,17 @@ if ($may['add']) {
             <?php endif; ?>
         </div>
     </div>
-    <div class="d-flex flex-wrap gap-1 mb-2" id="folder-kind-filters">
+    <div class="d-flex flex-wrap align-items-center gap-1 mb-2" id="folder-kind-filters">
         <?php foreach ($kinds as $k => $label): ?><?= hx_link('/f/' . $id . ($k === '' ? '' : '?kind=' . $k), e($label), 'btn btn-sm btn-touch ' . (($listing['kind'] ?? '') === $k ? 'btn-primary' : 'btn-light'), 'id="folder-kind-' . ($k === '' ? 'all' : $k) . '"') ?><?php endforeach; ?>
+        <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Layout" id="folder-view-switch">
+            <?= hx_link($layoutUrl('list'), '<i class="feather-list"></i><span class="d-none d-sm-inline ms-1">List</span>', 'btn btn-touch ' . ($layout === 'list' ? 'btn-primary' : 'btn-light'), 'id="folder-view-list" title="List" aria-pressed="' . ($layout === 'list' ? 'true' : 'false') . '"') ?>
+            <?= hx_link($layoutUrl('grid'), '<i class="feather-grid"></i><span class="d-none d-sm-inline ms-1">Grid</span>', 'btn btn-touch ' . ($layout === 'grid' ? 'btn-primary' : 'btn-light'), 'id="folder-view-grid" title="Grid" aria-pressed="' . ($layout === 'grid' ? 'true' : 'false') . '"') ?>
+        </div>
     </div>
     <?php if ($may['edit'] || $may['manage']): ?><?= view('files/partials/select-bar.php', ['folderId' => $id, 'may' => $may, 'datalist' => $tagDatalist ?? []]) ?><?php endif; ?>
-    <?= view('files/partials/listing.php', ['rows' => $listing['rows'], 'tz' => $tz, 'select' => $may['edit'] || $may['manage'], 'stars' => $stars, 'back' => $back, 'sortBase' => $base, 'sort' => $listing['sort'], 'dir' => $listing['dir'],
-        'empty' => $listing['kind'] === null ? 'Nothing here yet.' : 'Nothing of that kind here.', 'id' => 'listing-table']) ?>
+    <?php $listingData = ['rows' => $listing['rows'], 'tz' => $tz, 'select' => $may['edit'] || $may['manage'], 'stars' => $stars, 'back' => $back, 'sortBase' => $base, 'sort' => $listing['sort'], 'dir' => $listing['dir'],
+        'empty' => $listing['kind'] === null ? 'Nothing here yet.' : 'Nothing of that kind here.']; ?>
+    <?= $layout === 'grid' ? view('files/partials/grid.php', $listingData + ['id' => 'listing-grid']) : view('files/partials/listing.php', $listingData + ['id' => 'listing-table']) ?>
     <?php if ($listing['pages'] > 1): ?>
     <nav class="d-flex align-items-center justify-content-between mt-2 fs-12" id="listing-pager">
         <span class="text-muted"><?= (int) $listing['total'] ?> items · page <?= (int) $listing['page'] ?> of <?= (int) $listing['pages'] ?></span>
@@ -78,7 +85,7 @@ if ($may['add']) {
     var bar = document.getElementById('select-bar'); if (!bar) return;
     var checks = function () { return Array.prototype.slice.call(document.querySelectorAll('.listing-check')); };
     var update = function () { var n = checks().filter(function (c) { return c.checked; }).length; bar.classList.toggle('d-none', n === 0); bar.classList.toggle('d-flex', n > 0); document.getElementById('select-bar-count').textContent = n + ' selected'; };
-    checks().forEach(function (c) { c.addEventListener('change', update); });
+    document.getElementById('folder-content').addEventListener('change', function (e) { if (e.target.classList && e.target.classList.contains('listing-check')) update(); });   // delegated: a swapped tile still counts
     var all = document.getElementById('listing-select-all'); if (all) { all.addEventListener('change', function () { checks().forEach(function (c) { c.checked = all.checked; }); update(); }); }
     var clear = document.getElementById('select-bar-clear-btn'); if (clear) { clear.addEventListener('click', function () { checks().forEach(function (c) { c.checked = false; }); if (all) all.checked = false; update(); }); }
 })();

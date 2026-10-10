@@ -352,6 +352,8 @@
           "document_restore",
           "document_lock",
           "document_unlock",
+          "document_preview_hide",
+          "document_preview_show",
           "saved_search_save",
           "link_make",
           "request_make",

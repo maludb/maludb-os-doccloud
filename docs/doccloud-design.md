@@ -551,11 +551,15 @@ links expiring; the Clerk's last note; curators: untagged this week, duplicates,
 queue and the month's spend, failed extractions. **A new person's home is one button: "Upload your first file"** (and "Create a
 group" for curators).
 
-**Files**: `folder` (`/f/<id>`: crumbs, the listing table with sort and filters, multi-select → move/copy/tag/trash/download zip,
+**Files**: `folder` (`/f/<id>`: crumbs, the listing as a table or a **grid of tiles** (2026-10-10, `docs/build-specs/grid-and-media.md`:
+thumbnails for images, videos and PDF pages, a type icon with the extension otherwise, a video's length, the "Hide preview" switch below an
+image or a video for an editor — a placeholder for everyone; `?view=list|grid`, remembered per browser) with sort and filters, multi-select → move/copy/tag/trash/download zip,
 "New folder", "Upload", "Share", "Get link", "Request files", the folder's access summary ("Finance · 12 people · 1 group"),
 the subtree's size) · `document` (`/d/<id>`: preview (image, PDF in the browser's viewer, text and Markdown rendered, CSV as a
 table, Office as its extracted text with "download to open"), name, description, tags (add inline), owner, folder path, size,
-version list with restore, lock, "who can see this" (the explanation), links, comments (notes), related documents from the graph
+version list with restore, lock, "who can see this" (the explanation), links, comments (notes), related documents from the graph; a video
+streams in the page's player (2026-10-10: playsinline, the poster, a format no browser plays says so with Download; a hidden preview shows
+a placeholder with Show)
 (when indexed), the trail, download) · `folder-form` · `move` (the record picker over folders I may edit) · `upload` (the drop
 zone, the per-file list, "keep both" on a conflict).
 
@@ -715,6 +719,20 @@ live in DocCloud — a later decision that would make `document_link` their door
 | (c) | **The bytes live under the install by default** (`/srv/apps/doccloud/storage/blobs`), `DC_STORAGE_DIR` pointing at a mount when the owner names one at install; `ROOT_STEPS.sh` makes it | §6; §14 |
 
 ## 16. State
+
+**2026-10-10 — THE GRID, THUMBNAILS, VIDEO AND HIDDEN PREVIEWS** (the owner's request after Phase 4; `docs/build-specs/grid-and-media.md`,
+decisions G1–G4 the owner's, built in the worktree `grid-media` and merged). The folder listing as a grid beside the list; video thumbnails
+and lengths through ffmpeg (installed on this host; `deploy/ROOT_STEPS.sh` step 0c), JPEG thumbnails turned upright by EXIF, the worker's
+queue moved from files on disk to `document_versions.thumb_state`; a video streamed in the document page's player; **"Hide preview"** — a
+row in the NEW table `document_preview_hidden`, for everyone, flipped by anyone with edit (`document_preview_hide` / `_show`, free for
+agents, the expert granted both) — a screen's privacy, never a wall. **db/023**. Two streaming defects fixed on the way: PHP held the
+session's lock for the whole of a stream or download (the person's other pages waited — proven: a folder page took 30 s beside a stream
+without the fix, 0.2 s with it), and every range request of a player wrote an activity row (now one per viewing). Also found: `.gitignore`'s
+`storage/` had swallowed `html/curate/storage/export.php` (slice 9's `storage_export`, never committed — now anchored to `/storage/`);
+`tests/setup_dev.sh` would have reset the cluster roles' passwords from a worktree of the installed application (it reuses the
+install's now). Proof: `tests/phase3/media/run.sh` — thumbs 23 + actions 30 + grid 25 + serving 29 + browser 23 (also under a real
+Apache); every earlier suite re-run. **Observed on this host 2026-10-10: DocCloud is installed** (the kernel's application 69,
+`subello_doccloud`, the vhost, both MCP units and the three timers running); db/023 applied to it with the merge.
 
 **2026-10-10 — PHASE 3 and PHASE 4 COMPLETE; Phase 5 is the owner's.** Slices 6–9 and Phase 4 built by Sonnet 5.5 workers one at a time, each
 verified by the planning model's rerun and committed: slice 6 the trash, locks, quotas and the worker's windows (0a9a945; 323 checks; db/021 —

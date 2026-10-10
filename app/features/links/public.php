@@ -99,5 +99,12 @@ function public_preview(PDO $pdo, array $doc): array
         $text = $st->fetch() ?: null;
     }
     $d = $doc + ['document_id' => (int) $doc['id']];
+    // a hidden preview is hidden from a link holder too, and a video's poster is its thumbnail (docs/build-specs/grid-and-media.md)
+    $d['preview_hidden'] = document_preview_is_hidden($pdo, (int) $doc['id']);
+    if ($doc['current_version_id'] !== null) {
+        $st = $pdo->prepare('SELECT thumb_state, duration_ms FROM document_versions WHERE id = :v');
+        $st->execute(['v' => (int) $doc['current_version_id']]);
+        $d += $st->fetch() ?: [];
+    }
     return document_preview($pdo, $d, $text);
 }

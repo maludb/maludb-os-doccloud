@@ -96,7 +96,7 @@ exit($report['errors'] === [] ? 0 : 1);
 function worker_pass_upload_sessions_expire(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_uploads_expire($pdo); }
 /** SLICE 2 — text extraction for pending versions (app/doccloud/extract/), document_text written; the triggers index the document and queue its graph job. */
 function worker_pass_extract_text(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_extract($pdo, min($limit, 50)); }
-/** SLICE 2 — thumbnails for images (GD) and PDFs' first page (pdftoppm). */
+/** SLICE 2 (and docs/build-specs/grid-and-media.md) — thumbnails for images (GD), PDFs' first page (pdftoppm) and videos (ffmpeg), with a video's length. */
 function worker_pass_thumbnails(PDO $pdo, int $limit, DateTimeImmutable $now): array { return worker_thumbs($pdo, min($limit, 50)); }
 /** SLICE 4 — dc_search_catch_up(): every document whose index row is older than its change. */
 /** SLICE 4 — the keyword index's catch-up: documents whose row is missing or older than the document (dc_search_catch_up), 500 a pass. */

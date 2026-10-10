@@ -21,7 +21,9 @@ function present_listing_row(array $r): array
     $tags = is_array($r['tags'] ?? null) ? $r['tags'] : pg_text_array((string) ($r['tags'] ?? '{}'));
     return ['kind' => $r['kind'], 'id' => (int) $r['id'], 'name' => $r['name'], 'url' => ($r['kind'] === 'folder' ? '/f/' : '/documents/') . (int) $r['id'], 'mime_kind' => $r['mime_kind'],
             'byte_size' => $r['byte_size'] === null ? null : (int) $r['byte_size'], 'owner_member_id' => $r['owner_member_id'] === null ? null : (int) $r['owner_member_id'], 'owner_name' => $r['owner_name'] ?? null,
-            'updated_at' => json_ts($r['updated_at']), 'tags' => $tags, 'my_level' => $r['level'], 'locked' => ($r['locked_by'] ?? null) !== null, 'version_count' => $r['version_count'] === null ? null : (int) $r['version_count']];
+            'updated_at' => json_ts($r['updated_at']), 'tags' => $tags, 'my_level' => $r['level'], 'locked' => ($r['locked_by'] ?? null) !== null, 'version_count' => $r['version_count'] === null ? null : (int) $r['version_count'],
+            'mime_type' => $r['mime_type'] ?? null, 'has_thumbnail' => (bool) ($r['has_thumbnail'] ?? false), 'preview_hidden' => (bool) ($r['preview_hidden'] ?? false),
+            'duration_ms' => isset($r['duration_ms']) ? (int) $r['duration_ms'] : null];
 }
 
 function present_listing(array $listing): array
@@ -43,7 +45,8 @@ function present_document(array $d): array
             'locked_by' => $d['locked_by'] === null ? null : (int) $d['locked_by'], 'locked_by_name' => $d['locked_by_name'] ?? null, 'lock_expires_at' => json_ts($d['lock_expires_at'] ?? null),
             'trashed' => ($d['trashed_at'] ?? null) !== null, 'tags' => $tags, 'my_level' => $d['my_level'], 'in_graph' => (bool) ($d['in_graph'] ?? false), 'own_access' => (bool) ($d['own_access'] ?? false),
             'created_at' => json_ts($d['created_at']), 'updated_at' => json_ts($d['updated_at']), 'last_opened_at' => json_ts($d['last_opened_at'] ?? null),
-            'url' => '/documents/' . (int) $d['document_id'], 'download_url' => '/d/' . (int) $d['document_id'] . '?download=1', 'thumb_url' => '/d/' . (int) $d['document_id'] . '/thumb'];
+            'url' => '/documents/' . (int) $d['document_id'], 'download_url' => '/d/' . (int) $d['document_id'] . '?download=1', 'thumb_url' => '/d/' . (int) $d['document_id'] . '/thumb',
+            'preview_hidden' => (bool) ($d['preview_hidden'] ?? false), 'duration_ms' => isset($d['duration_ms']) ? (int) $d['duration_ms'] : null];
 }
 
 function present_version(array $v): array
@@ -79,7 +82,7 @@ function present_preview(array $p): array
     if (isset($p['rows'])) {
         $out['rows'] = $p['rows'];
     }
-    foreach (['truncated', 'status', 'error'] as $k) {
+    foreach (['truncated', 'status', 'error', 'hidden', 'playable', 'duration_ms'] as $k) {
         if (array_key_exists($k, $p)) {
             $out[$k] = $p[$k];
         }

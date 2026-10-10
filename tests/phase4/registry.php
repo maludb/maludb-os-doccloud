@@ -19,7 +19,7 @@ echo "1. The wrapper, the registry and the manifest read right\n";
 ok(($wrapper['schema'] ?? '') === 'maludb-os.registry/1' && $wrapper['app_key'] === 'doccloud' && count($wrapper['resolve']) === 12, 'the wrapper: schema maludb-os.registry/1, app_key doccloud, twelve resolve entities');
 $php = (int) shell_exec('cd ' . escapeshellarg($root) . ' && php bin/build_action_registry.php --check >/dev/null 2>&1; echo $?');
 ok($php === 0, 'the registry is current with the action manifest (bin/build_action_registry.php --check)');
-ok(count($actions) === 95 && count(array_filter($actions, fn ($a) => !empty($a['built']))) === 95, 'the registry holds 95 actions, every one built');
+ok(count($actions) === 97 && count(array_filter($actions, fn ($a) => !empty($a['built']))) === 97, 'the registry holds 97 actions, every one built (95 + the grid-and-media pair)');
 $cats = array_unique(array_filter(array_column($actions, 'approval')));
 $withCat = count(array_filter($actions, fn ($a) => $a['approval'] !== null));
 ok(count(array_diff($cats, $KNOWN_CATEGORIES)) === 0 && $withCat === 23, 'every approval category is one the kernel knows (' . implode(', ', $cats) . '); ' . $withCat . ' actions carry one');
@@ -68,8 +68,8 @@ $out = (string) shell_exec($cmd);
 $k = json_decode($out, true);
 ok(is_array($k), 'the kernel\'s loader and tool factory ran against the composed registry' . (is_array($k) ? '' : ' — ' . substr((string) @file_get_contents('/tmp/dc-registry-check.err'), -400)));
 if (!is_array($k)) { finish(); }
-ok($k['loaded'] === ['doccloud'] && $k['registered'] === 95, 'application_actions.load_registries() accepts it and register() adds 95 tools');
-ok(count($k['tools']) === 95 && count(array_diff(array_keys($actions), array_keys($k['tools']))) === 0, 'one tool per action, by the action\'s name');
+ok($k['loaded'] === ['doccloud'] && $k['registered'] === 97, 'application_actions.load_registries() accepts it and register() adds 97 tools');
+ok(count($k['tools']) === 97 && count(array_diff(array_keys($actions), array_keys($k['tools']))) === 0, 'one tool per action, by the action\'s name');
 $noApp = [];
 foreach ($actions as $key => $a) { if ($a['approval'] !== null && !str_contains($k['tools'][$key]['description'], 'category: ' . $a['approval'])) { $noApp[] = $key; } }
 ok($noApp === [], 'a tool\'s description states its approval category (' . $withCat . ' of them)');

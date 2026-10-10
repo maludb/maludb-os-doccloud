@@ -5,7 +5,8 @@ declare(strict_types=1);
  * dc_can_see_document; a link holder ($_SESSION['link'][id], set by slice 3's /s/ door) through dc_link_reaches_document (download only when
  * the link allows); an API key as its person. None → 404, the same nothing. Inline only when the kind is inline-safe (else attachment);
  * ?download=1 forces attachment. Ranges, ETag (the sha256), nosniff, Cache-Control private — store_stream(). Logged document.download or
- * document.preview with the bytes and the door; last_opened_at for a session caller.
+ * document.preview with the bytes and the door, once per viewing (the opening request, not a player's later ranges); last_opened_at for a
+ * session caller. store_stream() releases the session before the bytes.
  */
 require_once dirname(__DIR__, 2) . '/app/features/files/handler.php';
 $pdo = db();
@@ -73,13 +74,16 @@ if ($linkId !== null && !$inlineOk && !$allowDownload) {
     refuse(403, 'This link shows the document; it does not download it.');
 }
 $ranged = isset($_SERVER['HTTP_RANGE']);
-if (($_SERVER['HTTP_IF_NONE_MATCH'] ?? '') !== '"' . $v['sha256'] . '"') {
+// one log row per viewing (docs/build-specs/grid-and-media.md): the opening request — no Range, or one from byte 0 (Safari's two-byte probe
+// excepted) — is logged and counted; a player's later range requests (seeking, buffering) and a resumed download are the same viewing
+$opening = !$ranged || (preg_match('/^bytes=0-/', (string) $_SERVER['HTTP_RANGE']) === 1 && (string) $_SERVER['HTTP_RANGE'] !== 'bytes=0-1');
+if ($opening && ($_SERVER['HTTP_IF_NONE_MATCH'] ?? '') !== '"' . $v['sha256'] . '"') {
     $event = $inline ? 'document.preview' : 'document.download';
     log_activity($pdo, $event, 'document', $id, ['document_id' => $id, 'folder_id' => (int) $doc['folder_id'], 'library_id' => (int) $doc['library_id'], 'actor_member_id' => $linkId !== null ? null : ($_SESSION['member_id'] ?? null),
         'source' => $linkId !== null ? 'portal' : null, 'after' => ['version_no' => (int) $v['version_no'], 'bytes' => (int) $v['byte_size'], 'ranged' => $ranged, 'door' => $door, 'link_id' => $linkId]]);
     if ($linkId !== null) {
         $pdo->prepare('SELECT dc_link_open(:l, :w, :a, :d, :b)')->execute(['l' => $linkId, 'w' => $inline ? 'view' : 'download', 'a' => hash('sha256', client_ip() . '|' . date('Y-m-d') . '|' . (string) env('ACTION_TOKEN_KEY', '')), 'd' => $id, 'b' => (int) $v['byte_size']]);
-    } elseif ($door === 'web' && !$ranged) {
+    } elseif ($door === 'web') {
         $pdo->prepare('UPDATE documents SET last_opened_at = now() WHERE id = :id')->execute(['id' => $id]);
     }
 }

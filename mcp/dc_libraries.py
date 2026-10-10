@@ -132,7 +132,7 @@ def register(mcp, q, bridge_=None) -> None:
         """What is in folder X: subfolders first, then documents — sorted, paged, with tags, sizes and my level on each. An `upload` holder sees only their own documents. The tool to browse with."""
         fid = await folder_ref(q, params.folder)
         f = (await q("SELECT folder_id, name, library_id, parent_id, my_level, trashed_at FROM mcp_folders WHERE folder_id = $1", fid))[0]
-        rows = await q("SELECT kind, id, name, mime_kind, byte_size, owner_member_id, owner_name, updated_at, tags, level, locked_by, version_count, has_thumbnail, total FROM dc_folder_listing($1, $2, $3, $4, $5, $6)",
+        rows = await q("SELECT kind, id, name, mime_kind, byte_size, owner_member_id, owner_name, updated_at, tags, level, locked_by, version_count, has_thumbnail, total, mime_type, preview_hidden, duration_ms FROM dc_folder_listing($1, $2, $3, $4, $5, $6)",
                        fid, params.sort, params.dir, params.limit, params.offset, params.kind)
         total = int(rows[0]["total"]) if rows else 0
         for r in rows:

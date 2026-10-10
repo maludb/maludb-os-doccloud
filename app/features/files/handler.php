@@ -161,6 +161,113 @@ function kind_icon(?string $kind): string
     };
 }
 
+/**
+ * The listing's layout, list or grid (docs/build-specs/grid-and-media.md): ?view= switches it and is remembered per browser in the dc_view
+ * cookie (a phone may keep the grid and a desk the list); the list by default.
+ */
+function listing_layout(): string
+{
+    $asked = (string) ($_GET['view'] ?? '');
+    if (in_array($asked, ['list', 'grid'], true)) {
+        if (!headers_sent() && ($_COOKIE['dc_view'] ?? '') !== $asked) {
+            $https = (($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off') || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+            setcookie('dc_view', $asked, ['expires' => time() + 31536000, 'path' => '/', 'secure' => $https, 'httponly' => true, 'samesite' => 'Lax']);
+        }
+        return $asked;
+    }
+    return ($_COOKIE['dc_view'] ?? '') === 'grid' ? 'grid' : 'list';
+}
+
+/** The kinds whose preview may be hidden (the owner: "an image or a video"). */
+const PREVIEW_HIDEABLE = ['image', 'video'];
+
+/** Video types no browser plays inline: the page says so and offers Download (G3 — no transcoding). */
+function video_unplayable(string $mime): bool
+{
+    return in_array(strtolower($mime), ['video/x-msvideo', 'video/avi', 'video/msvideo', 'video/x-ms-asf', 'video/x-ms-wmv', 'video/x-ms-wm', 'video/x-flv', 'video/mpeg', 'video/mp2t', 'video/x-mpeg'], true);
+}
+
+/**
+ * A file's family for its grid icon (docs/build-specs/grid-and-media.md): finer than mime_kind — a Word document, a spreadsheet and a deck are
+ * all `office`. Answers [family, feather icon, colour class, extension label].
+ */
+function file_family(?string $mimeKind, ?string $mimeType = null, ?string $name = null): array
+{
+    $ext = strtolower((string) pathinfo((string) $name, PATHINFO_EXTENSION));
+    $mime = strtolower((string) $mimeType);
+    $family = match (true) {
+        $mimeKind === 'folder' => 'folder',
+        $mimeKind === 'image' => 'image',
+        $mimeKind === 'video' => 'video',
+        $mimeKind === 'audio' => 'audio',
+        $mimeKind === 'pdf' => 'pdf',
+        $mimeKind === 'archive' => 'archive',
+        in_array($ext, ['xls', 'xlsx', 'xlsm', 'ods', 'csv', 'tsv', 'numbers'], true) || str_contains($mime, 'spreadsheet') || str_contains($mime, 'excel') || $mime === 'text/csv' => 'sheet',
+        in_array($ext, ['ppt', 'pptx', 'odp', 'key'], true) || str_contains($mime, 'presentation') || str_contains($mime, 'powerpoint') => 'slides',
+        in_array($ext, ['doc', 'docx', 'odt', 'rtf', 'pages'], true) || str_contains($mime, 'wordprocessing') || $mime === 'application/msword' || $mime === 'application/rtf' => 'word',
+        in_array($ext, ['json', 'xml', 'yml', 'yaml', 'js', 'mjs', 'ts', 'py', 'php', 'rb', 'go', 'java', 'c', 'h', 'cpp', 'cs', 'sql', 'sh', 'html', 'htm', 'css', 'svg', 'toml', 'ini'], true) || $mime === 'application/json' || $mime === 'application/xml' => 'code',
+        $mimeKind === 'text' || $mimeKind === 'office' => $mimeKind === 'text' ? 'text' : 'word',
+        default => 'other',
+    };
+    [$icon, $colour] = match ($family) {
+        'folder' => ['feather-folder', 'ft-folder'], 'image' => ['feather-image', 'ft-image'], 'video' => ['feather-film', 'ft-video'], 'audio' => ['feather-music', 'ft-audio'],
+        'pdf' => ['feather-file-text', 'ft-pdf'], 'archive' => ['feather-archive', 'ft-archive'], 'sheet' => ['feather-grid', 'ft-sheet'], 'slides' => ['feather-monitor', 'ft-slides'],
+        'word' => ['feather-file-text', 'ft-word'], 'code' => ['feather-code', 'ft-code'], 'text' => ['feather-align-left', 'ft-text'], default => ['feather-file', 'ft-other'],
+    };
+    $label = $family === 'folder' ? '' : strtoupper(mb_substr($ext !== '' && preg_match('/^[a-z0-9]{1,6}$/', $ext) ? $ext : ($family === 'other' ? 'file' : $family), 0, 5));
+    return ['family' => $family, 'icon' => $icon, 'colour' => $colour, 'label' => $label];
+}
+
+/** A length in words for a badge: 0:42, 12:05, 1:02:09. */
+function format_duration(?int $ms): string
+{
+    if ($ms === null) {
+        return '';
+    }
+    $t = (int) round($ms / 1000);
+    return $t >= 3600 ? sprintf('%d:%02d:%02d', intdiv($t, 3600), intdiv($t % 3600, 60), $t % 60) : sprintf('%d:%02d', intdiv($t, 60), $t % 60);
+}
+
+/** The "Preview hidden" placeholder the thumbnail door serves while a document's preview is hidden (no image of the file at all). */
+function preview_hidden_svg(): string
+{
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320"><rect width="320" height="320" rx="24" fill="#e9ecf2"/>'
+        . '<g transform="translate(112 96) scale(4)" fill="none" stroke="#8a93a6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'
+        . '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></g>'
+        . '<text x="160" y="236" text-anchor="middle" font-family="sans-serif" font-size="24" fill="#6b7280">Preview hidden</text></svg>';
+}
+
+/**
+ * Actions `document_preview_hide` / `document_preview_show` (docs/build-specs/grid-and-media.md): the caller holds documents.edit and edit on the
+ * document (the controller checked both); only an image or a video (422 on `document` otherwise). A lock does not stop it — the preview setting is
+ * not the content. Logged once when it changed, with the name and the kind. HTMX with swap=tile answers the re-rendered grid tile; JSON the result
+ * contract; a browser lands on return_to with a notice.
+ */
+function preview_hidden_action(PDO $pdo, array $doc, bool $hidden): never
+{
+    $id = (int) $doc['id'];
+    if (!in_array((string) $doc['mime_kind'], PREVIEW_HIDEABLE, true)) {
+        dc_refuse_fields(['document' => 'Only an image\'s or a video\'s preview can be hidden.']);
+    }
+    $changed = (bool) dc_guard($pdo, static fn (): bool => document_preview_hidden_set($pdo, $id, $hidden, (int) current_member_id()));
+    if ($changed) {
+        files_log($pdo, $hidden ? 'document.preview_hide' : 'document.preview_show', 'document', $id, ['document_id' => $id, 'folder_id' => (int) $doc['folder_id'],
+            'library_id' => (int) $doc['library_id'], 'after' => ['name' => $doc['name'], 'mime_kind' => $doc['mime_kind'], 'preview_hidden' => $hidden]]);
+    }
+    $did = ($changed ? ($hidden ? 'Hid the preview of ' : 'Showed the preview of ') : ($hidden ? 'The preview was already hidden: ' : 'The preview was already shown: ')) . $doc['name'];
+    if (is_htmx_request() && !wants_json() && req_val('swap') === 'tile') {
+        emit_action_status(true, ['did' => $did, 'record_id' => $id, 'refresh' => 'documentChanged']);
+        $row = grid_row_for_document($pdo, $id);
+        if ($row !== null) {
+            hx_trigger('documentChanged');
+            echo view('files/partials/tile.php', ['r' => $row, 'tz' => member_timezone(), 'select' => req_val('select') === '1', 'stars' => my_favourite_ids($pdo),
+                'back' => safe_local_path($_POST['return_to'] ?? null) ?? '', 'mayEditRight' => true]);
+            exit;
+        }
+    }
+    dc_done($did, $id, dc_land(return_path('/documents/' . $id), $hidden ? 'preview_hidden' : 'preview_shown'), 'documentChanged');
+}
+
 /** An UploadRefused becomes the answer: JSON {error: {code, message, ...extra}} with its status; a browser the sentence (a 409 names the document). */
 function upload_refused(UploadRefused $e): never
 {

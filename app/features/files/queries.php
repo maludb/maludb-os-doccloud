@@ -167,7 +167,19 @@ function listing_row_from_document(array $d): array
 {
     return ['kind' => 'document', 'id' => (int) $d['document_id'], 'name' => $d['name'], 'mime_kind' => $d['mime_kind'], 'byte_size' => $d['byte_size'], 'owner_member_id' => $d['owner_member_id'],
             'owner_name' => $d['owner_name'] ?? null, 'updated_at' => $d['updated_at'], 'tags' => $d['tags'] ?? '{}', 'level' => $d['my_level'] ?? null, 'locked_by' => $d['locked_by'] ?? null,
-            'version_count' => $d['version_count'] ?? null, 'has_thumbnail' => in_array($d['mime_kind'] ?? '', ['image', 'pdf'], true), 'folder_id' => $d['folder_id'] ?? null];
+            'version_count' => $d['version_count'] ?? null, 'has_thumbnail' => in_array($d['mime_kind'] ?? '', ['image', 'pdf', 'video'], true), 'folder_id' => $d['folder_id'] ?? null,
+            'mime_type' => $d['mime_type'] ?? null, 'preview_hidden' => (bool) ($d['preview_hidden'] ?? false), 'duration_ms' => null];
+}
+
+/** One document as a listing row (dc_folder_listing's columns), for a grid tile re-rendered on its own (the hide-preview switch). */
+function grid_row_for_document(PDO $pdo, int $id): ?array
+{
+    $st = $pdo->prepare("SELECT 'document' AS kind, d.document_id AS id, d.name, d.mime_kind, d.byte_size, d.owner_member_id, d.owner_name, d.updated_at, d.tags, d.my_level AS level,
+                                d.locked_by, d.version_count, COALESCE(v.thumb_state = 'made', false) AS has_thumbnail, d.mime_type, d.preview_hidden, v.duration_ms
+                           FROM mcp_documents d LEFT JOIN document_versions v ON v.id = d.current_version_id WHERE d.document_id = :id");
+    $st->execute(['id' => $id]);
+    $r = $st->fetch();
+    return $r === false ? null : $r;
 }
 
 /** The folder and document ids the caller starred, for the listing's star state. */
@@ -186,7 +198,7 @@ function my_favourite_ids(PDO $pdo): array
 /** One document as the caller sees it (mcp_documents + the current version's filename and extraction state), or null. */
 function find_document(PDO $pdo, int $id): ?array
 {
-    $st = $pdo->prepare('SELECT d.*, v.filename, v.version_no AS current_version_no, v.extracted_status, v.uploaded_at AS current_uploaded_at, f.name AS folder_name, f.parent_id AS folder_parent_id,
+    $st = $pdo->prepare('SELECT d.*, v.filename, v.version_no AS current_version_no, v.extracted_status, v.uploaded_at AS current_uploaded_at, v.thumb_state, v.duration_ms, f.name AS folder_name, f.parent_id AS folder_parent_id,
                                 (SELECT m.display_name FROM members m WHERE m.id = d.locked_by) AS locked_by_name
                            FROM mcp_documents d LEFT JOIN document_versions v ON v.id = d.current_version_id LEFT JOIN folders f ON f.id = d.folder_id WHERE d.document_id = :id');
     $st->execute(['id' => $id]);
@@ -221,14 +233,21 @@ function document_preview(PDO $pdo, array $doc, ?array $text = null): array
     $kind = (string) $doc['mime_kind'];
     $filename = (string) ($doc['filename'] ?? $doc['name']);
     $inlineOk = dc_inline_safe($mime, $filename);
+    // a hidden preview (docs/build-specs/grid-and-media.md): the page shows the placeholder and keeps the preview behind Show
+    $hidden = in_array($kind, PREVIEW_HIDEABLE, true) && (bool) ($doc['preview_hidden'] ?? false);
     if ($kind === 'image' && $inlineOk) {
-        return ['kind' => $kind, 'mode' => 'image'];
+        return ['kind' => $kind, 'mode' => 'image', 'hidden' => $hidden];
     }
     if ($kind === 'pdf' && $inlineOk) {
         return ['kind' => $kind, 'mode' => 'pdf'];
     }
-    if (in_array($kind, ['audio', 'video'], true) && $inlineOk) {
-        return ['kind' => $kind, 'mode' => $kind];
+    if ($kind === 'audio' && $inlineOk) {
+        return ['kind' => $kind, 'mode' => 'audio'];
+    }
+    if ($kind === 'video' && $inlineOk) {
+        // a MOV is offered to the player as MP4 (H.264 in a QuickTime box plays); the formats no browser plays say so with Download
+        return ['kind' => $kind, 'mode' => 'video', 'hidden' => $hidden, 'playable' => !video_unplayable($mime), 'source_type' => match ($mime) { 'video/mp4', 'video/webm', 'video/ogg' => $mime, 'video/quicktime' => 'video/mp4', default => null },
+                'poster' => ($doc['thumb_state'] ?? null) === 'made' && !$hidden, 'duration_ms' => isset($doc['duration_ms']) ? (int) $doc['duration_ms'] : null];
     }
     $text ??= document_text_of($pdo, (int) $doc['document_id']);
     $body = $text === null ? '' : (string) $text['text'];

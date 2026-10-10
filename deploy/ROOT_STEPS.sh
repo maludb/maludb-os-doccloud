@@ -3,8 +3,8 @@
 # later phases ADD steps and mark them. NOTHING HERE HAS BEEN RUN: the proofs use a scratch database, php -S and fixtures, and
 # never touch an installed application, Apache, systemd or the MaluDB API.
 #   bash deploy/ROOT_STEPS.sh              prints this plan (the default)
-#   sudo bash deploy/ROOT_STEPS.sh apply   runs the steps with no decision in them: 0, 2b, 3 and 4 (the ports, the storage
-#                                          directory, the memory database, its token)
+#   sudo bash deploy/ROOT_STEPS.sh apply   runs the steps with no decision in them: 0, 0c, 2b, 3 and 4 (the ports, the media
+#                                          tools, the storage directory, the memory database, its token)
 # Steps 1, 2, 5, 6 and 7 are printed and never run: they are the installer's, the owner's, or put a secret somewhere.
 set -euo pipefail
 APP=/srv/apps/doccloud
@@ -29,6 +29,18 @@ else
   echo "   (config/.env exists — leaving it alone)"
 fi
 #    See that it worked:  php $KERNEL/bin/app_install.php plan $APP --domain subello.com | grep -E '^(todo|done) +(ports|vhost)'   -> ports done, no {{...}} unfilled
+
+# ------------------------------------------------------------------------------------------------------------------
+# 0c. THE MEDIA TOOLS (ROOT; idempotent; added 2026-10-10, docs/build-specs/grid-and-media.md): ffmpeg for a video's thumbnail and its
+#     length, poppler-utils' pdftoppm for a PDF's first page. Without them the grid shows the type's icon, and the worker fills the
+#     thumbnails in once they exist (a version waiting on a missing tool is kept `no_tool` and retried). Installed on this host 2026-10-10.
+echo "== 0c. The media tools: ffmpeg and pdftoppm (ROOT)"
+if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1 && command -v pdftoppm >/dev/null 2>&1; then
+  echo "   (ffmpeg, ffprobe and pdftoppm are installed)"
+else
+  run env DEBIAN_FRONTEND=noninteractive apt-get install -y ffmpeg poppler-utils
+fi
+#    See that it worked:  ffmpeg -version | head -1; pdftoppm -v 2>&1 | head -1
 
 # ------------------------------------------------------------------------------------------------------------------
 # 1. Look (read-only, any user): what the installer would do.

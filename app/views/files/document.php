@@ -20,7 +20,7 @@ $back = '/documents/' . $id;
     <?php if ($d['trashed_at'] !== null): ?><?= view('files/partials/trash-banner.php', ['d' => $d, 'id' => $id, 'may' => $may, 'tz' => $tz, 'window' => trash_window_days(db())]) ?><?php endif; ?>
     <div class="row g-3">
         <div class="col-12 col-lg-8">
-            <?= view('files/partials/preview.php', ['d' => $d, 'preview' => $preview, 'extraction' => $extraction]) ?>
+            <?= view('files/partials/preview.php', ['d' => $d, 'preview' => $preview, 'extraction' => $extraction, 'mayHide' => $may['hide_preview'] ?? false]) ?>
             <?= view('files/partials/versions.php', ['d' => $d, 'versions' => $versions, 'may' => $may, 'tz' => $tz, 'compact' => true]) ?>
             <div class="card mb-3" id="document-comments"><div class="card-header"><h5 class="card-title mb-0">Comments</h5></div>
                 <div id="comments-list"><div class="list-group list-group-flush" id="document-notes-list">

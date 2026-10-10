@@ -63,6 +63,12 @@ graph** in a MaluDB memory database of its own. It is what Dropbox, Box and Next
 - Commit after every finished step on `main` in the repository's message style; never push unless the owner asks.
 
 ## State
+2026-10-10 (later) — **THE GRID, THUMBNAILS, VIDEO AND HIDDEN PREVIEWS** (`docs/build-specs/grid-and-media.md`, design §16): the folder's grid,
+video thumbnails through ffmpeg, streaming in the page's player (the session released before the bytes; one log row per viewing), "Hide
+preview" for everyone (`document_preview_hidden`, db/023; two actions — 97/97 built). Proof `tests/phase3/media/run.sh` (needs ffmpeg).
+**A worktree of this installed clone shares the cluster's three roles with the install**: `tests/setup_dev.sh` reuses the install's passwords
+(never resets them) — keep it that way. DocCloud is installed on this host (application 69, `subello_doccloud`).
+
 2026-10-10 — **PHASE 3 AND PHASE 4 COMPLETE** (design §16): 68/68 screens, 95/95 actions, records MCP 73 tools + activity 7, migrations
 db/001–022. Built by the planning model through slice 5, by Sonnet 5.5 workers for slices 6–9 and Phase 4, every one verified and committed.
 **Phase 5 is the owner's** (`deploy/ROOT_STEPS.sh`, then `bin/app_install.php apply` twice, DNS/TLS, the hires, naming the expert and the Clerk
@@ -73,4 +79,4 @@ MaluMail 4xx fails at once, 5xx retried twice; a cancelled dispatch is recorded 
 **Owed outside this repository:** the kernel's `/api/v1/apps/connections.php` (the admin's connections screen falls back without it);
 M10/M11/M12 upstream in MaluDB. Proofs (one at a time — ports 8701–8707): `tests/phase0/run.sh`, `timing.sh`, `engine.sh`,
 `tests/extract/run.sh`, `tests/phase1/check_specs.sh`, `tests/phase2/run.sh`, `tests/phase3/slice{1..9}/run.sh` (slice 5 also `DC_ENGINE=1`),
-`tests/phase4/run.sh`.
+`tests/phase3/media/run.sh`, `tests/phase4/run.sh`.

@@ -90,7 +90,7 @@ function activity_sentence(array $r): string
         'folder.restrict' => 'restricted a folder', 'folder.export' => 'exported a folder',
         'document.upload' => 'uploaded a document', 'document.version' => 'added a version', 'document.rename' => 'renamed a document', 'document.move' => 'moved a document', 'document.copy' => 'copied a document',
         'document.open' => 'opened a document', 'document.download' => 'downloaded a document', 'document.preview' => 'previewed a document', 'document.trash' => 'trashed a document',
-        'document.restore' => 'restored a document', 'document.purge' => 'purged a document', 'document.lock' => 'locked a document', 'document.unlock' => 'unlocked a document',
+        'document.restore' => 'restored a document', 'document.purge' => 'purged a document', 'document.lock' => 'locked a document', 'document.unlock' => 'unlocked a document', 'document.preview_hide' => 'hid a document\'s preview', 'document.preview_show' => 'showed a document\'s preview again',
         'document.lock_break' => 'broke a lock', 'document.transfer' => 'transferred a document', 'version.restore' => 'restored a version', 'version.purge' => 'purged a version',
         'document.describe' => 'described a document', 'document.reextract' => 'asked for the text to be read again', 'document.text_extracted' => 'had its text read', 'document.export' => 'made a zip of documents',
         'upload.start' => 'started an upload', 'upload.finish' => 'finished an upload', 'upload.conflict' => 'met a name already taken', 'upload.refused' => 'had an upload refused', 'upload.expire' => 'had an upload expire',

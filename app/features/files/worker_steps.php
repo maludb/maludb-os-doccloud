@@ -74,34 +74,69 @@ function worker_extract(PDO $pdo, int $limit = 50, int $budgetSeconds = 50): arr
     return $out;
 }
 
-/** Thumbnails for images and PDFs without one (the current version), newest first. */
+/**
+ * Thumbnails (docs/build-specs/grid-and-media.md): the current version of each live image, PDF or video whose thumb_state is still NULL — or
+ * no_tool when the tool it waits on now exists — newest first. A thumbnail already on disk from before db/023 is recorded `made` without being
+ * remade (unless it is a JPEG photo whose EXIF orientation is not upright: remade once); the old `.none` marker is recorded `none`. At most
+ * $limit tool runs a pass. A video's length is kept on its version.
+ */
 function worker_thumbs(PDO $pdo, int $limit = 50): array
 {
     $made = 0;
     $skipped = 0;
-    $st = $pdo->prepare("SELECT d.id, d.current_version_id, v.mime_type, b.storage_path FROM documents d JOIN document_versions v ON v.id = d.current_version_id JOIN blobs b ON b.id = v.blob_id
-                          WHERE d.trashed_at IS NULL AND d.mime_kind IN ('image', 'pdf') AND (v.extracted_status <> 'pending' OR v.uploaded_at < now() - interval '1 minute') ORDER BY v.uploaded_at DESC LIMIT :n");
+    $waiting = 0;
+    $recorded = 0;
+    $retry = [];
+    if (dc_tool('ffmpeg') !== null) {
+        $retry[] = "v.mime_type LIKE 'video/%'";
+        $retry[] = "v.mime_type LIKE 'image/%'";
+    }
+    if (dc_tool('pdftoppm') !== null) {
+        $retry[] = "v.mime_type = 'application/pdf'";
+    }
+    $retrySql = $retry === [] ? 'false' : '(' . implode(' OR ', $retry) . ')';
+    $st = $pdo->prepare("SELECT d.id, d.current_version_id, v.mime_type, v.thumb_state, b.storage_path
+                           FROM documents d JOIN document_versions v ON v.id = d.current_version_id JOIN blobs b ON b.id = v.blob_id
+                          WHERE d.trashed_at IS NULL AND d.mime_kind IN ('image', 'pdf', 'video') AND v.purged_at IS NULL
+                            AND (v.thumb_state IS NULL OR (v.thumb_state = 'no_tool' AND $retrySql))
+                            AND (v.extracted_status <> 'pending' OR v.uploaded_at < now() - interval '1 minute')
+                          ORDER BY v.uploaded_at DESC LIMIT :n");
     $st->bindValue('n', $limit * 4, PDO::PARAM_INT);
     $st->execute();
+    $set = $pdo->prepare('UPDATE document_versions SET thumb_state = :s, duration_ms = COALESCE(:ms, duration_ms) WHERE id = :v');
     foreach ($st->fetchAll() as $d) {
-        if ($made >= $limit) {
+        if ($made + $skipped + $waiting >= $limit) {
             break;
         }
-        $thumb = store_thumb_path((int) $d['id'], (int) $d['current_version_id']);
-        if (is_file($thumb) || is_file($thumb . '.none')) {
-            continue;
+        $id = (int) $d['id'];
+        $vid = (int) $d['current_version_id'];
+        $mime = (string) $d['mime_type'];
+        $thumb = store_thumb_path($id, $vid);
+        if ($d['thumb_state'] === null) {
+            if (is_file($thumb . '.none')) {                         // slice 2's marker: tried once, not possible
+                $set->execute(['s' => 'none', 'ms' => null, 'v' => $vid]);
+                @unlink($thumb . '.none');
+                $recorded++;
+                continue;
+            }
+            if (is_file($thumb) && !str_starts_with($mime, 'video/') && dc_exif_orientation(dc_storage_path((string) $d['storage_path']), $mime) === 1) {
+                $set->execute(['s' => 'made', 'ms' => null, 'v' => $vid]);
+                $recorded++;
+                continue;
+            }
         }
-        $rel = dc_make_thumbnail((string) $d['storage_path'], (string) $d['mime_type'], (int) $d['id'], (int) $d['current_version_id']);
-        if ($rel === null) {
-            @mkdir(dirname($thumb), 0750, true);
-            @touch($thumb . '.none');                                  // tried once: not a thumbnail we can make (a corrupt image, no pdftoppm)
+        $r = dc_make_thumb((string) $d['storage_path'], $mime, $id, $vid);
+        $set->execute(['s' => $r['state'], 'ms' => $r['duration_ms'], 'v' => $vid]);
+        if ($r['state'] === 'made') {
+            $made++;
+            log_activity($pdo, 'thumb.made', 'document', $id, ['source' => 'cron', 'actor_member_id' => null, 'document_id' => $id, 'after' => ['version_id' => $vid]]);
+        } elseif ($r['state'] === 'no_tool') {
+            $waiting++;
+        } else {
             $skipped++;
-            continue;
         }
-        $made++;
-        log_activity($pdo, 'thumb.made', 'document', (int) $d['id'], ['source' => 'cron', 'actor_member_id' => null, 'document_id' => (int) $d['id'], 'after' => ['version_id' => (int) $d['current_version_id']]]);
     }
-    return ['made' => $made, 'skipped' => $skipped];
+    return ['made' => $made, 'skipped' => $skipped, 'waiting' => $waiting, 'recorded' => $recorded];
 }
 
 /** Queued exports, one at a time: the zip of what the maker may see; the maker told when it is ready. */

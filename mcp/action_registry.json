@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-10T00:19:48+00:00",
+    "generated_at": "2026-10-10T19:15:36+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -3661,6 +3661,48 @@
             "who": "reports.storage or reports.search",
             "agent": true,
             "record_id": "the file",
+            "built": true
+        },
+        "document_preview_hide": {
+            "action": "document_preview_hide",
+            "section": "The grid, thumbnails, video and hidden previews (2026-10-10, docs/build-specs/grid-and-media.md)",
+            "endpoint": "/documents/preview-hide.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "an image or a video — everyone then sees a placeholder"
+                }
+            ],
+            "undo": "document_preview_show",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.preview_hide",
+            "who": "documents.edit and edit on the document",
+            "agent": true,
+            "record_id": "the document",
+            "built": true
+        },
+        "document_preview_show": {
+            "action": "document_preview_show",
+            "section": "The grid, thumbnails, video and hidden previews (2026-10-10, docs/build-specs/grid-and-media.md)",
+            "endpoint": "/documents/preview-show.php",
+            "params": [
+                {
+                    "name": "document",
+                    "required": true,
+                    "repeated": false,
+                    "hint": "an image or a video whose preview is hidden"
+                }
+            ],
+            "undo": "document_preview_hide",
+            "confirm": false,
+            "approval": null,
+            "log_event": "document.preview_show",
+            "who": "documents.edit and edit on the document",
+            "agent": true,
+            "record_id": "the document",
             "built": true
         }
     }

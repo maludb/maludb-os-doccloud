@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
-/** GET /d/{id}/thumb — the current version's 320 px thumbnail (the same gate as the bytes), cacheable an hour; the kind's icon as a small SVG when there is none. */
+/**
+ * GET /d/{id}/thumb — the current version's 320 px thumbnail (the same gate as the bytes), cacheable an hour (the pages add ?v={version}, so a new
+ * version is a new URL); the kind's icon as a small SVG when there is none; the "Preview hidden" placeholder, never cached, while the document's
+ * image or video preview is hidden (docs/build-specs/grid-and-media.md — every surface that shows the thumbnail shows the placeholder instead).
+ */
 require_once dirname(__DIR__, 2) . '/app/features/files/handler.php';
 $pdo = db();
 $id = request_integer('id');
@@ -26,9 +30,15 @@ if (!is_logged_in()) {
 } else {
     $doc = document_at_level($pdo, $id, 'view');
 }
+header('X-Content-Type-Options: nosniff');
+if (in_array((string) $doc['mime_kind'], ['image', 'video'], true) && document_preview_is_hidden($pdo, $id)) {
+    header('Cache-Control: no-store');
+    header('Content-Type: image/svg+xml');
+    echo preview_hidden_svg();
+    exit;
+}
 $thumb = $doc['current_version_id'] === null ? null : store_thumb_path($id, (int) $doc['current_version_id']);
 header('Cache-Control: private, max-age=3600');
-header('X-Content-Type-Options: nosniff');
 if ($thumb !== null && is_file($thumb)) {
     $etag = '"t' . md5_file($thumb) . '"';
     header('ETag: ' . $etag);

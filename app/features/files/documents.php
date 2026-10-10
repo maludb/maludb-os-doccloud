@@ -59,3 +59,22 @@ function document_reextract(PDO $pdo, int $id): bool
     $st->execute(['id' => $id]);
     return $st->rowCount() === 1;
 }
+
+/** Is this document's preview hidden (a row in document_preview_hidden — docs/build-specs/grid-and-media.md)? */
+function document_preview_is_hidden(PDO $pdo, int $id): bool
+{
+    $st = $pdo->prepare('SELECT EXISTS (SELECT 1 FROM document_preview_hidden WHERE document_id = :id)');
+    $st->execute(['id' => $id]);
+    return (bool) $st->fetchColumn();
+}
+
+/** Hide or show a document's preview for everyone. True when it changed. Never touches documents (its updated_at is the "Modified" date). */
+function document_preview_hidden_set(PDO $pdo, int $id, bool $hidden, int $by): bool
+{
+    $st = $hidden
+        ? $pdo->prepare('INSERT INTO document_preview_hidden (document_id, hidden_by) VALUES (:id, :by) ON CONFLICT (document_id) DO NOTHING')
+        : $pdo->prepare('DELETE FROM document_preview_hidden WHERE document_id = :id');
+    $st->execute($hidden ? ['id' => $id, 'by' => $by] : ['id' => $id]);
+    return $st->rowCount() > 0;
+}
+
