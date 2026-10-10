@@ -56,7 +56,7 @@ ob_start();
 <div class="card mb-3" id="document-preview" data-mode="<?= e($mode) ?>"<?= $hidden ? ' data-hidden="1"' : '' ?>>
     <div class="card-body p-2">
     <?php if ($hidden): ?>
-        <div class="preview-hidden text-center" id="document-preview-hidden">
+        <div class="preview-hidden d-flex flex-column align-items-center text-center" id="document-preview-hidden">
             <span class="avatar-text avatar-lg rounded mb-2"><i class="feather-eye-off"></i></span>
             <div class="fw-semibold">Preview hidden</div>
             <div class="fs-12 text-muted mb-2">This <?= $mode === 'video' ? 'video' : 'image' ?> shows a placeholder to everyone<?= $mayHide ? ' until you turn hiding off' : '' ?>. Show it here, just this once.</div>
