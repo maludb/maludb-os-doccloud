@@ -6,7 +6,7 @@ mcp/__pycache__/
 __pycache__/
 *.pyc
 logs/
-storage/
+/storage/
 tests/phase0/engine/scratch/
 .DS_Store
 *.swp
