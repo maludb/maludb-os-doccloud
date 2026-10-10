@@ -10,6 +10,7 @@
  *                                         every request is appended to "<state file>.ledger" (the period asked, or "list")
  *   POST /api/v1/notify/sms.php         → K6, as state.sms says (mode = ok | no_sender | not_held | no_verified_phone | opted_out | rate_limited | server_error);
  *                                         every request body is appended to "<state file>.sms" (one JSON line each)
+ *   GET  /api/v1/apps/connections.php   → slice 9's admin connections screen: state.connections (rows of consumer, provider, tool, status) when set, else a 404 (a kernel without the route)
  * Every call needs Authorization: Bearer $OS_APPLICATION_TOKEN (else 401), like the real one. Never a real kernel.
  */
 $state = json_decode((string) @file_get_contents((string) getenv('FAKE_KERNEL_STATE')), true) ?: [];
@@ -19,6 +20,9 @@ $out = static function (array $body, int $status = 200): never { http_response_c
 if ($auth !== 'Bearer ' . getenv('OS_APPLICATION_TOKEN')) { $out(['error' => ['code' => 'unauthorized', 'message' => 'A valid application token is required.']], 401); }
 $input = json_decode((string) file_get_contents('php://input'), true) ?: [];
 switch ($path) {
+    case '/api/v1/apps/connections.php':
+        if (!isset($state['connections'])) { $out(['error' => ['code' => 'not_found', 'message' => 'No such route.']], 404); }
+        $out(['schema' => 'os.app-connections/1', 'connections' => $state['connections']]);
     case '/api/v1/ledger/periods.php':
         $ledger = $state['ledger'] ?? ['periods' => [], 'docs' => []];
         file_put_contents((string) getenv('FAKE_KERNEL_STATE') . '.ledger', ($_GET['period'] ?? 'list') . "\n", FILE_APPEND);

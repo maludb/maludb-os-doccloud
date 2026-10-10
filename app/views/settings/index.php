@@ -4,7 +4,8 @@
     <?= view('shared/notice.php', ['notice' => $notice]) ?>
     <div class="d-flex flex-wrap gap-1 mb-3" id="settings-tabs">
         <?= hx_link('/settings/?tab=notify', 'How I am told', 'btn btn-touch ' . ($tab === 'notify' ? 'btn-primary' : 'btn-light'), 'id="settings-tab-notify"') ?>
-        <?= hx_link('/settings/tokens/', 'Tokens', 'btn btn-touch btn-light', 'id="settings-tab-tokens"') ?>
+        <?= hx_link('/settings/tokens/', 'Tokens and keys', 'btn btn-touch btn-light', 'id="settings-tab-tokens"') ?>
+        <?= hx_link('/activity', 'My activity', 'btn btn-touch btn-light', 'id="settings-tab-activity"') ?>
         <?php if ($may['settings']): ?><?= hx_link('/admin/', 'The application\'s settings', 'btn btn-touch btn-light', 'id="settings-tab-admin"') ?><?php endif; ?>
     </div>
     <div class="row g-3">

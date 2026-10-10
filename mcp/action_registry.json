@@ -1,6 +1,6 @@
 {
     "generated_from": "docs/doccloud-action-manifest.md",
-    "generated_at": "2026-10-09T22:58:16+00:00",
+    "generated_at": "2026-10-10T00:19:48+00:00",
     "screens": {
         "home": {
             "screen": "home",
@@ -618,8 +618,8 @@
             "section": "Home, curate, admin, reports and tokens (slice 9)",
             "when": "the curate area: groups, shared libraries, tags and rules, ownership, the storage report, the search report, the Clerk's proposals",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "curate-ownership": {
             "screen": "curate-ownership",
@@ -629,7 +629,7 @@
             "params": [
                 "member"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "curate-storage": {
@@ -640,7 +640,7 @@
             "params": [
                 "library"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "curate-search": {
@@ -651,7 +651,7 @@
             "params": [
                 "since"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin": {
@@ -660,8 +660,8 @@
             "section": "Home, curate, admin, reports and tokens (slice 9)",
             "when": "the admin area: settings, quotas, the graph, links, libraries, keys, agents, connections, the worker",
             "params": [],
-            "built": false,
-            "stub": true
+            "built": true,
+            "stub": false
         },
         "admin-settings": {
             "screen": "admin-settings",
@@ -681,7 +681,7 @@
                 "kind",
                 "status"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-libraries": {
@@ -693,7 +693,7 @@
                 "kind",
                 "archived"
             ],
-            "built": false,
+            "built": true,
             "stub": false
         },
         "admin-storage": {
@@ -702,7 +702,7 @@
             "section": "Home, curate, admin, reports and tokens (slice 9)",
             "when": "the disk: blobs, de-duplication, freed bytes, the storage directory",
             "params": [],
-            "built": false,
+            "built": true,
             "stub": false
         }
     },
@@ -765,7 +765,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the notification",
-            "built": false
+            "built": true
         },
         "notifications_read_all": {
             "action": "notifications_read_all",
@@ -786,7 +786,7 @@
             "who": "own",
             "agent": true,
             "record_id": "the count",
-            "built": false
+            "built": true
         },
         "token_mint": {
             "action": "token_mint",
@@ -3423,6 +3423,12 @@
                     "hint": ""
                 },
                 {
+                    "name": "upload_session_hours",
+                    "required": false,
+                    "repeated": false,
+                    "hint": "1 to 168"
+                },
+                {
                     "name": "link_default_days",
                     "required": false,
                     "repeated": false,
@@ -3502,7 +3508,7 @@
             "who": "settings.manage",
             "agent": true,
             "record_id": "the settings",
-            "built": false
+            "built": true
         },
         "retention_set": {
             "action": "retention_set",
@@ -3574,7 +3580,7 @@
             "who": "ownership.transfer",
             "agent": true,
             "record_id": "the new owner",
-            "built": false
+            "built": true
         },
         "note_add": {
             "action": "note_add",
@@ -3607,7 +3613,7 @@
             "who": "view on the thing",
             "agent": true,
             "record_id": "the note",
-            "built": false
+            "built": true
         },
         "note_delete": {
             "action": "note_delete",
@@ -3628,7 +3634,7 @@
             "who": "own or manage on the thing",
             "agent": true,
             "record_id": "the note",
-            "built": false
+            "built": true
         },
         "storage_export": {
             "action": "storage_export",
@@ -3655,7 +3661,7 @@
             "who": "reports.storage or reports.search",
             "agent": true,
             "record_id": "the file",
-            "built": false
+            "built": true
         }
     }
 }

@@ -23,10 +23,20 @@ $back = '/documents/' . $id;
             <?= view('files/partials/preview.php', ['d' => $d, 'preview' => $preview, 'extraction' => $extraction]) ?>
             <?= view('files/partials/versions.php', ['d' => $d, 'versions' => $versions, 'may' => $may, 'tz' => $tz, 'compact' => true]) ?>
             <div class="card mb-3" id="document-comments"><div class="card-header"><h5 class="card-title mb-0">Comments</h5></div>
-                <div class="list-group list-group-flush" id="document-notes-list">
-                    <?php if ($notes === []): ?><div class="list-group-item text-muted fs-12" id="document-notes-empty">No comments yet. (The composer arrives with slice 8.)</div><?php endif; ?>
-                    <?php foreach ($notes as $n): ?><div class="list-group-item fs-12" id="note-<?= (int) $n['note_id'] ?>"><span class="fw-semibold"><?= e($n['author'] ?? 'Someone') ?></span> <span class="text-muted"><?= e(format_ts($n['created_at'], $tz)) ?></span><div><?= nl2br(e($n['body'])) ?></div></div><?php endforeach; ?>
+                <div id="comments-list"><div class="list-group list-group-flush" id="document-notes-list">
+                    <?php if ($notes === []): ?><div class="list-group-item text-muted fs-12" id="document-notes-empty">No comments yet.</div><?php endif; ?>
+                    <?php foreach ($notes as $n): $nid = (int) $n['note_id']; $mineNote = $n['member_id'] !== null && (int) $n['member_id'] === (int) current_member_id(); ?><div class="list-group-item fs-12" id="note-<?= $nid ?>">
+                        <div class="d-flex justify-content-between gap-2"><span><span class="fw-semibold"><?= e($n['author'] ?? 'Someone') ?></span> <span class="text-muted"><?= e(format_ts($n['created_at'], $tz)) ?></span></span>
+                        <?php if ($mineNote || $may['manage']): ?><form method="post" action="/notes/delete.php" hx-post="/notes/delete.php" hx-target="#flash" hx-confirm="Delete this comment?" class="d-inline"><?= csrf_field() ?><input type="hidden" name="note" value="<?= $nid ?>"><input type="hidden" name="return_to" value="<?= e($back) ?>">
+                            <button type="submit" class="btn btn-sm btn-light" id="note-delete-<?= $nid ?>" aria-label="Delete this comment"><i class="feather-trash-2"></i></button></form><?php endif; ?></div>
+                        <div id="note-<?= $nid ?>-body"><?= nl2br(e($n['body'])) ?></div></div><?php endforeach; ?>
                 </div></div>
+                <?php if ($d['trashed_at'] === null): ?><div class="card-body border-top">
+                    <form method="post" action="/notes/add.php" hx-post="/notes/add.php" hx-target="#flash" id="comment-form"><?= csrf_field() ?><input type="hidden" name="document" value="<?= $id ?>"><input type="hidden" name="return_to" value="<?= e($back) ?>">
+                        <label class="form-label fs-12" for="comment-body">Add a comment</label>
+                        <textarea name="body" id="comment-body" class="form-control" rows="2" maxlength="4000" required placeholder="Say something about this document"></textarea>
+                        <button type="submit" class="btn btn-primary btn-touch mt-2" id="comment-add-btn">Comment</button>
+                    </form></div><?php endif; ?></div>
             <?= view('shared/timeline.php', ['rows' => $timeline, 'tz' => $tz, 'prefix' => 'document']) ?>
         </div>
         <div class="col-12 col-lg-4">

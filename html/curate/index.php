@@ -1,5 +1,15 @@
 <?php
 declare(strict_types=1);
-/** Curate (screen `curate`) — built by slice 9 (NAV_SLICES); until then the shell's placeholder: 200 after the right (groups.manage|libraries.shared|tags.manage), 501 for JSON and a POST. Removing this call is the slice's first step. */
-require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
-render_nav_stub('curate', NAV_SLICES['curate'], 'groups.manage|libraries.shared|tags.manage');
+/**
+ * Curate (screen `curate`, GET /curate/): the curator's index — Groups · Shared libraries · Tags and rules · Ownership · Storage report · Search report · Proposals, each with its count; a card shows
+ * only when the person holds its right. Admitted by any of groups.manage, libraries.shared, tags.manage. Slice 9.
+ */
+require_once dirname(__DIR__, 2) . '/app/features/curate/handler.php';
+require_any_right('groups.manage|libraries.shared|tags.manage');
+$pdo = db();
+$counts = curate_counts($pdo);
+log_screen_view($pdo, 'curate');
+if (wants_json()) {
+    respond_screen(['counts' => $counts]);
+}
+render_screen('Curate', view('curate/index.php', ['counts' => $counts]), ['activeNav' => 'curate', 'screen' => 'curate']);

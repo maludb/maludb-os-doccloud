@@ -82,3 +82,36 @@ function retention_set(PDO $pdo, array $f, int $by): array
     }
     return ['before' => $b, 'after' => $a];
 }
+
+/**
+ * The settings (slice 9): any of SETTINGS_FIELDS' columns, only the keys given change. $f: column => typed value (int, bool, string, null for an emptied business name). Returns ['before' => …, 'after' => …] of
+ * what differs. The controller has judged the rights and the bounds.
+ */
+function settings_save(PDO $pdo, array $f, int $by): array
+{
+    $keys = array_values(array_intersect(array_keys($f), array_keys(SETTINGS_FIELDS)));
+    $read = static fn (): array => $pdo->query('SELECT ' . implode(', ', array_merge(['id'], array_keys(SETTINGS_FIELDS))) . ' FROM dc_settings WHERE id = 1')->fetch();
+    $before = $read();
+    if ($keys !== []) {
+        $set = [];
+        foreach ($keys as $k) {
+            $set[] = $k . ' = :' . $k;
+        }
+        $st = $pdo->prepare('UPDATE dc_settings SET ' . implode(', ', $set) . ' WHERE id = 1');
+        foreach ($keys as $k) {
+            $v = $f[$k];
+            $st->bindValue($k, $v, is_bool($v) ? PDO::PARAM_BOOL : ($v === null ? PDO::PARAM_NULL : (is_int($v) ? PDO::PARAM_INT : PDO::PARAM_STR)));
+        }
+        $st->execute();
+    }
+    $after = $read();
+    $b = [];
+    $a = [];
+    foreach ($keys as $k) {
+        if ($before[$k] !== $after[$k]) {
+            $b[$k] = $before[$k];
+            $a[$k] = $after[$k];
+        }
+    }
+    return ['before' => $b, 'after' => $a];
+}

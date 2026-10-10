@@ -1,5 +1,5 @@
-<?php /** Home (screen `home`, design §9), the Phase 2 form. Data: s (home_summary: libraries, recent, shared_count, first_run, personal_root, guest, may), tz.
- * A new Member sees ONE button; a guest with nothing shared is told so; everyone else their libraries as cards and their recent documents. */
+<?php /** Home (screen `home`, design §9), each role's own (slice 9). Data: s (home_summary: libraries, recent, shared_count, shared_recent, first_run, personal_root, guest, member, curator, admin, may), tz.
+ * A new Member sees ONE button; a guest their Shared with me; everyone else their libraries as cards, their recent documents and the blocks of home/partials/{member,curator,admin}.php for the roles they hold. */
 $may = $s['may'];
 $libraries = $s['libraries'];
 $kindBadge = ['personal' => 'light text-dark', 'group' => 'info text-info', 'shared' => 'secondary text-secondary'];
@@ -20,6 +20,7 @@ $fmtBytes = static function (?int $b): string { if ($b === null) { return ''; } 
             <?php endif; ?>
         </div>
     </div></div>
+    <?= view('home/partials/guest.php', ['s' => $s, 'tz' => $tz]) ?>
 <?php elseif ($s['first_run']): ?>
     <div class="card" id="home-first-run"><div class="card-body">
         <div class="empty-state text-center py-4" id="home-empty">
@@ -64,5 +65,8 @@ $fmtBytes = static function (?int $b): string { if ($b === null) { return ''; } 
             </tbody></table></div></div>
         <?php endif; ?>
     </div>
+    <?= view('home/partials/member.php', ['s' => $s, 'tz' => $tz]) ?>
+    <?= view('home/partials/curator.php', ['s' => $s, 'tz' => $tz, 'fmtBytes' => $fmtBytes]) ?>
+    <?= view('home/partials/admin.php', ['s' => $s, 'tz' => $tz, 'fmtBytes' => $fmtBytes]) ?>
 <?php endif; ?>
 </div>

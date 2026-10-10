@@ -2,8 +2,7 @@
 declare(strict_types=1);
 /**
  * The document (screen `document`, /documents/{id}; design §9): the preview per kind, name, description, tags (slice 4's chips), owner, the folder
- * crumb, size and kind, the lock state, the versions table with restore (and purge for the admin), download, the trail, comments (notes, read-only
- * until slice 8's composer), "who can see this" (slice 3) and related documents from the graph (slice 5: the document's subjects, the documents like it through the wall). Read on a phone first.
+ * crumb, size and kind, the lock state, the versions table with restore (and purge for the admin), download, the trail, comments (notes, with slice 9's composer), "who can see this" (slice 3) and related documents from the graph (slice 5: the document's subjects, the documents like it through the wall). Read on a phone first.
  */
 require_once dirname(__DIR__, 2) . '/app/features/trash/handler.php';
 require_once dirname(__DIR__, 2) . '/app/features/activity/queries.php';
@@ -42,7 +41,7 @@ $may = ['edit' => dc_level_at_least($level, 'edit') && has_right('documents.edit
         'lock' => dc_level_at_least($level, 'edit') && has_right('documents.edit') && $d['locked_by'] === null, 'unlock' => $d['locked_by'] !== null && (int) $d['locked_by'] === $me,
         'break' => $lockedByOther && dc_level_at_least($level, 'manage'), 'copy' => has_right('documents.upload') && !is_guest(), 'star' => !is_guest(), 'export' => has_right('export.own'),
         'tag' => dc_level_at_least($level, 'edit') && has_right('tags.apply') && !$lockedByOther,
-        'reextract' => dc_level_at_least($level, 'manage') && in_array((string) ($d['extracted_status'] ?? ''), ['failed', 'no_text', 'unsupported', 'ready'], true), 'share' => dc_level_at_least($level, 'manage') && has_right('documents.share')];
+        'reextract' => dc_level_at_least($level, 'manage') && in_array((string) ($d['extracted_status'] ?? ''), ['failed', 'no_text', 'unsupported', 'ready'], true), 'share' => dc_level_at_least($level, 'manage') && has_right('documents.share'), 'comment' => $d['trashed_at'] === null];
 log_activity($pdo, 'document.open', 'document', $id, ['screen' => 'document', 'document_id' => $id, 'folder_id' => (int) $d['folder_id'], 'library_id' => (int) $d['library_id']]);
 $pdo->prepare('UPDATE documents SET last_opened_at = now() WHERE id = :id')->execute(['id' => $id]);
 $documentTags = document_tags($pdo, $id);
@@ -55,7 +54,7 @@ if (wants_json()) {
         'timeline' => array_map('present_activity_row', $timeline),
         'graph' => ['status' => $related['status'], 'policy' => $graphSubjects['policy'] ?? null, 'indexed_at' => isset($graphSubjects['indexed_at']) ? json_ts($graphSubjects['indexed_at']) : null, 'subjects' => $graphSubjects['subjects'] ?? [], 'related' => array_map('present_graph_row', $related['rows'])]]);
 }
-$notices = ['tagged' => ['success', 'Tagged.'], 'untagged' => ['success', 'The tag was removed.'], 'proposed' => ['success', 'Proposed to the curators.'], 'uploaded' => ['success', 'Uploaded.'], 'version' => ['success', 'A new version was added.'], 'renamed' => ['success', 'Renamed.'], 'described' => ['success', 'Saved.'], 'moved' => ['success', 'Moved.'],
+$notices = ['commented' => ['success', 'Your comment was added.'], 'comment_deleted' => ['success', 'The comment was deleted.'], 'tagged' => ['success', 'Tagged.'], 'untagged' => ['success', 'The tag was removed.'], 'proposed' => ['success', 'Proposed to the curators.'], 'uploaded' => ['success', 'Uploaded.'], 'version' => ['success', 'A new version was added.'], 'renamed' => ['success', 'Renamed.'], 'described' => ['success', 'Saved.'], 'moved' => ['success', 'Moved.'],
             'copied' => ['success', 'Copied — this is the copy.'], 'restored' => ['success', 'Restored as a new version.'], 'purged' => ['success', 'The version was purged.'], 'locked' => ['success', 'Locked for you.'],
             'unlocked' => ['success', 'Unlocked.'], 'lock_broken' => ['success', 'The lock was broken; its holder was told.'], 'reextract' => ['success', 'The text will be read again within the minute.'],
             'starred' => ['success', 'Added to your favourites.'], 'unstarred' => ['success', 'Removed from your favourites.'], 'export' => ['success', 'The zip is being made; find it under Exports.'], 'trashed' => ['success', 'Sent to the trash.'], 'untrashed' => ['success', 'Restored from the trash.'], 'restored_root' => ['success', 'Restored to the library\'s top folder: its folder is gone.']];

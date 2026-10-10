@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-/** / — the home (screen `home`, design §9): one button for a new Member, the libraries as cards and the recent documents for everyone else, Shared with me for a guest. JSON: the same, whitelisted. */
+/** / — the home (screen `home`, design §9, slice 9): one button for a new Member; for everyone else the libraries, recent, shared this week, open requests, expiring links and the Clerk; a curator's and the admin's blocks on top; Shared with me for a guest. JSON: the same, whitelisted. */
 require_once dirname(__DIR__) . '/app/bootstrap.php';
 require_once dirname(__DIR__) . '/app/features/home/queries.php';
 require_login();
@@ -17,6 +17,6 @@ if (wants_json()) {
             'updated_at' => json_ts($d['updated_at']), 'last_opened_at' => json_ts($d['last_opened_at'] ?? null)], $s['recent']),
         'proposals_open' => (int) $s['proposals_open'], 'clerk_note' => $s['clerk_note'] === null ? null : ['title' => $s['clerk_note']['title'], 'body' => $s['clerk_note']['body'], 'created_at' => json_ts($s['clerk_note']['created_at'])],
         'may' => $s['may'],
-    ]);
+    ] + present_home_blocks($s));
 }
 render_screen('Home', view('home/dashboard.php', ['s' => $s, 'tz' => member_timezone()]), ['activeNav' => 'home', 'screen' => 'dashboard']);
