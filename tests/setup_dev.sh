@@ -3,7 +3,7 @@
 #   tests/setup_dev.sh            (needs `sudo -n -u postgres`; recreates $DC_DEV_DB, default dc_dev0)
 # 1. drops and creates the scratch database; 2. applies db/0*.sql in order as postgres (the same files the installer applies —
 #    db/001–005 alone are enough for the kit's proof; the schema's files follow as they are written); 3. leaves the cluster roles'
-#    passwords ALONE when the app is installed (reads them from config/.env); else gives them a scratch password (the kernel's
+#    passwords ALONE when the app is installed (reads them from config/.env — or the install's, from a worktree); else gives them a scratch password (the kernel's
 #    installer sets fresh ones at `apply`); 4. writes the proofs' environment to $DC_DEV_ENV (default /tmp/inv-dev0.env, mode 600) —
 #    app/bootstrap.php reads that file instead of config/.env when DC_DEV_ENV is set (never in production). Nothing here is
 #    committed or installed. the graph's token is left empty: the engine proof (tests/phase0/engine.sh) has its own scratch tenant.
@@ -18,6 +18,14 @@ UPTO=${DC_DEV_UPTO:-999}      # DC_DEV_UPTO=005 applies db/001–005 only (the k
 for f in "$ROOT"/db/0*.sql; do n=$(basename "$f" | cut -c1-3); [ "$n" -le "$UPTO" ] 2>/dev/null || continue; $PSQL -d "$DB" -f "$f" >/dev/null || { echo "FAILED: $f"; exit 1; }; done
 LIVEENV="$ROOT/config/.env"
 lv() { grep -m1 "^$1=" "$LIVEENV" | cut -d= -f2-; }
+# A worktree (or a second clone) of an INSTALLED DocCloud has no config/.env of its own but shares the cluster's three roles with the
+# install: resetting their passwords here would take the installed application down. Reuse the install's passwords instead
+# (DC_LIVE_ENV names its config/.env; /srv/apps/doccloud is the install path), never reset them.
+if ! { [ -f "$LIVEENV" ] && [ -n "$(lv DB_PASSWORD)" ]; }; then
+  for cand in "${DC_LIVE_ENV:-}" /srv/apps/doccloud/config/.env; do
+    if [ -n "$cand" ] && [ -r "$cand" ] && grep -q '^DB_PASSWORD=.' "$cand"; then LIVEENV=$cand; break; fi
+  done
+fi
 if [ -f "$LIVEENV" ] && [ -n "$(lv DB_PASSWORD)" ] && [ -n "$(lv MCP_RECORDS_DB_PASSWORD)" ] && [ -n "$(lv MCP_ACTIVITY_DB_PASSWORD)" ]; then
   PW_RW=$(lv DB_PASSWORD); PW_REC=$(lv MCP_RECORDS_DB_PASSWORD); PW_ACT=$(lv MCP_ACTIVITY_DB_PASSWORD)
 else
