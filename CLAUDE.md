@@ -63,6 +63,12 @@ graph** in a MaluDB memory database of its own. It is what Dropbox, Box and Next
 - Commit after every finished step on `main` in the repository's message style; never push unless the owner asks.
 
 ## State
+2026-10-10 (latest) — **FILES OF ANY SIZE** (`docs/build-specs/large-uploads.md`, design §16; the owner: a file over 2 GB refused "is not
+acceptable"): no per-file ceiling by default (`max_document_bytes` NULL; an admin may set one), the store's room limits (507); every part
+written at its offset in `uploads/<session>/data` and hashed as the parts arrive under the session's row lock (never weaken that lock: the
+stored sha256 must always be the bytes stored, or de-duplication hands one person another's content); resume by `resume_key`; the export's
+2 GB cap gone (db/024). Proof `tests/phase3/bigfiles/run.sh` (~10 GB free on /tmp; a real 2.5 GB file).
+
 2026-10-10 (later) — **THE GRID, THUMBNAILS, VIDEO AND HIDDEN PREVIEWS** (`docs/build-specs/grid-and-media.md`, design §16): the folder's grid,
 video thumbnails through ffmpeg, streaming in the page's player (the session released before the bytes; one log row per viewing), "Hide
 preview" for everyone (`document_preview_hidden`, db/023; two actions — 97/97 built). Proof `tests/phase3/media/run.sh` (needs ffmpeg).

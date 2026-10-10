@@ -4,8 +4,9 @@ declare(strict_types=1);
 /**
  * A zip of documents (docs/build-specs/uploads-and-versions.md §8, uploads-versions.md divergence 4): built by the worker for an export —
  * the documents the MAKER may see at build time (dc_visible_among as the maker), each blob added by path (ZipArchive streams it; nothing read
- * into memory), paths = the folder path below the exported folder, names de-duplicated with " (2)". ≤ 2 GB and ≤ 10,000 entries. Returns
- * [item_count, byte_size, skipped] or throws.
+ * into memory), paths = the folder path below the exported folder, names de-duplicated with " (2)". ≤ 10,000 entries, and no more bytes than the store has room for (dc_store_room — no fixed size cap since
+ * db/024; ZipArchive writes Zip64 past 4 GB); a file of 64 MB or more is stored as it is (deflating gigabytes of video costs minutes and gains
+ * nothing). Returns [item_count, byte_size, skipped] or throws.
  */
 function dc_zip_build(PDO $pdo, array $export): array
 {
@@ -67,6 +68,7 @@ function dc_zip_build(PDO $pdo, array $export): array
     $count = 0;
     $skipped = 0;
     $bytes = 0;
+    $room = dc_store_room() ?? PHP_INT_MAX;
     $blob = $pdo->prepare('SELECT b.storage_path, b.byte_size FROM document_versions v JOIN blobs b ON b.id = v.blob_id WHERE v.id = :v AND v.purged_at IS NULL');
     foreach ($rows as $r) {
         if (empty($visible[(int) $r['id']])) {
@@ -84,7 +86,7 @@ function dc_zip_build(PDO $pdo, array $export): array
             $skipped++;
             continue;
         }
-        if ($bytes + (int) $b['byte_size'] > 2 * 1024 * 1024 * 1024 || $count >= 10000) {
+        if ($bytes + (int) $b['byte_size'] > $room || $count >= 10000) {
             $skipped++;
             continue;
         }
@@ -97,6 +99,9 @@ function dc_zip_build(PDO $pdo, array $export): array
         }
         $names[strtolower($entry)] = true;
         $zip->addFile($abs, $entry);
+        if ((int) $b['byte_size'] >= 67108864) {
+            $zip->setCompressionName($entry, ZipArchive::CM_STORE);
+        }
         $count++;
         $bytes += (int) $b['byte_size'];
     }

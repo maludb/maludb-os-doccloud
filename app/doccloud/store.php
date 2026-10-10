@@ -5,10 +5,11 @@ declare(strict_types=1);
  * THE BLOB STORE — the one module that touches the disk (design §6.1; docs/build-specs/uploads-and-versions.md §1, §3; sso-shell.md).
  * Every later slice calls it; nothing else opens a file under the store. Two name sets are served, because the two specs name them
  * differently: the uploads spec's (dc_storage_dir, dc_storage_path, dc_sniff_mime, dc_inline_safe, dc_refused_kind, dc_blob_store,
- * dc_blob_unlink, dc_make_thumbnail, dc_safe_filename) and the shell spec's (store_blob_path, store_part_path, store_thumb_path,
+ * dc_blob_unlink, dc_make_thumbnail, dc_safe_filename) and the shell spec's (store_blob_path, store_upload_path, store_thumb_path,
  * store_export_path, store_judge_type, store_move_into_blobs, store_stream, store_unlink). The directory: DC_STORAGE_DIR, else
- * dc_settings.storage_dir, else APP_ROOT/storage — holding blobs/ (content-addressed: blobs/aa/bb/<sha256>), uploads/<session>/<part>,
- * thumbs/<document>/<version>.jpg, exports/<export>.zip. Nothing is refused for storage but a zero-byte file; what must never be served
+ * dc_settings.storage_dir, else APP_ROOT/storage — holding blobs/ (content-addressed: blobs/aa/bb/<sha256>), uploads/<session>/data (every
+ * part written at its offset, db/024), thumbs/<document>/<version>.jpg, exports/<export>.zip. Nothing is refused for storage but a zero-byte
+ * file and a file the disk has no room for (dc_store_room; no per-file ceiling unless an admin sets one, dc_file_ceiling); what must never be served
  * INLINE (an executable, a script, HTML, SVG, anything beginning <?php, #!, MZ or ELF) is stored and served as an attachment.
  */
 
@@ -59,6 +60,35 @@ function dc_storage_ready(): bool
     return $ready = is_writable($base . '/blobs') && is_writable($base . '/uploads');
 }
 
+/**
+ * Bytes the store can still take: the filesystem's free space (what an unprivileged writer may use) less the reserve always kept free —
+ * DC_STORE_RESERVE_BYTES, 1 GB by default — so a large upload can never fill the disk the database and the logs share. Null when unknown.
+ */
+function dc_store_room(): ?int
+{
+    $free = @disk_free_space(dc_storage_dir());
+    if ($free === false) {
+        return null;
+    }
+    $reserve = trim((string) env('DC_STORE_RESERVE_BYTES', ''));               // an empty line in the environment keeps the default
+    return (int) $free - ($reserve === '' ? 1073741824 : max(0, (int) $reserve));
+}
+
+/**
+ * The per-file ceiling, or null for none (db/024, the owner's rule: a file store takes files of any size). The setting
+ * dc_settings.max_document_bytes is NULL unless an admin chose a ceiling; DC_MAX_DOCUMENT_BYTES may only lower it. dc_store_room() limits always.
+ */
+function dc_file_ceiling(PDO $pdo): ?int
+{
+    $v = one_value($pdo, "SELECT dc_setting_int('max_document_bytes')");
+    $ceiling = $v === null ? null : (int) $v;
+    $env = (int) env('DC_MAX_DOCUMENT_BYTES', '0');
+    if ($env > 0) {
+        $ceiling = $ceiling === null ? $env : min($ceiling, $env);
+    }
+    return $ceiling;
+}
+
 /** 'ok' when the store is writable, 'unwritable' otherwise (the health page). */
 function dc_storage_state(): string
 {
@@ -66,8 +96,7 @@ function dc_storage_state(): string
 }
 
 function store_blob_path(string $relative): string { return dc_storage_path($relative); }
-function store_part_path(int $session, int $part): string { return dc_storage_path('uploads/' . $session . '/' . $part); }
-function store_assembled_path(int $session): string { return dc_storage_path('uploads/' . $session . '/assembled'); }
+function store_upload_path(int $session): string { return dc_storage_path('uploads/' . $session . '/data'); }
 function store_thumb_path(int $documentId, int $versionId = 0): string { return dc_storage_path('thumbs/' . $documentId . '/' . ($versionId ?: 'current') . '.jpg'); }
 function store_export_path(int $exportId): string { return dc_storage_path('exports/' . $exportId . '.zip'); }
 
@@ -202,9 +231,10 @@ function dc_mime_kind_of(string $mime): string
 
 /**
  * Move an assembled (or uploaded) file into the blobs by its sha256: hard-links when it can, moves otherwise; 0640; an existing blob
- * file is kept (the bytes are the same) and the source removed. Returns the RELATIVE path (what blobs.storage_path holds).
+ * file is kept (the bytes are the same) and the source removed — unless $keepSource (the finish of an upload keeps its file until the
+ * version is committed, so a refusal at the commit can be answered again). Returns the RELATIVE path (what blobs.storage_path holds).
  */
-function store_move_into_blobs(string $tmp, string $sha256): string
+function store_move_into_blobs(string $tmp, string $sha256, bool $keepSource = false): string
 {
     if (!dc_storage_ready()) {
         throw new RuntimeException('The store is not writable.');
@@ -216,17 +246,22 @@ function store_move_into_blobs(string $tmp, string $sha256): string
         throw new RuntimeException('Cannot make ' . $dir);
     }
     if (is_file($dest)) {
-        @unlink($tmp);
+        if (!$keepSource) {
+            @unlink($tmp);
+        }
         return $rel;
     }
     if (!@link($tmp, $dest)) {
-        if (!@rename($tmp, $dest)) {
-            if (!@copy($tmp, $dest)) {
+        if ($keepSource || !@rename($tmp, $dest)) {
+            if (!@copy($tmp, $dest . '.part') || !@rename($dest . '.part', $dest)) {     // never a half-copied file under a sha256's name
+                @unlink($dest . '.part');
                 throw new RuntimeException('Cannot store the file.');
             }
         }
     }
-    @unlink($tmp);
+    if (!$keepSource) {
+        @unlink($tmp);
+    }
     @chmod($dest, 0640);
     return $rel;
 }

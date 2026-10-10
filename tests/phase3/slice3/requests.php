@@ -59,7 +59,7 @@ $big = tmpfile_of(1200000, 'big', 'huge.bin');
 $r = pub_upload($m['path'] . '/upload', $big, 'Acme', 'up', $m['path']);
 ok($r['code'] === 413, 'a file over the ceiling (1 MB set; 64 MB at most on this door): 413 (' . $r['code'] . ')');
 @unlink($big);
-pdo()->exec("UPDATE dc_settings SET max_document_bytes = 2147483648");
+pdo()->exec("UPDATE dc_settings SET max_document_bytes = NULL");
 $r = req('POST', $m['path'] . '/upload', ['jar' => visitor('up'), 'form' => ['name' => 'x']]);
 ok($r['code'] === 403 || $r['code'] === 422, 'a POST without the page\'s token or a file is refused (' . $r['code'] . ')');
 

@@ -26,7 +26,8 @@ through `wants_json()`. Paths: `DC_STORAGE_DIR` (`env('DC_STORAGE_DIR')`, defaul
 | `tests/slice2/run.sh` | the proof (§10) |
 
 ## 2. The upload in parts
-Settings: `dc_settings.upload_part_bytes` (8 MB), `max_document_bytes` (2 GB; `DC_MAX_DOCUMENT_BYTES` may only lower it),
+Settings: `dc_settings.upload_part_bytes` (8 MB), `max_document_bytes` (NULL = no ceiling since db/024 — `large-uploads.md`, which also
+writes each part at its offset in one file and hashes as the parts arrive; `DC_MAX_DOCUMENT_BYTES` may only lower it),
 `upload_session_hours` (24). The browser (`upload.js`) slices a `File` into parts of `upload_part_bytes`, sends them in order (at
 most 3 in flight), retries a failed part thrice, and finishes; a file no larger than one part is `start` + one `part` + `finish`
 (three requests; the API door below is the one-request form).

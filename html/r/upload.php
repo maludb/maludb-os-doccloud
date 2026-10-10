@@ -25,7 +25,7 @@ $answer = static function (int $status, array $payload) use ($base): never {
 if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file((string) $file['tmp_name'])) {
     $answer(422, ['ok' => false, 'error' => ['code' => 'no_file', 'message' => 'Choose a file to send.']]);
 }
-$ceiling = min(64 * 1024 * 1024, (int) one_value($pdo, "SELECT dc_setting_int('max_document_bytes')"));
+$ceiling = min(64 * 1024 * 1024, dc_file_ceiling($pdo) ?? PHP_INT_MAX);
 if ((int) $file['size'] > $ceiling) {
     $answer(413, ['ok' => false, 'error' => ['code' => 'too_large', 'message' => 'A file sent this way is at most ' . format_bytes($ceiling) . '.']]);
 }

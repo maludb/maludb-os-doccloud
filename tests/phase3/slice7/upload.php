@@ -99,7 +99,7 @@ ok($r['code'] === 409 && $r['json']['error']['code'] === 'name_taken' && $r['jso
 ok(api('POST', '/api/v1/upload/start', $kb, ['json' => ['folder' => $pol, 'filename' => 'x.bin', 'byte_size' => 100]])['code'] === 403, 'start in a folder seen at view only: 403');
 ok(api('POST', '/api/v1/upload/start', $km, ['json' => ['folder' => $contracts, 'filename' => 'zero.bin', 'byte_size' => 0]])['code'] === 422, 'a zero-byte start: 422');
 $r = api('POST', '/api/v1/upload/start', $km, ['json' => ['folder' => $contracts, 'filename' => 'huge.bin', 'byte_size' => 9999999999999]]);
-ok($r['code'] === 413, 'a file over the ceiling: 413');
+ok($r['code'] === 507 && $r['json']['error']['code'] === 'no_space', 'a 10 TB file: 507 no_space — no per-file ceiling since db/024, the store\'s room limits');
 ok(api('GET', "/api/v1/upload/$sid/finish", $km)['code'] === 405 && api('GET', '/api/v1/upload/start', $km)['code'] === 405, 'the wrong method on the parts routes: 405');
 ok(api('PUT', '/api/v1/upload/999999/1', $km, ['raw' => 'x', 'headers' => ['Content-Type: application/octet-stream']])['code'] === 404, 'an unknown session: 404');
 finish();

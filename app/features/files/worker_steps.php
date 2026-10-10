@@ -190,7 +190,13 @@ function worker_uploads_expire(PDO $pdo): array
             store_unlink('uploads/' . (int) $id);
         }
     }
-    return ['expired' => $n];
+    $tmp = 0;
+    foreach (glob(dc_storage_path('uploads/tmp') . '/*') ?: [] as $f) {      // a part's body whose request died before it was written in
+        if (is_file($f) && filemtime($f) < time() - 86400 && @unlink($f)) {
+            $tmp++;
+        }
+    }
+    return ['expired' => $n, 'temp_removed' => $tmp];
 }
 
 /** Exports past their date: the rows' paths cleared by the database, the files unlinked. */

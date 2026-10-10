@@ -84,9 +84,9 @@ SELECT pg_temp.check((SELECT count(*) FROM mcp_app_roles) = 4 AND (SELECT count(
 
 -- ---------------------------------------------------------------- settings (§6.3)
 SELECT pg_temp.as_member(1);
-SELECT pg_temp.check((SELECT max_document_bytes = 2147483648 AND versions_keep_days = 30 AND versions_keep_count = 10 AND trash_days = 30 AND lock_hours = 24 AND link_default_days = 30
+SELECT pg_temp.check((SELECT max_document_bytes IS NULL AND versions_keep_days = 30 AND versions_keep_count = 10 AND trash_days = 30 AND lock_hours = 24 AND link_default_days = 30
     AND NOT link_no_expiry_allowed AND graph_monthly_text_mb = 100 AND graph_default_policy = 'index' AND key_rate_per_minute = 60 AND key_rate_per_day = 5000 FROM dc_settings),
-    'the settings row is seeded with the design''s defaults (2 GB, 30 days/10, trash 30, locks 24 h, links 30 days, 100 MB, index, 60/min, 5,000/day)');
+    'the settings row is seeded with the design''s defaults (no per-file ceiling since db/024, 30 days/10, trash 30, locks 24 h, links 30 days, 100 MB, index, 60/min, 5,000/day)');
 RESET ROLE;
 SELECT pg_temp.refused($$INSERT INTO dc_settings (id) VALUES (2)$$, 'violates check', 'the settings are one row');
 SET ROLE doccloud_rw;
@@ -166,7 +166,13 @@ SELECT pg_temp.check((SELECT version_no = 3 AND source = 'restore' AND sha256 = 
 SELECT pg_temp.refused($$UPDATE document_versions SET purged_at = now() WHERE id = $$ || pg_temp.i('v3'), 'never purged', 'the current version is never purged');
 SELECT pg_temp.refused($$UPDATE document_versions SET version_no = 9 WHERE id = $$ || pg_temp.i('v2'), 'immutable', 'a version is immutable');
 SELECT pg_temp.refused($$SELECT pg_temp.doc('d_dup', $$ || pg_temp.i('f_2026') || $$, 'ACME-MSA.pdf', 27)$$, 'duplicate key', 'a same-named live document in a folder is refused (PHP then asks: a new version, or keep both)');
-SELECT pg_temp.refused($$SELECT pg_temp.doc('d_big', $$ || pg_temp.i('f_2026') || $$, 'huge.bin', 27, 3000000000)$$, 'per-file ceiling', 'over the per-file ceiling is refused');
+RESET ROLE;
+UPDATE dc_settings SET max_document_bytes = 2147483648;                         -- a ceiling an admin chose (db/024: none by default)
+SET ROLE doccloud_rw;
+SELECT pg_temp.refused($$SELECT pg_temp.doc('d_big', $$ || pg_temp.i('f_2026') || $$, 'huge.bin', 27, 3000000000)$$, 'per-file ceiling', 'over a per-file ceiling an admin set is refused');
+RESET ROLE;
+UPDATE dc_settings SET max_document_bytes = NULL;
+SET ROLE doccloud_rw;
 UPDATE libraries SET quota_bytes = 20000 WHERE id = pg_temp.i('lib_board');
 SELECT pg_temp.refused($$SELECT pg_temp.doc('d_quota', $$ || pg_temp.i('f_2026') || $$, 'overflow.bin', 27, 9000)$$, 'over its quota', 'a quota refuses at upload');
 SELECT pg_temp.check((SELECT near FROM dc_quota_state(pg_temp.i('lib_board'))) = false AND (SELECT pct FROM dc_quota_state(pg_temp.i('lib_board'))) = 85.0, 'dc_quota_state: 17,000 of 20,000 = 85%, not yet near');

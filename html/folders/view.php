@@ -31,7 +31,7 @@ $may = ['add' => dc_level_at_least($level, 'upload') && has_right('documents.upl
         'manage' => dc_level_at_least($level, 'manage'), 'share' => dc_level_at_least($level, 'manage') && has_right('documents.share'), 'star' => !is_guest(), 'export' => has_right('export.own')];
 require_once dirname(__DIR__, 2) . '/app/features/tags/queries.php';
 $tagDatalist = $may['edit'] && has_right('tags.apply') ? tag_datalist($pdo) : [];
-$uploadSettings = ['part_bytes' => (int) one_value($pdo, "SELECT dc_setting_int('upload_part_bytes')"), 'max_document_bytes' => (int) one_value($pdo, "SELECT dc_setting_int('max_document_bytes')")];
+$uploadSettings = ['part_bytes' => (int) one_value($pdo, "SELECT dc_setting_int('upload_part_bytes')"), 'max_document_bytes' => dc_file_ceiling($pdo)];
 $strip = null;
 if (!is_guest()) {
     $stripProposals = $pdo->prepare("SELECT clerk_proposal_id FROM mcp_clerk_proposals WHERE folder_id = :f AND status = 'proposed' AND (for_member_id = app_current_member_id() OR (SELECT dc_has_right('groups.manage')))");

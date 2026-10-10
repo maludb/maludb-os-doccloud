@@ -91,7 +91,7 @@ echo "4. Abandoned uploads, stale locks\n";
 $s = post_j(27, '/upload/start', ['folder_id' => $wf, 'filename' => 'abandoned.bin', 'byte_size' => 10 * 1048576]);
 $sid = (int) $s['json']['session_id'];
 post_raw(27, '/upload/part?session=' . $sid . '&n=1', str_repeat('a', 8388608));
-ok(is_file(store() . '/uploads/' . $sid . '/1'), 'a part of an abandoned session is on disk');
+ok(is_file(store() . '/uploads/' . $sid . '/data') && filesize(store() . '/uploads/' . $sid . '/data') === 8388608, 'a part of an abandoned session is on disk (written at its offset in the session\'s one file)');
 pdo()->exec("UPDATE upload_sessions SET expires_at = now() - interval '1 minute' WHERE id = $sid");
 $rep = worker('upload_sessions_expire');
 ok(($rep['ran']['upload_sessions_expire']['expired'] ?? 0) === 1 && one('SELECT status FROM upload_sessions WHERE id = :s', ['s' => $sid]) === 'expired' && !is_dir(store() . '/uploads/' . $sid), 'the pass expires it and removes the parts');

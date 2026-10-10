@@ -52,7 +52,7 @@ check "$(sql "select count(*) from dc_rights")" "28" "twenty-eight rights"
 check "$(sql "select cardinality(rights) from mcp_app_roles where role_key = 'guest'")" "1" "a Guest holds one right: documents.guest"
 check "$(sudo -n -u postgres psql -d "$DC_DEV_DB" -v ON_ERROR_STOP=1 -qAt -c "begin; insert into activity_log (source, action, after) values ('portal', 'link.open', '{\"label\":\"SMOKE link\"}'); select source from activity_log; rollback;" 2>&1 | head -1)" "portal" "activity_log admits source portal (a link holder)"
 check "$(sql "select string_agg(column_name, ',' order by ordinal_position) from information_schema.columns where table_name = 'activity_log' and column_name in ('library_id','document_id','folder_id','token_id')")" "library_id,document_id,folder_id,token_id" "the four audit keys appended to activity_log"
-check "$(sql "select max_document_bytes || ':' || trash_days || ':' || graph_default_policy || ':' || key_rate_per_minute || ':' || link_default_days from dc_settings")" "2147483648:30:index:60:30" "the settings row is seeded with the design's defaults (2 GB, 30 days, index, 60/min, 30-day links)"
+check "$(sql "select coalesce(max_document_bytes::text, 'none') || ':' || trash_days || ':' || graph_default_policy || ':' || key_rate_per_minute || ':' || link_default_days from dc_settings")" "none:30:index:60:30" "the settings row is seeded with the design's defaults (no per-file ceiling since db/024, 30 days, index, 60/min, 30-day links)"
 
 echo "== the mirror (the fixture through directory_sync --from-file)"
 php bin/directory_sync.php --from-file bin/dev_directory.json >/dev/null 2>&1; check "$?" "0" "the directory fixture applies"

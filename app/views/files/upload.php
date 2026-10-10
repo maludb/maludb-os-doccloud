@@ -6,7 +6,7 @@ $id = (int) $folder['id'];
 <div class="main-content" id="upload-content">
     <?= view('files/partials/upload-zone.php', ['folderId' => $id, 'documentId' => $doc === null ? null : (int) $doc['id'], 'settings' => $settings, 'open' => true, 'doneUrl' => $doc === null ? '/f/' . $id : '/documents/' . (int) $doc['id']]) ?>
     <?php $open = array_values(array_filter($sessions, static fn (array $s): bool => in_array($s['status'], ['open', 'assembling'], true))); if ($open !== []): ?>
-    <div class="card" id="upload-open-sessions"><div class="card-header"><h5 class="card-title mb-0">Still arriving</h5></div><div class="list-group list-group-flush">
+    <div class="card" id="upload-open-sessions"><div class="card-header"><h5 class="card-title mb-0">Still arriving</h5><div class="fs-11 text-muted">Choose the same file again to carry on where it stopped.</div></div><div class="list-group list-group-flush">
         <?php foreach ($open as $s): ?><div class="list-group-item fs-12 d-flex justify-content-between"><span><?= e($s['filename']) ?> · <?= (int) $s['parts_done'] ?>/<?= (int) $s['parts_total'] ?> parts</span><span class="text-muted">expires <?= e(format_ts($s['expires_at'], $tz)) ?></span></div><?php endforeach; ?>
     </div></div>
     <?php endif; ?>

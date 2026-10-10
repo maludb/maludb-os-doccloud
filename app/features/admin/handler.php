@@ -17,7 +17,8 @@ const RETENTION_BOUNDS = ['versions_keep_days' => ['Keep every version for', 1, 
 
 /**
  * The settings form's fields (slice 9; db/005's columns and their CHECK ranges): key => [group, type, label, min, max, unit]. `settings` needs settings.manage, `limits` quotas.manage. A `bytes` field is
- * sent as <name> (bytes) or as the same name with _mb for megabytes (a number, decimals allowed) — the form uses megabytes. `bool` is yes/no, `enum` one of the list in `max`, `tz` an identifier from PHP's list.
+ * sent as <name> (bytes) or as the same name with _mb for megabytes (a number, decimals allowed) — the form uses megabytes. A `ceiling` is a `bytes` field that may be emptied (blank or 0 = none; db/024).
+ * `bool` is yes/no, `enum` one of the list in `max`, `tz` an identifier from PHP's list.
  */
 const SETTINGS_FIELDS = [
     'business_name' => ['settings', 'text', 'The business name', 0, 120, 'characters'],
@@ -28,7 +29,7 @@ const SETTINGS_FIELDS = [
     'stale_guest_share_days' => ['settings', 'int', 'Days before a guest share is stale', 1, 3650, 'days'],
     'graph_default_policy' => ['settings', 'enum', 'The graph\'s default policy', 0, ['none', 'index', 'full'], ''],
     'graph_text_chars' => ['settings', 'int', 'Characters the index policy remembers', 1000, 200000, 'characters'],
-    'max_document_bytes' => ['limits', 'bytes', 'The largest file', 1048576, 1099511627776, 'MB'],
+    'max_document_bytes' => ['limits', 'ceiling', 'The largest file', 1048576, null, 'MB'],
     'max_text_bytes' => ['limits', 'bytes', 'The most text read from a file', 65536, 1073741824, 'MB'],
     'upload_part_bytes' => ['limits', 'bytes', 'The size of an upload part', 1048576, 67108864, 'MB'],
     'upload_session_hours' => ['limits', 'int', 'An abandoned upload is dropped after', 1, 168, 'hours'],

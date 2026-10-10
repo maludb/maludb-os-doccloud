@@ -12,7 +12,7 @@ $me = (int) current_member_id();
 $rightFor = ['settings' => 'settings.manage', 'limits' => 'quotas.manage'];
 $sent = [];
 foreach (SETTINGS_FIELDS as $k => [$group, $type]) {
-    $names = $type === 'bytes' ? [$k, preg_replace('/_bytes$/', '_mb', $k)] : [$k];
+    $names = in_array($type, ['bytes', 'ceiling'], true) ? [$k, preg_replace('/_bytes$/', '_mb', $k)] : [$k];
     foreach ($names as $n) {
         if (req_has($n)) {
             $sent[$k] = $n;
@@ -62,16 +62,22 @@ foreach ($sent as $k => $n) {
                 $f[$k] = $raw;
             }
             break;
+        case 'ceiling':
+            if (in_array(trim($raw), ['', '0'], true)) {
+                $f[$k] = null;                                                   // no ceiling: the store's free space limits
+                break;
+            }
+            // a number: as bytes, with no top
         case 'bytes':
             $isMb = str_ends_with($n, '_mb');
             $num = str_replace(',', '.', $raw);
             if (!is_numeric($num) || (float) $num <= 0) {
-                $errors[$n] = $label . ' is a number above zero' . ($isMb ? ' in megabytes.' : ' of bytes.');
+                $errors[$n] = $label . ' is a number above zero' . ($isMb ? ' in megabytes' : ' of bytes') . ($type === 'ceiling' ? ', or empty for no limit.' : '.');
                 break;
             }
             $bytes = (int) round((float) $num * ($isMb ? 1048576 : 1));
-            if ($bytes < $min || $bytes > $max) {
-                $errors[$n] = $label . ' is from ' . format_bytes($min) . ' to ' . format_bytes($max) . '.';
+            if ($bytes < $min || ($max !== null && $bytes > $max)) {
+                $errors[$n] = $max === null ? $label . ' is at least ' . format_bytes($min) . ', or empty for no limit.' : $label . ' is from ' . format_bytes($min) . ' to ' . format_bytes($max) . '.';
             } else {
                 $f[$k] = $bytes;
             }

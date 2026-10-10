@@ -298,7 +298,7 @@ function extraction_sentence(array $doc, ?array $text): string
 /** My open and recent upload sessions (the upload screen's "still arriving" list). */
 function my_upload_sessions(PDO $pdo, ?int $folderId = null): array
 {
-    $st = $pdo->prepare("SELECT * FROM mcp_upload_sessions WHERE member_id = app_current_member_id() AND (:f::bigint IS NULL OR folder_id = :f) AND created_at > now() - interval '1 day' ORDER BY created_at DESC LIMIT 100");
+    $st = $pdo->prepare("SELECT * FROM mcp_upload_sessions WHERE member_id = app_current_member_id() AND (:f::bigint IS NULL OR folder_id = :f) AND (created_at > now() - interval '1 day' OR status IN ('open', 'assembling')) ORDER BY created_at DESC LIMIT 100");
     $st->execute(['f' => $folderId]);
     return $st->fetchAll();
 }

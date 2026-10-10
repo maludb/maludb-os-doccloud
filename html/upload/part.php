@@ -2,7 +2,8 @@
 declare(strict_types=1);
 /**
  * POST (or PUT) /upload/part?session=&n= — one part's bytes as the raw body (application/octet-stream) or a multipart `part` field
- * (uploads-and-versions.md §2.2). The session's owner only; a repeat overwrites (resume). Answers {part_no, parts_done, parts_total}. Not logged.
+ * (uploads-and-versions.md §2.2). The session's owner only; the bytes are written at the part's offset in the session's one file (large-uploads.md),
+ * a repeat of the same bytes changes nothing (resume). Answers {part_no, parts_done, parts_total}; 409 part_differs, 507 no_space. Not logged.
  */
 require_once dirname(__DIR__, 2) . '/app/features/files/handler.php';
 if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['POST', 'PUT'], true)) {

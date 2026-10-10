@@ -28,6 +28,12 @@ $field = static function (string $k) use ($current): string {
             }
             $input .= '</select>';
             break;
+        case 'ceiling':
+            $mb = $v === null ? '' : rtrim(rtrim(number_format((int) $v / 1048576, 4, '.', ''), '0'), '.');
+            $name = preg_replace('/_bytes$/', '_mb', $k);
+            $input = '<div class="input-group"><input type="number" step="any" class="form-control btn-touch" name="' . e($name) . '" id="' . e($id) . '" min="0" value="' . e($mb) . '" placeholder="No limit"><span class="input-group-text fs-12">MB</span></div>';
+            $hint = 'Empty for no limit — the store\'s free space always limits. At least ' . rtrim(rtrim(number_format($min / 1048576, 4, '.', ''), '0'), '.') . ' MB when set.';
+            break;
         case 'bytes':
             $mb = rtrim(rtrim(number_format((int) $v / 1048576, 4, '.', ''), '0'), '.');
             $name = preg_replace('/_bytes$/', '_mb', $k);

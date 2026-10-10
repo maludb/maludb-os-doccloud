@@ -18,7 +18,7 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 $registryPath = $root . '/mcp/action_registry.json';
 $specDir = $root . '/docs/build-specs';
-$specs = ['sso-shell', 'libraries-groups-folders', 'uploads-versions', 'access-sharing-links', 'tags-search', 'graph', 'trash-locks-quotas-worker', 'api-keys-k7', 'agents-clerk-notifications', 'home-curate-admin', 'grid-and-media'];   // grid-and-media: 2026-10-10, after Phase 4
+$specs = ['sso-shell', 'libraries-groups-folders', 'uploads-versions', 'access-sharing-links', 'tags-search', 'graph', 'trash-locks-quotas-worker', 'api-keys-k7', 'agents-clerk-notifications', 'home-curate-admin', 'grid-and-media', 'large-uploads'];   // grid-and-media and large-uploads: 2026-10-10, after Phase 4
 
 $registry = json_decode((string) file_get_contents($registryPath), true);
 if (!is_array($registry) || !isset($registry['screens'], $registry['actions'])) {

@@ -1,8 +1,8 @@
-<?php /** The drop zone and the per-file progress list (assets/js/dc-upload.js). Data: folderId, documentId?, settings (part_bytes, max_document_bytes), open (bool: shown at once), doneUrl */
+<?php /** The drop zone and the per-file progress list (assets/js/dc-upload.js). Data: folderId, documentId?, settings (part_bytes, max_document_bytes — null = no ceiling), open (bool: shown at once), doneUrl */
 $documentId = $documentId ?? null;
 $open = $open ?? true;
 ?>
-<div id="upload-zone-wrap" class="<?= $open ? '' : 'd-none' ?> mb-3" data-folder="<?= (int) $folderId ?>" data-document="<?= $documentId === null ? '' : (int) $documentId ?>" data-part-bytes="<?= (int) $settings['part_bytes'] ?>" data-max-bytes="<?= (int) $settings['max_document_bytes'] ?>" data-done-url="<?= e($doneUrl) ?>" data-csrf="<?= e(csrf_token()) ?>">
+<div id="upload-zone-wrap" class="<?= $open ? '' : 'd-none' ?> mb-3" data-folder="<?= (int) $folderId ?>" data-document="<?= $documentId === null ? '' : (int) $documentId ?>" data-part-bytes="<?= (int) $settings['part_bytes'] ?>" data-max-bytes="<?= (int) ($settings['max_document_bytes'] ?? 0) ?>" data-done-url="<?= e($doneUrl) ?>" data-csrf="<?= e(csrf_token()) ?>">
     <div id="drop-zone" class="card border-dashed text-center p-4 mb-2" tabindex="0" role="button" aria-label="Drop files or folders here, or choose">
         <i class="feather-upload-cloud fs-1 text-muted"></i>
         <div class="fw-semibold mt-1 d-none d-md-block"><?= $documentId === null ? 'Drop files or folders here, or choose' : 'Drop the new version here, or choose' ?></div>
@@ -12,7 +12,7 @@ $open = $open ?? true;
         </div>
         <input type="file" id="upload-files-input" class="d-none" <?= $documentId === null ? 'multiple' : '' ?>>
         <input type="file" id="upload-folder-input" class="d-none" webkitdirectory multiple>
-        <div class="fs-11 text-muted mt-2">Up to <?= e(format_bytes((int) $settings['max_document_bytes'])) ?> a file. Large files go in parts and resume if the connection drops.</div>
+        <div class="fs-11 text-muted mt-2" id="upload-zone-hint"><?= ($settings['max_document_bytes'] ?? null) === null ? 'Files of any size.' : 'Up to ' . e(format_bytes((int) $settings['max_document_bytes'])) . ' a file.' ?> Large files go up in parts; if the connection drops or the page closes, choose the same file again to carry on.</div>
     </div>
     <div id="upload-list" class="list-group mb-2" aria-live="polite"></div>
     <div class="d-flex gap-2"><?= hx_link($doneUrl, 'Done', 'btn btn-light btn-touch', 'id="upload-done-btn"') ?><span class="fs-12 text-muted align-self-center" id="upload-summary"></span></div>

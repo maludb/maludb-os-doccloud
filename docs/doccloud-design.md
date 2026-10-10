@@ -271,14 +271,18 @@ every document's metadata. The tenant's memory keeps receiving this application'
 
 **Upload**: the browser sends a file in **parts of 8 MB** (`upload_sessions (id, member_id, folder_id, filename, byte_size,
 mime_hint, parts_total, parts_done, sha256_claimed, status, expires_at)`; `POST /upload/start`, `/upload/part`, `/upload/finish`),
-so a 2 GB file passes Apache's and PHP's per-request limits (64 MB, as Spaces) and a broken connection resumes; a file under 8 MB is
-one part. **Finish** assembles the parts, hashes them (sha256), decides the type with `finfo` (never the extension), refuses the
+so a file of ANY size passes Apache's and PHP's per-request limits (64 MB, as Spaces) and a broken connection resumes; a file under 8 MB is
+one part. **Since db/024** (`docs/build-specs/large-uploads.md`) each part is written at its offset in ONE file (`uploads/<session>/data`,
+KineticSeas' php-chunk-upload), hashed as the parts arrive in order (the sha256's state kept on the session), and the same file chosen again
+resumes (`resume_key`). **Finish** completes the hash (sha256; it reads at most the last few parts), decides the type with `finfo` (never the extension), refuses the
 executable kinds and HTML/SVG for inline serving (stored, but served as attachments), **de-duplicates**: an existing `blobs` row
 with the same sha256 is reused (`ref_count + 1`), else the file moves to `storage/blobs/<aa>/<bb>/<sha256>`; then the
 `document_versions` row and, for a new path, the `documents` row; a same-named document in the folder makes **a new version**
 (the uploader may say "keep both" → `name (2)`). Folders dropped in the browser upload as their tree. Per-file ceiling
-`dc_settings.max_document_bytes` (default 2 GB; env may only lower); per-library `quota_bytes` (NULL = none) checked at start;
-abandoned sessions expire in 24 h.
+`dc_settings.max_document_bytes` (**NULL = none, the default since db/024** — the owner: a file over 2 GB being refused "is not acceptable";
+an admin may set one; env may only lower); the store's room (free space less `DC_STORE_RESERVE_BYTES` and what open uploads still owe)
+checked at start and at every part (507); per-library `quota_bytes` (NULL = none) checked at start; abandoned sessions expire 24 h after their
+last part.
 
 **Serving**: `GET /d/<id>` (the current version) and `/d/<id>/v/<n>` stream the blob through the gate with
 `Content-Disposition: attachment` unless the kind is on the inline allow-list (images, PDF, text kinds), `X-Content-Type-Options:
@@ -367,7 +371,7 @@ and is asked there (§8). The graph never leaves `graph.php`; a missing token ma
 |---|---|---|
 | The mirror | `members` (+ `is_agent`, `is_external`), `departments`, `department_members`, `sso_nonces`, `member_sessions`, `directory_sync_state` | the kernel's ids; `members.roles text[]` |
 | Roles | `dc_rights`, `dc_roles`, `dc_role_rights`, `mcp_app_roles` | `dc_has_right(right)` |
-| Settings | `dc_settings` (one row: `max_document_bytes` 2 GB, `max_text_bytes` 5 MB, `versions_keep_days` 30, `versions_keep_count` 10, `trash_days` 30, `lock_hours` 24, `link_default_days` 30, `link_no_expiry_allowed` false, `upload_session_hours` 24, `graph_monthly_text_mb` 100, `graph_default_policy` index, `graph_text_chars` 20,000, key defaults 60/min 5,000/day, the model alias and embedding model — read from MaluDB, changed with a pause, `storage_dir`) | seeded |
+| Settings | `dc_settings` (one row: `max_document_bytes` NULL = no ceiling (db/024; was 2 GB), `max_text_bytes` 5 MB, `versions_keep_days` 30, `versions_keep_count` 10, `trash_days` 30, `lock_hours` 24, `link_default_days` 30, `link_no_expiry_allowed` false, `upload_session_hours` 24, `graph_monthly_text_mb` 100, `graph_default_policy` index, `graph_text_chars` 20,000, key defaults 60/min 5,000/day, the model alias and embedding model — read from MaluDB, changed with a pause, `storage_dir`) | seeded |
 | Libraries and groups | `libraries` (id, `kind` personal/group/shared, name, `owner_member_id`, `group_id`, `everyone_level`, `graph_policy`, `quota_bytes`, `used_bytes`, `root_folder_id`, `archived_at`), `groups`, `group_members` | a personal library is made on first sign-on; a group's with the group |
 | Folders and access | `folders`, `folder_access`, `document_access`, `access_changes` (who changed what access when — the trail Spaces keeps in `activity_log`; here a table because "who could see this on June 3rd" is a question) | `access_root_id` by trigger |
 | Documents | `documents` (id, `library_id`, `folder_id`, `name`, `description`, `owner_member_id`, `current_version_id`, `access_root_id`, `mime_type`, `mime_kind` image/pdf/office/text/audio/video/archive/other, `byte_size`, `sha256`, `locked_by/at`, `lock_expires_at`, `trashed_at/by`, `created_by/at`, `updated_at`, `last_opened_at`), `document_versions`, `blobs` (id, `sha256` unique, `byte_size`, `storage_path`, `ref_count`, `created_at`, `deleted_at`), `document_text`, `upload_sessions`, `upload_parts` | the file store's canonical tables |
@@ -706,7 +710,7 @@ live in DocCloud — a later decision that would make `document_link` their door
 | D6 | **New canonical `groups` / `group_members`** — custom or a department mirror; a group library created with the group and surviving it | §6.2; §6.4 |
 | D7 | **PostgreSQL full text on Spaces' `search_index`** (title A, tags and description B, 200,000 characters of text C), `websearch`, trigram on names; no second server | §6.1; slice 4 |
 | D8 | **Three graph policies per library and folder — `none` / `index` (default, `remember`, no model) / `full` (queued model extraction under 100 MB of text a month via K24, estimate first)**; replace on a new version, forget on purge | §6.3; `docs/build-specs/document-graph.md` |
-| D9 | **Resumable 8 MB parts; 2 GB per file (a setting); sha256-deduplicated blobs with a reference count; `finfo`; executables, HTML and SVG never inline; folders dropped as trees** | §6.1; `docs/build-specs/uploads-and-versions.md` |
+| D9 | **Resumable 8 MB parts; ~~2 GB per file~~ no per-file ceiling by default since db/024, the store's room limits (`large-uploads.md`, L1–L10); sha256-deduplicated blobs with a reference count; `finfo`; executables, HTML and SVG never inline; folders dropped as trees** | §6.1; `docs/build-specs/uploads-and-versions.md` |
 | D10 | **Versions: all for 30 days, then the last 10, the current always; the trash 30 days then purge; locks 24 h, breakable by a manager** — all settings | §6.2; slice 6 |
 | D11 | **Links expire in 30 days by default** ("never" only when the admin allows), download allowed by default, optional password, every open logged; **file requests upload-only and blind**; both pause for an agent | §4; slice 3 |
 | D12 | **Managed + free tags**; a free tag used by three becomes a proposal; folder auto-tag rules; merges keep aliases; the Clerk proposes from the graph | §6.2; slice 4 |
@@ -719,6 +723,15 @@ live in DocCloud — a later decision that would make `document_link` their door
 | (c) | **The bytes live under the install by default** (`/srv/apps/doccloud/storage/blobs`), `DC_STORAGE_DIR` pointing at a mount when the owner names one at install; `ROOT_STEPS.sh` makes it | §6; §14 |
 
 ## 16. State
+
+**2026-10-10 — FILES OF ANY SIZE** (the owner: a file over 2 GB was refused, "not acceptable for this application"; the reference
+`github.com/KineticSeas/php-chunk-upload`; `docs/build-specs/large-uploads.md`, decisions L1–L10 taken in the spec, built in the worktree
+`big-uploads`). The 2 GB ceiling is gone (NULL = none; an admin may set one) and the store's room limits instead (507 `no_space`); every part
+is written at its offset in one file and hashed as the parts arrive, so the finish of a 2.5 GB file takes half a second and never copies it;
+the same file chosen again resumes; a part moves the expiry on; the browser retries for a minute, then pauses with Resume, and asks before
+the page is left; a part sent again with other bytes after it was hashed is refused (the stored sha256 is always the bytes stored); the
+folder export lost its 2 GB cap (Zip64; large files stored). **db/024**. Proof `tests/phase3/bigfiles/run.sh` (40 + 17, a real 2.5 GB file
+through the routes and a 2.1 GB file through Chromium, also under Apache). PHP's sha256 (~60 MB/s on this VM) is the upload's bound.
 
 **2026-10-10 — THE GRID, THUMBNAILS, VIDEO AND HIDDEN PREVIEWS** (the owner's request after Phase 4; `docs/build-specs/grid-and-media.md`,
 decisions G1–G4 the owner's, built in the worktree `grid-media` and merged). The folder listing as a grid beside the list; video thumbnails

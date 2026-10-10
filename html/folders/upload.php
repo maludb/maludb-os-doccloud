@@ -13,7 +13,7 @@ require_right('documents.upload');
 $id = (int) $folder['id'];
 $documentId = request_integer('document');
 $doc = $documentId === null ? null : document_at_level($pdo, $documentId, 'edit');
-$settings = ['part_bytes' => (int) one_value($pdo, "SELECT dc_setting_int('upload_part_bytes')"), 'max_document_bytes' => (int) one_value($pdo, "SELECT dc_setting_int('max_document_bytes')")];
+$settings = ['part_bytes' => (int) one_value($pdo, "SELECT dc_setting_int('upload_part_bytes')"), 'max_document_bytes' => dc_file_ceiling($pdo)];
 log_screen_view($pdo, 'upload');
 if (wants_json()) {
     respond_screen(['folder' => present_folder(find_folder($pdo, $id) + ['my_level' => $folder['my_level']]), 'document' => $doc === null ? null : present_document(find_document($pdo, (int) $doc['id']) + ['my_level' => $doc['my_level']]),

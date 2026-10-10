@@ -45,12 +45,12 @@ echo "2. Settings and limits: the forms\n";
 $r = get_json(1, '/admin/settings');
 $f = $r['json']['data']['fields'] ?? [];
 ok($r['code'] === 200 && count($f) === 17 && $f['link_default_days']['min'] === 1 && $f['link_default_days']['max'] === 3650 && $f['graph_default_policy']['options'] === ['none', 'index', 'full'] && isset($r['json']['data']['windows']['trash_days']), 'the JSON: seventeen fields with their bounds, and slice 6\'s windows');
-ok($f['max_document_bytes']['value'] === 2147483648 && $f['link_default_days']['value'] === 30 && $f['timezone']['value'] !== null, '...and their values');
+ok($f['max_document_bytes']['value'] === null && $f['max_document_bytes']['type'] === 'ceiling' && $f['link_default_days']['value'] === 30 && $f['timezone']['value'] !== null, '...and their values');
 $h = page(actor(1), '/admin/settings')['body'];
 $miss = missing_ids($h, ['settings-form', 'settings-save', 'limits-form', 'limits-save', 'retention-form', 'retention-save', 'settings-business_name', 'settings-timezone', 'settings-link_default_days', 'settings-link_no_expiry_allowed', 'settings-graph_default_policy',
     'settings-max_document_bytes', 'settings-max_text_bytes', 'settings-upload_part_bytes', 'settings-upload_session_hours', 'settings-key_rate_per_minute', 'settings-link_opens_per_minute', 'retention-trash_days']);
 ok($miss === [], 'the page: the settings form, the limits form and the windows, every field with its input' . ($miss ? ' — missing ' . implode(', ', $miss) : ''));
-ok(str_contains($h, 'name="max_document_mb"') && str_contains($h, 'value="2048"') && str_contains($h, 'min="1" max="3650"'), '...the file ceilings in megabytes (2048), each field with its min and max');
+ok(str_contains($h, 'name="max_document_mb"') && preg_match('/id="settings-max_document_bytes" min="0" value="" placeholder="No limit"/', $h) === 1 && str_contains($h, 'min="1" max="3650"'), '...the file ceiling in megabytes, empty with "No limit" (db/024), each field with its min and max');
 ok(get_json(27, '/admin/settings')['code'] === 403 && get_json(26, '/admin/settings')['code'] === 403 && get_json(29, '/admin/settings')['code'] === 403, 'a curator, a Member and a guest: 403');
 ok(page(actor(1), '/admin/retention')['code'] === 200, '/admin/retention is still the same page');
 
@@ -96,16 +96,20 @@ ok((int) setting('max_document_bytes') === 104857600 && (int) setting('max_text_
 ok(count(activity('limits.save', $since)) === 1 && count(activity('settings.save', $since)) === 0, 'logged once as limits.save (and not settings.save)');
 $x = post_json(1, '/admin/settings/save.php', ['max_document_bytes' => 52428800]);
 ok($x['code'] === 200 && (int) setting('max_document_bytes') === 52428800, 'the byte form of the same field is accepted too');
-foreach ([['max_document_mb', 0.5, '1.0 MB'], ['max_document_mb', 2000000, 'TB'], ['max_text_mb', 0.01, '64'], ['upload_part_mb', 100, '64'], ['upload_part_mb', 'big', 'number'], ['upload_session_hours', 169, '1 to 168'], ['key_rate_per_minute', 0, '1 to 100,000'],
+foreach ([['max_document_mb', 0.5, '1.0 MB'], ['max_document_mb', -5, 'empty for no limit'], ['max_text_mb', 0.01, '64'], ['upload_part_mb', 100, '64'], ['upload_part_mb', 'big', 'number'], ['upload_session_hours', 169, '1 to 168'], ['key_rate_per_minute', 0, '1 to 100,000'],
           ['key_rate_per_day', 10000001, '10,000,000'], ['key_rotation_overlap_hours', 169, '0 to 168'], ['link_opens_per_minute', 0, '1 to 100,000'], ['request_uploads_per_hour', 'x', 'whole number']] as [$k, $v, $words]) {
     $x = post_json(1, '/admin/settings/save.php', [$k => $v]);
     ok($x['code'] === 422 && isset($x['json']['error']['fields'][$k]) && str_contains($x['json']['error']['fields'][$k], $words), "$k = " . var_export($v, true) . ' refused: ' . ($x['json']['error']['fields'][$k] ?? '?'));
 }
+$x = post_json(1, '/admin/settings/save.php', ['max_document_mb' => 2000000]);
+ok($x['code'] === 200 && (int) setting('max_document_bytes') === 2000000 * 1048576, 'the largest file has no top (db/024): 2,000,000 MB is a ceiling an admin may set');
+$x = post_json(1, '/admin/settings/save.php', ['max_document_mb' => '']);
+ok($x['code'] === 200 && setting('max_document_bytes') === null, 'emptied, the largest file has no ceiling again (NULL)');
 $since = last_activity_id();
 post_json(1, '/admin/settings/save.php', ['business_name' => 'Acme Docs', 'upload_session_hours' => 24]);
 ok(count(activity('settings.save', $since)) === 1 && count(activity('limits.save', $since)) === 1, 'a request with a setting and a limit logs both events');
-post_json(1, '/admin/settings/save.php', ['max_document_mb' => 2048, 'max_text_mb' => 5, 'upload_part_mb' => 8, 'upload_session_hours' => 24, 'key_rate_per_minute' => 60, 'key_rate_per_day' => 5000, 'key_rotation_overlap_hours' => 24, 'link_opens_per_minute' => 60, 'request_uploads_per_hour' => 20]);
-ok((int) setting('max_document_bytes') === 2147483648 && (int) setting('upload_part_bytes') === 8388608, '(restored)');
+post_json(1, '/admin/settings/save.php', ['max_document_mb' => '', 'max_text_mb' => 5, 'upload_part_mb' => 8, 'upload_session_hours' => 24, 'key_rate_per_minute' => 60, 'key_rate_per_day' => 5000, 'key_rotation_overlap_hours' => 24, 'link_opens_per_minute' => 60, 'request_uploads_per_hour' => 20]);
+ok(setting('max_document_bytes') === null && (int) setting('upload_part_bytes') === 8388608, '(restored)');
 
 echo "6. settings_save: the walls; slice 6's windows\n";
 $x = post_json(27, '/admin/settings/save.php', ['business_name' => 'Marco']);

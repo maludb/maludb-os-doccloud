@@ -75,7 +75,12 @@ ok((int) one("SELECT count(*) FROM activity_log WHERE action = 'upload.conflict'
 
 echo "5. Refusals\n";
 $r = post_j(27, '/upload/start', ['folder_id' => $contracts, 'filename' => 'huge.bin', 'byte_size' => 3 * 1024 * 1024 * 1024]);
-ok($r['code'] === 413 && ($r['json']['error']['code'] ?? '') === 'too_large' && str_contains($r['json']['error']['message'] ?? '', 'at most'), 'over the ceiling: 413 too_large in words');
+ok($r['code'] === 200 && (int) $r['json']['parts_total'] === 384, 'a 3 GB file starts: no per-file ceiling by default (db/024) — 384 parts');
+pdo()->exec("UPDATE upload_sessions SET status = 'expired' WHERE id = " . (int) ($r['json']['session_id'] ?? 0));
+pdo()->exec('UPDATE dc_settings SET max_document_bytes = 2147483648');
+$r = post_j(27, '/upload/start', ['folder_id' => $contracts, 'filename' => 'huge.bin', 'byte_size' => 3 * 1024 * 1024 * 1024]);
+ok($r['code'] === 413 && ($r['json']['error']['code'] ?? '') === 'too_large' && str_contains($r['json']['error']['message'] ?? '', 'at most'), 'over a ceiling an admin set: 413 too_large in words');
+pdo()->exec('UPDATE dc_settings SET max_document_bytes = NULL');
 $r = post_j(27, '/upload/start', ['folder_id' => $contracts, 'filename' => 'empty.txt', 'byte_size' => 0]);
 ok($r['code'] === 422 && ($r['json']['error']['code'] ?? '') === 'empty', 'a zero-byte file: 422 empty');
 pdo()->exec('UPDATE libraries SET quota_bytes = used_bytes + 1000 WHERE id = (SELECT library_id FROM folders WHERE id = ' . $contracts . ')');

@@ -38,7 +38,7 @@ if ($rest === '/upload' && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 if ($rest !== '' && $rest !== '/') {
     public_unavailable('not_found');
 }
-$maxBytes = min(64 * 1024 * 1024, (int) one_value($pdo, "SELECT dc_setting_int('max_document_bytes')"));
+$maxBytes = min(64 * 1024 * 1024, dc_file_ceiling($pdo) ?? PHP_INT_MAX);
 if (($_GET['done'] ?? '') === '1') {
     public_render('Thank you', view('public/thanks.php', ['link' => $link, 'base' => $base]));
 }

@@ -28,11 +28,12 @@ Always `{"error": {"code": "…", "message": "…"}}` (a field problem also carr
 | 404 | `not_found` | it does not exist **or you may not see it** — the same answer for both |
 | 405 | `method_not_allowed` | the route does not take that method |
 | 409 | `name_taken` | an upload whose name is taken (`existing_document_id`); say `conflict` |
-| 413 | `too_large` | a one-request upload over 64 MB (use the parts form), or a file over the ceiling |
+| 413 | `too_large` | a one-request upload over 64 MB (use the parts form), or a file over a ceiling an admin set (none by default) |
 | 422 | `invalid` | a field is wrong (`fields` names it) |
 | 423 | `locked` | someone else holds the document's lock |
 | 429 | `rate_limited` | over the key's minute or day limit (`Retry-After`) |
 | 503 | `graph_unavailable` | the document graph is not reachable (graph routes only; keyword search needs no engine) |
+| 507 | `no_space` | the store has no room for the file (its free space less a reserve and what open uploads still owe) |
 
 ## The routes
 
@@ -44,7 +45,7 @@ Always `{"error": {"code": "…", "message": "…"}}` (a field problem also carr
 | `GET /folders/{id}?sort=&dir=&page=&kind=&per=` | the folder, its crumbs and a page of its listing |
 | `POST /folders` `{parent, name}` | a new folder → `201 {folder_id}` |
 | `POST /upload` (multipart `file`, `folder`, `conflict`) | one request, up to 64 MB → `201 {document_id, version_id, version_no}`; `409` if the name is taken and `conflict` (`version`, `keep_both`, `refuse`) is not given |
-| `POST /upload/start` · `PUT /upload/{session}/{n}` · `POST /upload/{session}/finish` | the same upload in parts (8 MB by default; resumable) |
+| `POST /upload/start` · `PUT /upload/{session}/{n}` · `POST /upload/{session}/finish` | the same upload in parts (8 MB by default; a file of any size; resumable — send `resume_key`, any 64 hex characters that name the file, and a later start with the same key, size and folder answers `resumed: true` and `parts_received`) |
 | `GET /documents/{id}` | the document, its versions and its tags |
 | `GET /documents/{id}/download?version=` | the bytes (attachment) |
 | `GET /documents/{id}/text` | the extracted text and its pages, at most 5 MB |
@@ -84,7 +85,7 @@ The upload in parts, for a file over 64 MB (each part is the raw body, `parts_to
 ```text
 curl -s -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d '{"folder": 12, "filename": "big.iso", "byte_size": 1073741824}' "$BASE/api/v1/upload/start"
   → {"ok": true, "session_id": 41, "part_bytes": 8388608, "parts_total": 128, …}
-curl -s -H "Authorization: Bearer $KEY" -X PUT --data-binary @part-0001 "$BASE/api/v1/upload/41/1"        # repeat for 2 … 128; a repeat overwrites (resume)
+curl -s -H "Authorization: Bearer $KEY" -X PUT --data-binary @part-0001 "$BASE/api/v1/upload/41/1"        # repeat for 2 … 128, in any order; the same bytes again change nothing (resume)
 curl -s -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d '{"conflict": "version"}' "$BASE/api/v1/upload/41/finish"
 ```
 
