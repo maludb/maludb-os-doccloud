@@ -339,11 +339,63 @@ Still through the bridge with no schema change: `search_log` (the read role cann
 inserts as the writer).
 
 ## Size
-Records: **71 tools** (63 from §7 and the people/mine group, `app_roles`, `records_search`, the three kernel-only shares, `document_text`
-doubling as the fourth share, `link_opens` and `access_changes` as support), of which 10 call the engine through the bridge. Activity:
-**7 tools**. The resolve block names 12 entities. Four share documents, eight token-API routes. Phase 4 builds them as
-`mcp/records_server.py` with `dc_libraries`, `dc_documents`, `dc_access`, `dc_tags_search`, `dc_graph`, `dc_people`, `dc_admin`
-(each `register(mcp, q, bridge)`) plus `mcp/activity_server.py`.
+Records: **73 tools** — the 68 rows of the tables above (document_text among them, which is also the fourth share), `app_roles`, `records_search`, and the three
+shares that answer only as an application principal (`folders_index`, `documents_index`, `document_link`); 10 of them call the engine through the bridge. (Phase 1's
+count of 71 was a miscount of these same rows; Phase 4 counts the built tools: 73.) Activity: **7 tools**. The resolve block names 12 entities. Four share documents,
+eight token-API routes. Phase 4 builds them as `mcp/records_server.py` with `dc_libraries`, `dc_documents`, `dc_access`, `dc_tags_search`, `dc_graph`, `dc_people`,
+`dc_shares` (each `register(mcp, q, bridge)`; `dc_common` holds the shared pieces and the bridge client) plus `mcp/activity_server.py`.
 
 ## Open questions
 (none)
+
+## Phase 4 — built (2026-10-10, a Sonnet 5.5 worker; proof `tests/phase4/run.sh`)
+The two servers, the bridge and the proof. **Records 73 tools, Activity 7**; every tool is a `FastMCP` tool with one `params` model (`extra="forbid"`, every field described —
+`dc_common.describe_models` fills a field with no words of its own), `readOnlyHint`, `openWorldHint: false`. Files: `mcp/records_server.py`, `mcp/activity_server.py`,
+`mcp/dc_common.py` (annotations, bases, `Where`, `Refusal`/`answers`, the id-or-name resolvers, `qmatch`, the bridge client), `dc_libraries.py`, `dc_documents.py`,
+`dc_access.py`, `dc_tags_search.py`, `dc_graph.py`, `dc_people.py`, `dc_shares.py`; the kit changed in `db.py` (`request_consumer`, `request_consumer_agent`,
+`APP_INTERNAL_PORT`) and `server_common.py` (`SHARES`, `KERNEL_TOOLS`, `KERNEL_ONLY`, the K26 headers, `run_context()`); PHP: `html/internal/bridge.php`,
+`app/features/bridge/ops.php`; `deploy/apache-doccloud.conf` (the public vhost answers 404 for `/internal/`).
+
+**Decisions taken** (the surface and the code could not settle them; none changes a wall):
+1. *Counts.* 73, not 71 (above). An unexpected database failure answers `{"ok": false, "error": {"code": "server_error", "retry": true}}` — one code added to the table.
+2. *Lists.* A list tool answers a plain array of rows; where the surface names a total (`folder_listing`, `find_documents`, `documents_by_tag`, `search`, `graph_queue`) it answers an
+   object. With `q` alone every `find_*` / `saved_searches` / `clerk_proposals` tool answers the resolver's plain list, and **digits are an id** (or a name made of digits).
+3. *Libraries.* `find_libraries` reads `mcp_libraries` (a superset of `dc_my_libraries()`: it also lists a library one reaches only through a folder shared inside it, `my_level: none`).
+4. *Folders.* `find_folders` rows carry both `path` and `path_text` (the registry's `folder` resolver labels by `path`; the surface says `path_text`). `folder_ref` takes an id, a
+   name, or a `/a/b/c` (or `a › b`) path and answers `ambiguous` with up to six candidates.
+5. *Excerpts.* `document_excerpt` is cut in Python from `mcp_document_text` — `dc_document_excerpt()` matched only the exact or lower-cased string, and the surface promises case and
+   whitespace runs are ignored; the window is characters each side. Still DocCloud's own text, never the engine's, and still behind the same view.
+6. *Duplicates.* `dc_duplicates()` names every copy to a curator (`reports.storage`) whether or not they may see it. The tool keeps only the copies `mcp_documents` shows the asker and
+   leaves a group with fewer than two; `copies` is the visible count.
+7. *Evaluation runs.* The servers never refuse a read under `is_eval`; the tools that leave a trail (`search`, `run_saved_search`, `graph_find`) always call the bridge, and the bridge,
+   told `is_eval`, writes **no `search_log` row** and marks the activity line `after.eval = true`.
+8. *The bridge.* `POST /internal/bridge.php` with the header and envelope of "The bridge" above. Ops built: `graph_find`, `graph_related`, `document_subjects`, `graph_subjects`,
+   `subject`, `subject_neighbors`, `graph_path`, `graph_estimate_check`, `admin_view` (admin only; logged once per library per admin per hour), `log_search` (the surface's
+   "`search_log` writes"), and the shares `share_folders|share_documents|share_text|share_link` (`document_link` is accepted as the last one's other name). A member caller must be an
+   admitted mirror row (403 `unknown_member`); an application caller is honoured for the share ops only (403 `forbidden` otherwise), and a member is refused them. The tool
+   `document_subjects` reads `mcp_graph_documents` itself (the extracted subjects are already stored there); its bridge op exists for the surface's list. `graph_path` answers
+   `found: false` with no steps when any step is a document the asker may not see; `get_subject` never reports a count of hidden documents.
+9. *The shares.* `document_text` is both a person's tool and the fourth share: for the kernel's token it posts to the bridge as the consumer the kernel's headers name, with the
+   kernel's flat arguments wrapped into `params` (`server_common` does that for every tool but `app_roles`) and a `_Flat` model that ignores what the kernel adds. The three
+   kernel-only shares are listed and callable only with the kernel's token. `slice 7`'s `/api/v1/shares/read.php` stays (the same functions) but no tool uses it.
+10. *`clerk_report`.* Answers `{<part>: {count, ids, detail}}` for the twelve parts of `dc_clerk_report()` (`untagged`, `duplicates`, `stale_guest_shares`, `links_expiring`,
+    `links_suspicious`, `requests_open`, `trash_due`, `locked_long`, `extraction_failures`, `quota_near`, `budget`, `orphaned`) plus `untagged.folders` with names where the
+    Clerk may see the document. `suggested_tags` is not in it (it needs the graph; the Clerk calls `document_subjects` / `graph_subjects`). The function lets the admin read it too; so does the tool.
+11. *Access questions.* `access_list` / `access_explain` (about another person) / `access_history` / `access_changes` / `downloads` answer `managers_only` to one who sees the thing and
+    `not_found` to one who does not.
+
+**Defects found and fixed while building:** none in the schema. `deploy/apache-doccloud.conf` had no rule for `/internal/` (it would have been served from the public name as a plain file);
+the bridge refuses a non-loopback caller and a bad signature anyway.
+
+**Mismatches between the manifest and this surface — reported, not changed:** the expert's `tool_grants` include `records_search` (the "Agents' grants" paragraph says it is
+excluded) and `links_suspicious` (it answers `managers_only` unless the asker holds `links.all`); the Filing Clerk's grants do not include `clerk_report`, the tool made for it.
+
+**Phase 5 (the owner's) must know:** the vhost template changed (apply re-renders it); `APP_INTERNAL_PORT`, `ACTIONS_RELAY_KEY` and `OS_APPLICATION_TOKEN` are in `config/.env` (the
+manifest lists them) and the units read it; `mcp/venv` needs `pip install -r mcp/requirements.txt` (the installer does it); both services start the files named in `deploy/`.
+
+### Phase 4 — the grant mismatches, decided by the planning model (2026-10-10)
+The worker reported two mismatches between `maludb-os.json`'s agent grants and this surface and changed nothing. Decided the surface's way:
+the expert's grants lose `records_search` (the surface excludes the guarded catch-all search from the expert; it has `search` and the named
+tools) and `links_suspicious` (an admin's report: `managers_only` for anyone without `links.all`); the Clerk gains `clerk_report`, the tool
+built for it. The `dc_duplicates()` SQL function still names every copy to a holder of `reports.storage` — the curator's storage report by
+design (§6.4 of the design: the curator's reports carry names and counts across the store, never content); the MCP tool filters by the wall.

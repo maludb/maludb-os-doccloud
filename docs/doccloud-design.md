@@ -716,6 +716,19 @@ live in DocCloud — a later decision that would make `document_link` their door
 
 ## 16. State
 
+**2026-10-10 — PHASE 3 and PHASE 4 COMPLETE; Phase 5 is the owner's.** Slices 6–9 and Phase 4 built by Sonnet 5.5 workers one at a time, each
+verified by the planning model's rerun and committed: slice 6 the trash, locks, quotas and the worker's windows (0a9a945; 323 checks; db/021 —
+used_bytes now follows a move); slice 7 the API, keys and the K7 shares (d090660; 413 checks; fixed: a link's token reached activity_log.route);
+slice 8 the agents, the Filing Clerk and notifications (0524d84; 433 checks; db/022 — FIXED A LEAK: with no Clerk named, dc_clerk_report()'s guard
+was NULL and any caller could read the whole report); slice 9 the homes, curate and admin (b4f2034; 457 checks) — **68/68 screens and 95/95
+actions built, 23 paused, no stub**; Phase 4 the two MCP servers (records 73 tools — the surface's "71" was a miscount — and activity 7; the
+bridge `/internal/bridge.php`, 404 on the public vhost; 606 checks, also under `DC_ENGINE=1` and a real Apache; the registry accepted by the
+kernel's own loader). Decisions each worker took are under its spec's "Open questions"; those for the owner to confirm are listed in the
+repository's CLAUDE.md. **Phase 5 (the owner's):** `deploy/ROOT_STEPS.sh` — pin the ports 8190/8841/8842, the storage directory, the memory
+database `<tenant>_doccloud_memory` and its token, the K24 credential, `bin/app_install.php apply` (twice: the roles are read from `app_roles`
+once the records server answers; db/001–022 applied), DNS/TLS for `doccloud.<domain>`, hire `expert` and `clerk` and name both in DocCloud's
+admin → agents settings, the end-to-end proof of §10.
+
 **2026-10-09 — THE HANDOFF POINT: Phase 2, slices 1–5 BUILT by the planning model** (commits 3d452f2, 9315b00, db91ebc, ab59a23, 58eef53,
 f0f082a; not pushed). Phase 2 the shell (php -S and a real Apache: 161 + 71 + 74 + 44 + 22 + 12 + 14, vhost 47); slice 1 libraries, groups and
 folders, THE CRUD EXEMPLAR (59 + 40 + 54 + 21 + 35 + 24); slice 2 uploads, versions, blobs, serving, preview and extraction, THE FIRST EXEMPLAR

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from typing import Any
 
@@ -22,11 +23,12 @@ import db
 
 log = logging.getLogger("dc_mcp")
 
-# What the kernel's own token may reach: the roles catalogue (kernel db/145) and the tools shares[] declares (K7). DocCloud
-# shares FIVE tools (design §8; maludb-os.json shares[]) — Phase 4 adds their names here beside app_roles.
-KERNEL_TOOLS = {"app_roles"}
-# A share that is the KERNEL's alone (a person or an agent never lists or calls it) goes here when one exists.
-KERNEL_ONLY: set[str] = set()
+# What the kernel's own token may reach: the roles catalogue (kernel db/145) and the four tools shares[] declares (K7) — nothing else.
+SHARES = {"folders_index", "documents_index", "document_text", "document_link"}
+KERNEL_TOOLS = {"app_roles"} | SHARES
+# A share that is the KERNEL's alone (a person or an agent never lists or calls it): the three that answer only as an application
+# principal. document_text is also the records tool a person or an agent reads a document with, as themselves.
+KERNEL_ONLY = {"folders_index", "documents_index", "document_link"}
 
 # run id -> (facts, fetched_at). A run's grants do not change while it runs; a short TTL bounds a mistake.
 _facts_cache: dict[int, tuple[dict, float]] = {}
@@ -91,8 +93,8 @@ def install_grants(mcp: FastMCP, endpoint_name: str) -> None:
         if db.request_is_kernel.get():
             if name not in KERNEL_TOOLS:
                 raise ToolError(f"The kernel's token reaches {', '.join(sorted(KERNEL_TOOLS))} only.")
-            if name in KERNEL_ONLY and "params" not in arguments:
-                arguments = {"params": arguments}      # the kernel sends a share's arguments flat (from, to, scope_id)
+            if name != "app_roles" and "params" not in arguments:
+                arguments = {"params": arguments}      # the kernel sends a share's arguments flat (folder, since, document …)
             return await mcp.call_tool(name, arguments)
         if name in KERNEL_ONLY:
             raise ToolError(f"'{name}' is for the Business OS kernel's own token only.")
@@ -125,8 +127,15 @@ def make_app(mcp: FastMCP, db_user_key: str, db_pw_key: str, endpoint_name: str)
             db.request_role.set("anon")
             db.request_token.set(token)
             db.request_run_id.set(None)
+            # K26: the kernel says which application asks, and as which expert agent, in two headers (trusted with the token).
+            consumer = headers.get("x-os-consumer", "").strip()
+            agent = headers.get("x-os-consumer-agent", "").strip()
+            db.request_consumer.set(consumer if re.fullmatch(r"[a-z][a-z0-9_]{0,39}", consumer) else None)
+            db.request_consumer_agent.set(int(agent) if agent.isdigit() else None)
             return await inner(scope, receive, send)
         db.request_is_kernel.set(False)
+        db.request_consumer.set(None)
+        db.request_consumer_agent.set(None)
         ctx = await db.resolve_token(pool, token) if token else None
         if ctx is None and token and db.verify_run_token(token) is not None:
             # An agent's first contact: the mirror has the agent but no admission yet. The kernel's
@@ -155,3 +164,14 @@ def make_app(mcp: FastMCP, db_user_key: str, db_pw_key: str, endpoint_name: str)
 
 def run(mcp: FastMCP, db_user_key: str, db_pw_key: str, port: int, endpoint_name: str) -> None:
     uvicorn.run(make_app(mcp, db_user_key, db_pw_key, endpoint_name), host="127.0.0.1", port=port, log_level="info")
+
+
+async def run_context() -> dict:
+    """What a tool needs to know about the run behind this call, from the kernel's run-facts (cached per run): {run_id, request_id, is_eval, door}.
+    A person's own token has no run: door 'mcp'. A run token the kernel does not vouch for is already refused at the gate; here it reads as an eval-less 'agent'."""
+    token = db.request_token.get()
+    verified = db.verify_run_token(token) if token else None
+    if verified is None:
+        return {"run_id": None, "request_id": None, "is_eval": False, "door": "mcp"}
+    facts = await run_facts(token) or {}
+    return {"run_id": verified[1], "request_id": facts.get("request_id"), "is_eval": bool(facts.get("is_eval")), "door": "agent"}

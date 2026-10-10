@@ -31,11 +31,15 @@ request_is_kernel: contextvars.ContextVar[bool] = contextvars.ContextVar("is_ker
 request_run_id: contextvars.ContextVar[int | None] = contextvars.ContextVar("run_id", default=None)
 # The raw bearer the caller presented (a run token is shown to the kernel's run-facts call).
 request_token: contextvars.ContextVar[str] = contextvars.ContextVar("token", default="")
+# K26 (kernel db/173, 2026-10-06): on the kernel's K7 call, who is asking — the consuming application's key and its expert agent's
+# member id — from the headers X-OS-Consumer / X-OS-Consumer-Agent, read beside the token; never from the arguments.
+request_consumer: contextvars.ContextVar[str | None] = contextvars.ContextVar("consumer", default=None)
+request_consumer_agent: contextvars.ContextVar[int | None] = contextvars.ContextVar("consumer_agent", default=None)
 
 
 _ENV_KEYS = ("DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD", "MCP_RECORDS_DB_USER", "MCP_RECORDS_DB_PASSWORD",
              "MCP_ACTIVITY_DB_USER", "MCP_ACTIVITY_DB_PASSWORD", "ACTION_TOKEN_KEY", "ACTIONS_RELAY_KEY", "APP_KEY",
-             "OS_INTERNAL_URL", "OS_APPLICATION_TOKEN", "MALUDB_API_URL", "MALUDB_API_TOKEN", "MCP_RECORDS_PORT", "MCP_ACTIVITY_PORT")
+             "OS_INTERNAL_URL", "OS_APPLICATION_TOKEN", "MALUDB_API_URL", "MALUDB_API_TOKEN", "MCP_RECORDS_PORT", "MCP_ACTIVITY_PORT", "APP_INTERNAL_PORT")
 
 
 def load_env() -> dict[str, str]:

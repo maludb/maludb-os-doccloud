@@ -63,10 +63,14 @@ graph** in a MaluDB memory database of its own. It is what Dropbox, Box and Next
 - Commit after every finished step on `main` in the repository's message style; never push unless the owner asks.
 
 ## State
-2026-10-09 — **THE HANDOFF POINT.** Phase 0, Phase 1, Phase 2 and slices 1–5 built by the planning model and committed (design §16 has the
-counts); slice 1 is the CRUD exemplar, slice 2 (uploads) and slice 5 (the graph) the two exemplars. **Next: Sonnet 5.5 workers build slices
-6–9 and Phase 4, one at a time**, each from its spec and the exemplars' pattern, each proven by `tests/phase3/sliceN/run.sh` with every earlier
-suite re-run green, verified and committed by the planning model before the next. Phase 5 (apply, storage, the memory database and its token,
-K24, DNS/TLS, the hires, the end-to-end proof of design §10) is the owner's. Proofs: `bash tests/phase0/run.sh`, `bash tests/phase0/timing.sh`,
-`bash tests/extract/run.sh`, `bash tests/phase0/engine.sh`, `bash tests/phase1/check_specs.sh`, `bash tests/phase2/run.sh`,
-`bash tests/phase3/slice{1..5}/run.sh` (slice 5 also with `DC_ENGINE=1`) — one at a time, they share ports 8701–8707.
+2026-10-10 — **PHASE 3 AND PHASE 4 COMPLETE** (design §16): 68/68 screens, 95/95 actions, records MCP 73 tools + activity 7, migrations
+db/001–022. Built by the planning model through slice 5, by Sonnet 5.5 workers for slices 6–9 and Phase 4, every one verified and committed.
+**Phase 5 is the owner's** (`deploy/ROOT_STEPS.sh`, then `bin/app_install.php apply` twice, DNS/TLS, the hires, naming the expert and the Clerk
+in admin → agents, the end-to-end proof of design §10). Nothing pushed.
+**For the owner to confirm (decisions taken in the specs):** the Clerk's reach is one report read; the link key derived from ACTION_TOKEN_KEY;
+a signed share download URL reusable within its ten minutes; the API's upload answers 409 on a same name unless told version/keep both;
+MaluMail 4xx fails at once, 5xx retried twice; a cancelled dispatch is recorded `refused`; the expert and the Clerk named in settings.
+**Owed outside this repository:** the kernel's `/api/v1/apps/connections.php` (the admin's connections screen falls back without it);
+M10/M11/M12 upstream in MaluDB. Proofs (one at a time — ports 8701–8707): `tests/phase0/run.sh`, `timing.sh`, `engine.sh`,
+`tests/extract/run.sh`, `tests/phase1/check_specs.sh`, `tests/phase2/run.sh`, `tests/phase3/slice{1..9}/run.sh` (slice 5 also `DC_ENGINE=1`),
+`tests/phase4/run.sh`.

@@ -307,7 +307,6 @@
           "stale_guest_shares",
           "find_links",
           "links_expiring",
-          "links_suspicious",
           "find_requests",
           "find_tags",
           "tag_proposals",
@@ -327,8 +326,7 @@
           "find_keys",
           "find_notes",
           "find_members",
-          "find_departments",
-          "records_search"
+          "find_departments"
         ],
         "Activity MCP": [
           "record_history",
@@ -409,7 +407,8 @@
           "graph_subjects",
           "document_subjects",
           "find_members",
-          "find_groups"
+          "find_groups",
+          "clerk_report"
         ],
         "Activity MCP": [
           "record_history",
@@ -431,28 +430,97 @@
     }
   ],
   "approvals": [
-    { "action": "agents_settings_save", "category": "other" },
-    { "action": "document_purge", "category": "deletion" },
-    { "action": "folder_delete", "category": "deletion" },
-    { "action": "graph_budget_set", "category": "other" },
-    { "action": "graph_model_set", "category": "other" },
-    { "action": "graph_policy_set", "category": "other" },
-    { "action": "graph_rebuild_all", "category": "other" },
-    { "action": "group_delete", "category": "deletion" },
-    { "action": "library_delete", "category": "deletion" },
-    { "action": "library_everyone_set", "category": "external_send" },
-    { "action": "link_make", "category": "external_send" },
-    { "action": "link_revoke", "category": "deletion" },
-    { "action": "link_rotate", "category": "external_send" },
-    { "action": "ownership_transfer", "category": "deletion" },
-    { "action": "quota_set", "category": "other" },
-    { "action": "request_make", "category": "external_send" },
-    { "action": "retention_set", "category": "other" },
-    { "action": "settings_save", "category": "other" },
-    { "action": "share_application", "category": "external_send" },
-    { "action": "share_guest", "category": "external_send" },
-    { "action": "tag_delete", "category": "deletion" },
-    { "action": "trash_purge", "category": "deletion" },
-    { "action": "version_purge", "category": "deletion" }
+    {
+      "action": "agents_settings_save",
+      "category": "other"
+    },
+    {
+      "action": "document_purge",
+      "category": "deletion"
+    },
+    {
+      "action": "folder_delete",
+      "category": "deletion"
+    },
+    {
+      "action": "graph_budget_set",
+      "category": "other"
+    },
+    {
+      "action": "graph_model_set",
+      "category": "other"
+    },
+    {
+      "action": "graph_policy_set",
+      "category": "other"
+    },
+    {
+      "action": "graph_rebuild_all",
+      "category": "other"
+    },
+    {
+      "action": "group_delete",
+      "category": "deletion"
+    },
+    {
+      "action": "library_delete",
+      "category": "deletion"
+    },
+    {
+      "action": "library_everyone_set",
+      "category": "external_send"
+    },
+    {
+      "action": "link_make",
+      "category": "external_send"
+    },
+    {
+      "action": "link_revoke",
+      "category": "deletion"
+    },
+    {
+      "action": "link_rotate",
+      "category": "external_send"
+    },
+    {
+      "action": "ownership_transfer",
+      "category": "deletion"
+    },
+    {
+      "action": "quota_set",
+      "category": "other"
+    },
+    {
+      "action": "request_make",
+      "category": "external_send"
+    },
+    {
+      "action": "retention_set",
+      "category": "other"
+    },
+    {
+      "action": "settings_save",
+      "category": "other"
+    },
+    {
+      "action": "share_application",
+      "category": "external_send"
+    },
+    {
+      "action": "share_guest",
+      "category": "external_send"
+    },
+    {
+      "action": "tag_delete",
+      "category": "deletion"
+    },
+    {
+      "action": "trash_purge",
+      "category": "deletion"
+    },
+    {
+      "action": "version_purge",
+      "category": "deletion"
+    }
   ]
 }

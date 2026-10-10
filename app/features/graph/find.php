@@ -109,12 +109,15 @@ function graph_ms(float $t0): int
 /** search_log kind graph (the query cut at 120) and search.graph (never the words). */
 function graph_find_log(PDO $pdo, string $q, array $filters, int $results, int $ms, string $source, string $status, int $subjects = 0): void
 {
+    $eval = !empty($GLOBALS['__graph_eval']);                      // an evaluation run (the bridge says so) leaves no search_log row, only the search.graph line marked eval
     try {
-        search_log_write($pdo, 'graph', $q, $filters, $results, $ms, $source);
+        if (!$eval) {
+            search_log_write($pdo, 'graph', $q, $filters, $results, $ms, $source);
+        }
     } catch (Throwable $e) {
         error_log('graph find log: ' . $e->getMessage());
     }
-    log_activity($pdo, 'search.graph', 'search', null, ['screen' => 'graph', 'after' => ['length' => mb_strlen($q), 'results' => $results, 'subjects' => $subjects, 'status' => $status, 'took_ms' => $ms, 'filters' => array_keys($filters)]]);
+    log_activity($pdo, 'search.graph', 'search', null, ['screen' => 'graph', 'after' => ['length' => mb_strlen($q), 'results' => $results, 'subjects' => $subjects, 'status' => $status, 'took_ms' => $ms, 'filters' => array_keys($filters)] + ($eval ? ['eval' => true] : [])]);
 }
 
 function app_is_active(): bool
