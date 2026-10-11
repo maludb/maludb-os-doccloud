@@ -62,7 +62,12 @@ PDF keeps its first-page thumbnail. Hiding ignores a lock: a lock claims the con
   later range requests are not.
 - The player: `controls playsinline preload="metadata"`, the poster from the thumbnail (unless hidden). A MOV is offered to the
   player as `video/mp4`. AVI, WMV/ASF, FLV and MPEG-PS are known not to play: the page says so with Download. Anything else the
-  browser rejects (`canPlayType` empty, or an error on the source) switches to the same message.
+  browser rejects (`canPlayType` empty, or an error on the source) switches to the same message. The source's failure is caught by its
+  own `onerror` attribute (a failure that comes before the page's script ran is never missed) and the media's by an `error` listener;
+  **never by `networkState`** — it is `NETWORK_NO_SOURCE` for every video while the browser has yet to pick its source, and reading it
+  hid players that play behind the message (fixed 2026-10-11, the owner's `ED-BACK2.mp4`, an ordinary H.264/AAC MP4; the browser proof
+  had accepted the message for the MP4 believing its Chromium lacked H.264 — it plays: the proof now requires a shown player when
+  `canPlayType` is not empty, and the message for bytes the browser cannot read).
 - **Hidden:** the preview card shows the placeholder, **Show** (a `<template>` holds the preview, so nothing loads until asked) and
   for an editor the switch. The public link page (`/s/{token}`) shows the same placeholder and Show, without the switch.
 - The thumbnail door `/d/{id}/thumb` serves the placeholder SVG while a document's preview is hidden, so every surface (search,

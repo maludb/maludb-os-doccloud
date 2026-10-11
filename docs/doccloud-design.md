@@ -738,6 +738,8 @@ each bar (`POST /upload/cancel`: the session expired `cancelled`, what arrived r
 A camera's MP4 PHP's magic does not know (the owner's Sony `C3724.MP4`, brand `XAVC`, stored as `application/octet-stream`, no player) is typed
 by its `ftyp` brands (`dc_iso_media_mime()`, still the bytes, never the extension); `bin/retype.php` judges again what was stored before
 (`document.retype`). `docs/build-specs/grid-and-media.md` "A camera's MP4 PHP does not know".
+Every video page showed "This video can't play in this browser" over a player that plays (the owner's `ED-BACK2.mp4`): the fallback read
+`networkState`, which is NETWORK_NO_SOURCE until the browser picks the source — now only the source's `onerror` and the media's `error` count.
 
 **2026-10-10 — THE GRID, THUMBNAILS, VIDEO AND HIDDEN PREVIEWS** (the owner's request after Phase 4; `docs/build-specs/grid-and-media.md`,
 decisions G1–G4 the owner's, built in the worktree `grid-media` and merged). The folder listing as a grid beside the list; video thumbnails

@@ -67,7 +67,7 @@ worker('extract_text,thumbnails');
 $t = thumb_of($cam);
 ok($t['thumb_state'] === 'made' && abs((int) $t['duration_ms'] - 2000) <= 300, 'the worker makes its poster and keeps its length (' . $t['thumb_state'] . ', ' . $t['duration_ms'] . ' ms)');
 $b = page(actor(26), '/documents/' . $cam)['body'];
-ok(str_contains($b, '<source src="/d/' . $cam . '" type="video/mp4">') && str_contains($b, 'poster="/d/' . $cam . '/thumb?v='), 'the document page offers the player, with the poster');
+ok(str_contains($b, '<source src="/d/' . $cam . '" type="video/mp4" onerror=') && str_contains($b, 'poster="/d/' . $cam . '/thumb?v='), 'the document page offers the player, with the poster');
 $r = req('GET', '/d/' . $cam, ['jar' => actor(26), 'headers' => ['Range: bytes=0-']]);
 ok($r['code'] === 206 && preg_match('/^Content-Type: video\/mp4/mi', $r['headers']) && !preg_match('/^Content-Disposition: attachment/mi', $r['headers']), 'the gate streams it inline as video/mp4 (206)');
 $up = upload_file(27, $s['media'], $noise);
@@ -90,7 +90,7 @@ ok($vr['mime_type'] === 'video/mp4' && $vr['thumb_state'] === null && doc_row($c
 $log = q("SELECT source, actor_member_id, before, after FROM activity_log WHERE action = 'document.retype' AND document_id = :d", ['d' => $cam]);
 ok(count($log) === 1 && $log[0]['source'] === 'cron' && $log[0]['actor_member_id'] === null && json_decode($log[0]['before'], true)['mime_type'] === 'application/octet-stream' && json_decode($log[0]['after'], true)['mime_type'] === 'video/mp4', 'document.retype logged once, source cron, the type before and after');
 worker('extract_text,thumbnails');
-ok(thumb_of($cam)['thumb_state'] === 'made' && str_contains(page(actor(26), '/documents/' . $cam)['body'], '<source src="/d/' . $cam . '" type="video/mp4">'), 'the next worker pass makes the poster; the page plays it');
+ok(thumb_of($cam)['thumb_state'] === 'made' && str_contains(page(actor(26), '/documents/' . $cam)['body'], '<source src="/d/' . $cam . '" type="video/mp4" onerror='), 'the next worker pass makes the poster; the page plays it');
 $again = retype();
 ok(($again['summary']['changed'] ?? null) === 0 && $logged() === 1, 'a second run changes nothing (idempotent)');
 ok(doc_row($nz)['mime_type'] === 'application/octet-stream', 'the noise is still application/octet-stream');

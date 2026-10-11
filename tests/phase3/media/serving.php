@@ -62,11 +62,11 @@ ok($bid > 0 && $r['code'] === 200 && $took < 2.0 && $running, 'the same person o
 
 echo "4. The player\n";
 $b = page(actor(26), '/documents/' . $mp4)['body'];
-ok(str_contains($b, '<video controls playsinline preload="metadata"') && str_contains($b, '<source src="/d/' . $mp4 . '" type="video/mp4">'), 'an MP4: the player, playsinline, streamed from the gate');
+ok(str_contains($b, '<video controls playsinline preload="metadata"') && str_contains($b, '<source src="/d/' . $mp4 . '" type="video/mp4" onerror='), 'an MP4: the player, playsinline, streamed from the gate');
 ok(str_contains($b, 'poster="/d/' . $mp4 . '/thumb?v='), '...its poster is the thumbnail');
 ok(str_contains($b, 'id="document-preview-video-fallback"') && str_contains($b, "v.addEventListener('error', fail)"), '...and a fallback if this browser rejects it');
-ok(str_contains(page(actor(26), '/documents/' . $mov)['body'], '<source src="/d/' . $mov . '" type="video/mp4">'), 'a MOV is offered to the player as MP4');
-ok(str_contains(page(actor(26), '/documents/' . $webm)['body'], '<source src="/d/' . $webm . '" type="video/webm">'), 'a WebM as WebM');
+ok(str_contains(page(actor(26), '/documents/' . $mov)['body'], '<source src="/d/' . $mov . '" type="video/mp4" onerror='), 'a MOV is offered to the player as MP4');
+ok(str_contains(page(actor(26), '/documents/' . $webm)['body'], '<source src="/d/' . $webm . '" type="video/webm" onerror='), 'a WebM as WebM');
 $b = page(actor(26), '/documents/' . $avi)['body'];
 ok(str_contains($b, 'id="document-preview-unplayable"') && str_contains($b, "This format can't play in the browser") && !str_contains($b, '<video') && str_contains($b, 'href="/d/' . $avi . '?download=1"'), 'an AVI: "This format can\'t play in the browser" and Download, no player');
 

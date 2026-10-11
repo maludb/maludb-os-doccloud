@@ -21,7 +21,7 @@ ob_start();
             <a href="/d/<?= $id ?>?download=1" class="btn btn-primary btn-touch" id="document-preview-unplayable-download"><i class="feather-download me-1"></i>Download</a>
         </div>
     <?php elseif ($mode === 'video'): ?>
-        <video controls playsinline preload="metadata" class="w-100 rounded bg-dark d-block" style="max-height:70vh" id="document-preview-video"<?= !empty($preview['poster']) ? ' poster="/d/' . $id . '/thumb?v=' . e((string) strtotime((string) $d['updated_at'])) . '"' : '' ?>><source src="/d/<?= $id ?>"<?= !empty($preview['source_type']) ? ' type="' . e($preview['source_type']) . '"' : '' ?>></video>
+        <video controls playsinline preload="metadata" class="w-100 rounded bg-dark d-block" style="max-height:70vh" id="document-preview-video"<?= !empty($preview['poster']) ? ' poster="/d/' . $id . '/thumb?v=' . e((string) strtotime((string) $d['updated_at'])) . '"' : '' ?>><source src="/d/<?= $id ?>"<?= !empty($preview['source_type']) ? ' type="' . e($preview['source_type']) . '"' : '' ?> onerror="var v = this.parentNode; v.dataset.failed = '1'; if (v.dcFail) v.dcFail();"></video>
         <div class="empty-state text-center py-4 d-none" id="document-preview-video-fallback">
             <span class="avatar-text avatar-lg rounded mb-2"><i class="feather-film"></i></span>
             <div class="fw-semibold">This video can't play in this browser</div>
@@ -87,9 +87,12 @@ ob_start();
         var v = document.getElementById('document-preview-video'); if (!v || v.dataset.watched) return; v.dataset.watched = '1';
         var fb = document.getElementById('document-preview-video-fallback');
         var fail = function () { v.classList.add('d-none'); if (fb) fb.classList.remove('d-none'); };
-        var src = v.querySelector('source'); if (src) src.addEventListener('error', fail);
-        v.addEventListener('error', fail);
-        if (v.error || v.networkState === 3) fail();   // already failed before this ran (NETWORK_NO_SOURCE), e.g. after an HTMX swap
+        v.dcFail = fail;                                  // the <source>'s own onerror calls it — an attribute, so a failure before this ran is never missed
+        v.addEventListener('error', fail);                // the media itself failing (decoding, the network) after its source was chosen
+        // Already failed before this ran: the <source>'s onerror marked it, or v.error is set. Never networkState: it is NETWORK_NO_SOURCE (3)
+        // for EVERY video at this moment — the browser picks its <source> in a later task — and reading it hid players that play (the owner's
+        // ED-BACK2.mp4, 2026-10-11).
+        if (v.dataset.failed || v.error) fail();
     };
     var show = document.getElementById('document-preview-show-btn');
     if (show) show.addEventListener('click', function () {

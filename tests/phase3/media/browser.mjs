@@ -1,6 +1,7 @@
 // The grid-and-media browser proof (docs/build-specs/grid-and-media.md "Proof"): at 1280 x 800 (Marco) and 375 x 740 (Priya) — the grid's tiles
 // a row, the thumbnails loaded, the hide-preview switch swapping its tile in place and surviving a reload, the document page's placeholder and
-// Show, a WebM streaming and playing through the gate, an MP4 either playing or falling back (this Chromium may lack H.264), the AVI's message;
+// Show, a WebM and an MP4 streaming and playing through the gate in a player that is shown (the message only when canPlayType is empty, or for
+// bytes the browser cannot decode), the AVI's message;
 // screenshots; no sideways scroll at 375; no console errors. Run through tests/phase3/media/run.sh.
 import { createRequire } from 'node:module';
 const require = createRequire('/var/www/web/node_modules/');
@@ -76,6 +77,7 @@ const imgLoaded = (page, sel) => page.evaluate(async (s) => { const i = document
     return { readyState: v.readyState, duration: v.duration, currentTime: v.currentTime };
   });
   ok(webm.readyState >= 1 && Math.abs(webm.duration - 3) < 0.4 && webm.currentTime > 0.3, 'the WebM streams from the gate and plays (' + JSON.stringify(webm) + ')');
+  ok(await shown(page, '#document-preview-video') && !(await shown(page, '#document-preview-video-fallback')), '...in a player that is SHOWN — never the "can\'t play" message over a video that plays');
   await page.screenshot({ path: `${SHOTS}/media-desktop-video.png` });
   await page.goto(BASE + '/documents/' + ids.mp4, { waitUntil: 'networkidle' });
   const mp4 = await page.evaluate(async () => {
@@ -83,9 +85,17 @@ const imgLoaded = (page, sel) => page.evaluate(async (s) => { const i = document
     if (v && v.readyState < 1) await new Promise((r) => { v.addEventListener('loadedmetadata', r, { once: true }); v.addEventListener('error', r, { once: true }); v.querySelector('source')?.addEventListener('error', r, { once: true }); setTimeout(r, 8000); });
     await new Promise((r) => setTimeout(r, 300));
     const fb = document.getElementById('document-preview-video-fallback');
-    return { playable: !!v && v.readyState >= 1 && !v.classList.contains('d-none'), fallback: !!fb && !fb.classList.contains('d-none') };
+    return { playable: !!v && v.readyState >= 1 && !v.classList.contains('d-none'), fallback: !!fb && !fb.classList.contains('d-none'), canPlay: v ? v.canPlayType('video/mp4') : null };
   });
-  ok(mp4.playable !== mp4.fallback, 'the MP4 either plays or says it cannot here — never a dead player (' + (mp4.playable ? 'it plays' : 'this Chromium lacks H.264: the fallback') + ')');
+  ok(mp4.playable !== mp4.fallback, 'the MP4 either plays or says it cannot here — never a dead player (' + (mp4.playable ? 'it plays' : 'the fallback') + ')');
+  ok(mp4.fallback === (mp4.canPlay === ''), '...and the message only when this browser cannot play MP4 (canPlayType "' + mp4.canPlay + '": ' + (mp4.fallback ? 'the fallback' : 'the player') + ')');
+  // bytes the browser cannot read behind the same page, answered at once (it fails before the page's script runs): the message and Download replace the player
+  const broken = crypto.randomBytes(200000);
+  await page.route(`**/d/${ids.mp4}`, (r) => r.fulfill({ status: 200, contentType: 'video/mp4', body: broken }));
+  await page.goto(BASE + '/documents/' + ids.mp4, { waitUntil: 'load' });
+  await page.waitForSelector('#document-preview-video-fallback:not(.d-none)', { timeout: 8000 }).catch(() => {});
+  ok(await shown(page, '#document-preview-video-fallback') && !(await shown(page, '#document-preview-video')), 'a video this browser cannot read: the message and Download replace the player, even when it fails before the page\'s script runs');
+  await page.unrouteAll({ behavior: 'wait' });
   await page.goto(BASE + '/documents/' + ids.avi, { waitUntil: 'networkidle' });
   ok(await shown(page, '#document-preview-unplayable') && (await page.locator('#document-preview-video').count()) === 0, 'the AVI: the message and Download');
   ok(errors.length === 0, 'no console errors' + (errors.length ? ': ' + errors.slice(0, 3).join(' | ') : ''));
