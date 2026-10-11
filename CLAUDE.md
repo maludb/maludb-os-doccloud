@@ -1,7 +1,7 @@
 # DocCloud — CLAUDE.md
 
-This repository is the **DocCloud** application of the MaluDB Business OS (`github.com/maludb/maludb-os-doccloud`, private until
-the owner says otherwise; local clone and install path `/srv/apps/doccloud`; catalog key `doccloud`; DNS label `doccloud`). The
+This repository is the **DocCloud** application of the MaluDB Business OS (`github.com/maludb/maludb-os-doccloud`, PUBLIC —
+the owner chose to push it public on 2026-10-11, though the plan had said private; local clone and install path `/srv/apps/doccloud`; catalog key `doccloud`; DNS label `doccloud`). The
 kernel is `/var/www` (`maludb-os-core`); read its CLAUDE.md first — the kernel owns identity, the directory, the agents, approvals
 and the token ledger; this application owns the business's **files**: libraries (personal, group, shared) of folders and
 documents with versions, de-duplicated blobs, tags, sharing by principal with inheritance (members, **groups**, departments,
@@ -78,7 +78,7 @@ preview" for everyone (`document_preview_hidden`, db/023; two actions — 97/97 
 2026-10-10 — **PHASE 3 AND PHASE 4 COMPLETE** (design §16): 68/68 screens, 95/95 actions, records MCP 73 tools + activity 7, migrations
 db/001–022. Built by the planning model through slice 5, by Sonnet 5.5 workers for slices 6–9 and Phase 4, every one verified and committed.
 **Phase 5 is the owner's** (`deploy/ROOT_STEPS.sh`, then `bin/app_install.php apply` twice, DNS/TLS, the hires, naming the expert and the Clerk
-in admin → agents, the end-to-end proof of design §10). Nothing pushed.
+in admin → agents, the end-to-end proof of design §10). First pushed 2026-10-11 (main = ed81d1c, public).
 **For the owner to confirm (decisions taken in the specs):** the Clerk's reach is one report read; the link key derived from ACTION_TOKEN_KEY;
 a signed share download URL reusable within its ten minutes; the API's upload answers 409 on a same name unless told version/keep both;
 MaluMail 4xx fails at once, 5xx retried twice; a cancelled dispatch is recorded `refused`; the expert and the Clerk named in settings.
