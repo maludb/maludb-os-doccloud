@@ -280,7 +280,7 @@ query over 120 characters, a token, a link, a password, a storage path.**
 - `clerk.propose|accept|dismiss`: `proposal_id`, `kind`, `title`. `agent.dispatch|reply|fail`: `dispatch_id`, `agent_member_id`, `kind`, `via`, `run_id`, `status`.
 - `settings.save`, `retention.set`, `quota.set`, `agents_settings.save`: the fields changed. `share.read` (the shares). `key.mint|rotate|revoke|rate_limited`:
   `key_id`, `label`, `rate_per_minute`, `rate_per_day`, `limit_hit`. `token.mint|revoke`. `notification.send|read`. `note.add|delete`.
-  `favourite.add|remove`. `saved_search.save|delete`. `thumb.made` (the worker: `version_id`). `export.request|done|fail|expire`. `member.sign_on`, `directory.sync`, `screen.view`.
+  `favourite.add|remove`. `saved_search.save|delete`. `thumb.made` (the worker: `version_id`). `document.retype` (`bin/retype.php`: a version judged again, `mime_type` before and after). `export.request|done|fail|expire`. `member.sign_on`, `directory.sync`, `screen.view`.
 
 ## Entity resolution for the action tools (the registry's `resolve` block, `deploy/kernel-registry-doccloud.json`)
 Each tool answers the resolver's plain list when called with `q` alone: digits are an id, otherwise ILIKE with at most 6 candidates.

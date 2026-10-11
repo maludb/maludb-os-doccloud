@@ -146,8 +146,8 @@ function dc_file_sha256(string $path): string
 }
 
 /**
- * The type of a file, decided by its BYTES (finfo); a text kind refined by the extension among text kinds only (.md → text/markdown,
- * .csv → text/csv, .json → application/json). Returns the mime.
+ * The type of a file, decided by its BYTES (finfo, then dc_iso_media_mime() for an MP4-family file finfo does not know); a text kind refined
+ * by the extension among text kinds only (.md → text/markdown, .csv → text/csv, .json → application/json). Returns the mime.
  */
 function dc_sniff_mime(string $path, string $filename = ''): string
 {
@@ -155,6 +155,9 @@ function dc_sniff_mime(string $path, string $filename = ''): string
     if (is_file($path) && filesize($path) > 0) {
         $fi = new finfo(FILEINFO_MIME_TYPE);
         $mime = (string) ($fi->file($path) ?: 'application/octet-stream');
+        if ($mime === 'application/octet-stream') {
+            $mime = dc_iso_media_mime((string) @file_get_contents($path, false, null, 0, 512)) ?? $mime;
+        }
     }
     $ext = strtolower((string) pathinfo($filename, PATHINFO_EXTENSION));
     if (in_array($mime, ['text/plain', 'application/csv', 'text/x-c', 'text/x-php', 'application/json'], true) || str_starts_with($mime, 'text/')) {
@@ -164,6 +167,40 @@ function dc_sniff_mime(string $path, string $filename = ''): string
         }
     }
     return $mime;
+}
+
+/**
+ * An ISO base media file (MP4, QuickTime, 3GP, M4A) by its opening `ftyp` box, for the brands PHP's own magic does not know — a Sony
+ * camera's XAVC (`ftypXAVC`, compatible mp42 iso6) is application/octet-stream to it. The major brand decides, then the compatible brands in
+ * order; audio and video brands only (an image brand stays finfo's to judge). $head = the file's first bytes. Returns the mime, or null.
+ */
+function dc_iso_media_mime(string $head): ?string
+{
+    if (strlen($head) < 16 || substr($head, 4, 4) !== 'ftyp') {
+        return null;
+    }
+    $size = unpack('N', substr($head, 0, 4))[1];
+    if ($size < 16 || $size > 4096) {
+        return null;
+    }
+    $brands = [substr($head, 8, 4)];
+    for ($o = 16; $o + 4 <= min($size, strlen($head)); $o += 4) {
+        $brands[] = substr($head, $o, 4);
+    }
+    foreach ($brands as $b) {
+        $mime = match (true) {
+            $b === 'qt  ' => 'video/quicktime',
+            in_array($b, ['M4A ', 'M4B ', 'M4P ', 'F4A ', 'F4B '], true) => 'audio/mp4',
+            str_starts_with($b, '3g2') => 'video/3gpp2',
+            in_array(substr($b, 0, 3), ['3gp', '3gg', '3ge', '3gs'], true) => 'video/3gpp',
+            (bool) preg_match('/^iso[m2-9]$/', $b), in_array($b, ['mp41', 'mp42', 'avc1', 'XAVC', 'MSNV', 'M4V ', 'M4VH', 'M4VP', 'f4v ', 'mmp4', 'dash', 'CAEP'], true) => 'video/mp4',
+            default => null,
+        };
+        if ($mime !== null) {
+            return $mime;
+        }
+    }
+    return null;
 }
 
 /** The kinds that are stored but never served inline (the browser would run them). Returns the reason, or null. */

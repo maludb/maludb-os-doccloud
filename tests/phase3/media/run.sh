@@ -14,14 +14,14 @@ rm -rf "$DC_STORE"; mkdir -p "$DC_STORE"
 sed -i "s#^DC_STORAGE_DIR=.*#DC_STORAGE_DIR=$DC_STORE#" "$DC_DEV_ENV"
 status=0
 cd "$ROOT"
-ONLY=${DC_ONLY:-thumbs actions grid serving browser registry}
+ONLY=${DC_ONLY:-thumbs actions grid serving types browser registry}
 has() { [[ " $ONLY " == *" $1 "* ]]; }
 "$ROOT/tests/phase2/servers.sh" start >/dev/null || { echo "servers failed"; exit 1; }
 trap '"$ROOT/tests/phase2/servers.sh" stop' EXIT
 set -a; . "$DC_DEV_ENV"; set +a
 export FAKE_KERNEL_STATE="$DC_DEV_STATE/kernel.json" FAKE_MALUDB_LOG="$DC_DEV_STATE/maludb.log"
 php bin/directory_sync.php --full >/dev/null || { echo "the first sync failed"; exit 1; }
-for p in thumbs actions grid serving; do
+for p in thumbs actions grid serving types; do
   has $p || continue
   echo "== $p"; php "tests/phase3/media/$p.php" || status=1
 done

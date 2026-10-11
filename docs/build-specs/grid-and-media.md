@@ -68,6 +68,18 @@ PDF keeps its first-page thumbnail. Hiding ignores a lock: a lock claims the con
 - The thumbnail door `/d/{id}/thumb` serves the placeholder SVG while a document's preview is hidden, so every surface (search,
   recent, favourites, the API's `thumb_url`) shows it too.
 
+## A camera's MP4 PHP does not know (the owner, 2026-10-11)
+The owner's `C3724.MP4` (4.7 GB, a Sony camera: H.264 4K with big-endian PCM sound, major brand `XAVC`, compatible `mp42 iso6`) was
+stored as `application/octet-stream` — PHP's bundled magic (libmagic 5.43) does not know the brand, while the system's `file` 5.45 does —
+so its kind was `other`: no player, no poster. The store still decides by the bytes: when finfo answers `application/octet-stream`,
+`dc_iso_media_mime()` reads the opening `ftyp` box, and the major brand, then the compatible brands in order, decide — `qt  ` QuickTime;
+`M4A `/`M4B `/`M4P `/`F4A `/`F4B ` audio/mp4; `3gp*`/`3gg*`/`3ge*`/`3gs*` 3GPP, `3g2*` 3GPP2; `isom`, `iso2`–`iso9`, `mp41`, `mp42`, `avc1`,
+`XAVC`, `MSNV`, `M4V*`, `f4v `, `mmp4`, `dash`, `CAEP` video/mp4. Image brands (HEIF, AVIF) stay finfo's to judge; the extension never
+decides. **`bin/retype.php [--dry-run]`** judges again every version stored as `application/octet-stream` with the store's rules as they
+are now: a changed version takes the new type and its poster is queued again, the document follows when it is the current version (its
+Modified time moves — the touch trigger), `document.retype` logged (source cron, the type before and after); idempotent. Run it as the
+store's owner after a deploy that teaches the store a type.
+
 ## Actions (manifest, base `/documents/`)
 | Action | File | Params | Undo | Log | Who | Agent | record_id |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -95,4 +107,5 @@ there, legacy files recorded without being remade; the grid (tiles, icons per ty
 for an editor, the cookie); the two actions (rights, levels, 422 for a PDF, the tile swap, the JSON contract, an agent, the
 log rows, `updated_at` untouched); serving (the session released during a stream, one log row for a range sequence, the poster,
 the MOV source type, the unplayable message, the hidden placeholder with Show on the document page and the link page, the
-thumbnail door's placeholder); the registry (97 actions). Slices 1, 2, 6, Phase 2 and Phase 4 re-run green.
+thumbnail door's placeholder); types (2026-10-11: `ftyp` brands judged, a camera's XAVC MP4 through the upload door to a poster and the
+player, noise named `.MP4` left unknown, `bin/retype.php` dry run, run, log, idempotence); the registry (97 actions). Slices 1, 2, 6, Phase 2 and Phase 4 re-run green.

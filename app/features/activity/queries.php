@@ -94,7 +94,7 @@ function activity_sentence(array $r): string
         'document.lock_break' => 'broke a lock', 'document.transfer' => 'transferred a document', 'version.restore' => 'restored a version', 'version.purge' => 'purged a version',
         'document.describe' => 'described a document', 'document.reextract' => 'asked for the text to be read again', 'document.text_extracted' => 'had its text read', 'document.export' => 'made a zip of documents',
         'upload.start' => 'started an upload', 'upload.finish' => 'finished an upload', 'upload.conflict' => 'met a name already taken', 'upload.refused' => 'had an upload refused', 'upload.expire' => 'had an upload expire', 'upload.cancel' => 'cancelled an upload',
-        'export.ready' => 'has a zip ready', 'export.download' => 'downloaded a zip', 'export.expire' => 'had zips expire', 'thumb.made' => 'got a thumbnail',
+        'export.ready' => 'has a zip ready', 'export.download' => 'downloaded a zip', 'export.expire' => 'had zips expire', 'thumb.made' => 'got a thumbnail', 'document.retype' => 'had its type corrected',
         'access.share' => 'shared something', 'access.share_guest' => 'shared with a guest', 'access.share_application' => 'shared with an application', 'access.level_set' => 'changed a share',
         'access.unshare' => 'removed a share', 'access.restrict' => 'restricted access',
         'link.make' => 'made a link', 'link.rotate' => 'rotated a link', 'link.revoke' => 'revoked a link', 'link.open' => 'opened a link', 'request.make' => 'made a file request',

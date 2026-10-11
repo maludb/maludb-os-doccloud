@@ -735,6 +735,9 @@ through the routes and a 2.1 GB file through Chromium, also under Apache). PHP's
 **2026-10-11**: under each bar the time left (arrived of the whole, the speed over 30 s, the time at that speed), and **Cancel** at the end of
 each bar (`POST /upload/cancel`: the session expired `cancelled`, what arrived removed, `upload.cancel` logged). The file picker opens from the code
 (`showPicker()`, else `click()`) on either Choose button or anywhere on the drop zone — the owner's Chrome on a Mac once showed no dialog.
+A camera's MP4 PHP's magic does not know (the owner's Sony `C3724.MP4`, brand `XAVC`, stored as `application/octet-stream`, no player) is typed
+by its `ftyp` brands (`dc_iso_media_mime()`, still the bytes, never the extension); `bin/retype.php` judges again what was stored before
+(`document.retype`). `docs/build-specs/grid-and-media.md` "A camera's MP4 PHP does not know".
 
 **2026-10-10 — THE GRID, THUMBNAILS, VIDEO AND HIDDEN PREVIEWS** (the owner's request after Phase 4; `docs/build-specs/grid-and-media.md`,
 decisions G1–G4 the owner's, built in the worktree `grid-media` and merged). The folder listing as a grid beside the list; video thumbnails
