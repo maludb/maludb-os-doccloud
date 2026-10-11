@@ -47,6 +47,12 @@ authentication, sessions and checks, its "rename the old file" on a repeated nam
   refused), what arrived is removed, `upload.cancel` is logged with the parts that had arrived. A cancelled file cannot be resumed.
 - The uploader's script is included as `dc-upload.js?v=<its modified time>` so a browser never keeps an old copy after a deploy.
 
+## The file picker opens from the code (the owner, 2026-10-11)
+"Choose files" gave no dialog in the owner's Chrome on a Mac (a browser restart cured it; headless Chromium always opened it). The picker no
+longer depends on the browser's label-to-hidden-input default: the inputs are `visually-hidden` (never `display:none`, out of the tab order,
+`aria-hidden`), and a click on either Choose button, anywhere else on the drop zone, or Enter/Space on the focused zone opens the picker from
+the code — `input.showPicker()` where the browser has it, `input.click()` otherwise (`choose()` in `dc-upload.js`). One click opens one picker.
+
 ## Schema — `db/024_large_uploads.sql` (additive)
 - `dc_settings.max_document_bytes` drops NOT NULL, defaults to NULL, CHECK `IS NULL OR >= 1 MB` (no top); the seeded 2 GB is cleared.
 - `upload_sessions` gains `writes_at_offset` (boolean, default false; new sessions true), `hashed_parts` (integer, CHECK 0..parts_total),

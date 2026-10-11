@@ -10,8 +10,8 @@ $open = $open ?? true;
             <label class="btn btn-primary btn-touch mb-0" for="upload-files-input" id="upload-choose-btn"><i class="feather-file-plus me-1"></i><?= $documentId === null ? 'Choose files' : 'Choose the file' ?></label>
             <?php if ($documentId === null): ?><label class="btn btn-light btn-touch mb-0 d-none d-md-inline-block" for="upload-folder-input" id="upload-choose-folder-btn"><i class="feather-folder-plus me-1"></i>Choose a folder</label><?php endif; ?>
         </div>
-        <input type="file" id="upload-files-input" class="d-none" <?= $documentId === null ? 'multiple' : '' ?>>
-        <input type="file" id="upload-folder-input" class="d-none" webkitdirectory multiple>
+        <input type="file" id="upload-files-input" class="visually-hidden" tabindex="-1" aria-hidden="true" <?= $documentId === null ? 'multiple' : '' ?>>
+        <input type="file" id="upload-folder-input" class="visually-hidden" tabindex="-1" aria-hidden="true" webkitdirectory multiple>
         <div class="fs-11 text-muted mt-2" id="upload-zone-hint"><?= ($settings['max_document_bytes'] ?? null) === null ? 'Files of any size.' : 'Up to ' . e(format_bytes((int) $settings['max_document_bytes'])) . ' a file.' ?> Large files go up in parts; if the connection drops or the page closes, choose the same file again to carry on.</div>
     </div>
     <div id="upload-list" class="list-group mb-2" aria-live="polite"></div>

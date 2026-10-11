@@ -733,7 +733,8 @@ the page is left; a part sent again with other bytes after it was hashed is refu
 folder export lost its 2 GB cap (Zip64; large files stored). **db/024**. Proof `tests/phase3/bigfiles/run.sh` (40 + 17, a real 2.5 GB file
 through the routes and a 2.1 GB file through Chromium, also under Apache). PHP's sha256 (~60 MB/s on this VM) is the upload's bound.
 **2026-10-11**: under each bar the time left (arrived of the whole, the speed over 30 s, the time at that speed), and **Cancel** at the end of
-each bar (`POST /upload/cancel`: the session expired `cancelled`, what arrived removed, `upload.cancel` logged).
+each bar (`POST /upload/cancel`: the session expired `cancelled`, what arrived removed, `upload.cancel` logged). The file picker opens from the code
+(`showPicker()`, else `click()`) on either Choose button or anywhere on the drop zone — the owner's Chrome on a Mac once showed no dialog.
 
 **2026-10-10 — THE GRID, THUMBNAILS, VIDEO AND HIDDEN PREVIEWS** (the owner's request after Phase 4; `docs/build-specs/grid-and-media.md`,
 decisions G1–G4 the owner's, built in the worktree `grid-media` and merged). The folder listing as a grid beside the list; video thumbnails

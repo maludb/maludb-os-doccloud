@@ -162,6 +162,27 @@ console.log('1280 x 800 — the store full, then Resume; a part lost on the netw
   ok(await waitState(page, 'drone-raw-2.bin', 'done', 30000) && dropped === 1 && docOf('drone-raw-2.bin').sha256 === sha2, 'a part lost on the network is sent again and the file finishes');
   await page.unrouteAll({ behavior: 'wait' });
 }
+console.log('1280 x 800 — the file picker opens from the code');
+{
+  await page.goto(uploadUrl, { waitUntil: 'networkidle' });
+  const chooserOf = async (act) => {
+    const seen = []; const on = (fc) => seen.push(fc); page.on('filechooser', on);
+    await act(); await sleep(400); page.off('filechooser', on);
+    return seen;
+  };
+  let fcs = await chooserOf(() => page.click('#upload-choose-btn'));
+  ok(fcs.length === 1 && (await fcs[0].element().getAttribute('id')) === 'upload-files-input' && fcs[0].isMultiple(), '"Choose files" opens one picker, for several files');
+  fs.writeFileSync(dir + '/picked.txt', 'picked through the dialog\n');
+  if (fcs[0]) await fcs[0].setFiles(dir + '/picked.txt');
+  ok(await waitState(page, 'picked.txt', 'done', 15000) && Number(docOf('picked.txt').byte_size) === 26, 'a file given to that picker goes up to done');
+  fcs = await chooserOf(() => page.click('#upload-choose-folder-btn'));
+  ok(fcs.length === 1 && (await fcs[0].element().getAttribute('id')) === 'upload-folder-input', '"Choose a folder" opens the folder picker');
+  fcs = await chooserOf(() => page.click('#drop-zone .feather-upload-cloud'));
+  ok(fcs.length === 1 && (await fcs[0].element().getAttribute('id')) === 'upload-files-input', 'a click anywhere else on the drop zone opens the file picker');
+  fcs = await chooserOf(async () => { await page.focus('#drop-zone'); await page.keyboard.press('Enter'); });
+  ok(fcs.length === 1, 'Enter on the focused drop zone opens the file picker');
+  ok(await page.evaluate(() => { const i = document.getElementById('upload-files-input'); return i.classList.contains('visually-hidden') && i.tabIndex === -1 && getComputedStyle(i).display !== 'none'; }), 'the inputs are visually hidden, out of the tab order, never display:none');
+}
 ok(errors.length === 0, 'no console errors' + (errors.length ? ': ' + errors.slice(0, 3).join(' | ') : ''));
 await browser.close();
 fs.rmSync(dir, { recursive: true, force: true });

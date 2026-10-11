@@ -294,6 +294,12 @@ window.DcUpload = (function () {
     row.afterRun = function () { return dropOnServer(row); };
   }
 
+  /** Open the file picker of an input: showPicker() where the browser has it (a person's click is the activation it needs), click() otherwise. */
+  function choose(input) {
+    try { if (typeof input.showPicker === 'function') { input.showPicker(); return; } } catch (e) { /* not allowed here: fall back */ }
+    input.click();
+  }
+
   function mount(root) {
     if (!root || root.dataset.mounted) return; root.dataset.mounted = '1';
     wrap = root; list = root.querySelector('#upload-list'); summary = root.querySelector('#upload-summary'); csrf = root.dataset.csrf;
@@ -309,7 +315,15 @@ window.DcUpload = (function () {
       if (dt.items && dt.items.length && dt.items[0].webkitGetAsEntry) { walkEntries(dt.items).then(function (r) { addFiles(r.files, r.paths); }); }
       else { addFiles(dt.files); }
     });
-    zone.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+    zone.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(fileInput); } });
+    // The file picker opens from the code, never from the browser's label-to-hidden-input default (a Chrome on a Mac showed no dialog from it):
+    // the two Choose buttons, and a click anywhere else on the drop zone, open it.
+    zone.addEventListener('click', function (e) {
+      if (e.target.closest('input')) return;
+      var label = e.target.closest('label[for]');
+      e.preventDefault();
+      choose(label && label.htmlFor === 'upload-folder-input' && dirInput ? dirInput : fileInput);
+    });
     window.addEventListener('online', function () { queue.forEach(function (r) { if (r.paused) resume(r); }); });
     window.addEventListener('beforeunload', function (e) { if (queue.some(function (r) { return r.running; })) { e.preventDefault(); e.returnValue = ''; return ''; } });
   }
