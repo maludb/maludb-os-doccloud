@@ -45,7 +45,7 @@ const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
 const page = await ctx.newPage();
 const errors = [];
-page.on('console', (m) => { if (m.type() === 'error' && !/status of (409|507)|net::ERR_FAILED/.test(m.text())) errors.push(m.text()); });
+page.on('console', (m) => { if (m.type() === 'error' && !/status of (409|507)|net::ERR_FAILED|net::ERR_ABORTED/.test(m.text())) errors.push(m.text()); });
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 await page.goto(mint(27), { waitUntil: 'networkidle' });
 const uploadUrl = BASE + '/f/' + seed.contracts + '/upload';
@@ -96,6 +96,42 @@ console.log('1280 x 800 — the page left mid-way, the same file chosen again');
   ok(docOf('walkthrough.mov').sha256 === sha && sessions === 1, `the document has the file's sha256, from ONE session (${sessions})`);
   const resumed = sql("SELECT count(*)::int AS n FROM activity_log WHERE action = 'upload.start' AND (after->>'resumed')::boolean AND (after->>'parts_received')::int >= 4")[0].n;
   ok(resumed === 1, 'upload.start logged the resume with the parts it found');
+}
+
+console.log('1280 x 800 — the time left, and Cancel');
+{
+  bigFile(dir + '/timelapse.mp4', 24 * PART + 77);
+  bigFile(dir + '/queued-a.bin', 3 * PART); bigFile(dir + '/queued-b.bin', 3 * PART);
+  await page.goto(uploadUrl, { waitUntil: 'networkidle' });
+  const cdp = await ctx.newCDPSession(page);
+  await cdp.send('Network.enable');
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 20, downloadThroughput: -1, uploadThroughput: 8 * 1048576 });
+  await page.setInputFiles('#upload-files-input', [dir + '/timelapse.mp4', dir + '/queued-a.bin', dir + '/queued-b.bin']);
+  const etaId = await page.evaluate(() => [...document.querySelectorAll('.upload-row')].find((r) => r.dataset.name === 'timelapse.mp4').querySelector('.upload-eta').id);
+  const shownEta = await page.waitForFunction((id) => /^[\d.]+ MB of 192\.0 MB · [\d.]+ MB\/s · (less than a minute|about \d+ min) left$/.test(document.getElementById(id).textContent), etaId, { timeout: 20000 }).then(() => true, () => false);
+  ok(shownEta, 'under the bar: what has arrived of the whole, the speed and the time left ("' + await page.textContent('#' + etaId) + '")');
+  ok((await page.getAttribute('.upload-row[data-name="timelapse.mp4"] .progress-bar', 'aria-valuetext') || '').includes('left'), 'the bar\'s aria-valuetext says the same for a screen reader');
+  ok(await page.locator('.upload-row[data-name="timelapse.mp4"] .upload-cancel').isVisible() && await page.locator('.upload-row[data-name="queued-b.bin"] .upload-cancel').isVisible(), 'a Cancel button at the end of each bar, the queued file\'s too');
+  ok((await rowState(page, 'queued-b.bin')) === 'queued', 'two files go up at a time: the third is queued');
+  await page.click('.upload-row[data-name="queued-b.bin"] .upload-cancel');
+  ok((await rowState(page, 'queued-b.bin')) === 'cancelled' && sql("SELECT count(*)::int AS n FROM upload_sessions WHERE filename = 'queued-b.bin'")[0].n === 0, 'a queued file cancelled at once: no question, nothing reached the server');
+  let asked = null;
+  page.once('dialog', async (dlg) => { asked = dlg.message(); await dlg.dismiss(); });
+  await page.click('.upload-row[data-name="timelapse.mp4"] .upload-cancel');
+  await sleep(500);
+  ok(/^Cancel the upload of timelapse\.mp4\? The [\d.]+ MB already sent are removed\.$/.test(asked || '') && ['uploading', 'retrying'].includes(await rowState(page, 'timelapse.mp4')), 'Cancel asks first, saying what is lost; "No" keeps it going (' + asked + ')');
+  page.once('dialog', async (dlg) => { await dlg.accept(); });
+  await page.click('.upload-row[data-name="timelapse.mp4"] .upload-cancel');
+  ok(await waitState(page, 'timelapse.mp4', 'cancelled', 20000), 'confirmed: the row says cancelled');
+  await sleep(1500);
+  const sess = sql("SELECT id, status, error, parts_done FROM upload_sessions WHERE filename = 'timelapse.mp4'")[0] || {};
+  const store = process.env.DC_STORAGE_DIR;
+  ok(sess.status === 'expired' && sess.error === 'cancelled' && Number(sess.parts_done) < 25 && !fs.existsSync(store + '/uploads/' + sess.id + '/data'), `the server dropped the session (expired, cancelled at ${sess.parts_done} of 25 parts) and what had arrived`);
+  ok(!(await page.locator('.upload-row[data-name="timelapse.mp4"] .upload-cancel').isVisible()) && await page.locator('#' + etaId).isHidden(), 'no Cancel and no time left on a cancelled row');
+  ok(await waitState(page, 'queued-a.bin', 'done', 30000) && !(await page.locator('.upload-row[data-name="queued-a.bin"] .upload-cancel').isVisible()), 'the other file went on to done; a done row has no Cancel');
+  ok((await page.textContent('#upload-summary')).startsWith('3 of 3 done'), 'the summary counts the cancelled ones as finished');
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+  await cdp.detach();
 }
 
 console.log('1280 x 800 — the store full, then Resume; a part lost on the network');

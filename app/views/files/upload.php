@@ -11,5 +11,5 @@ $id = (int) $folder['id'];
     </div></div>
     <?php endif; ?>
 </div>
-<script src="/assets/js/dc-upload.js"></script>
+<script src="/assets/js/dc-upload.js?v=<?= (int) @filemtime(APP_ROOT . '/html/assets/js/dc-upload.js') ?>"></script>
 <script>if (window.DcUpload) { DcUpload.mount(document.getElementById('upload-zone-wrap')); }</script>

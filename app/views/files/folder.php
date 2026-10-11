@@ -69,7 +69,7 @@ if ($may['add']) {
     </nav>
     <?php endif; ?>
 </div>
-<?php if ($may['add']): ?><script src="/assets/js/dc-upload.js"></script>
+<?php if ($may['add']): ?><script src="/assets/js/dc-upload.js?v=<?= (int) @filemtime(APP_ROOT . '/html/assets/js/dc-upload.js') ?>"></script>
 <script>
 (function () {
     var w = document.getElementById('upload-zone-wrap'); if (!w || !window.DcUpload) return;

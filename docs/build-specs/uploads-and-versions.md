@@ -16,7 +16,7 @@ through `wants_json()`. Paths: `DC_STORAGE_DIR` (`env('DC_STORAGE_DIR')`, defaul
 |---|---|
 | `app/doccloud/store.php` | `dc_storage_dir()`, `dc_storage_path(string $rel)`, `dc_sniff_mime()`, `dc_inline_safe()`, `dc_refused_kind()`, `dc_blob_store()`, `dc_blob_unlink()`, `dc_make_thumbnail()`, `dc_safe_filename()` |
 | `app/features/uploads/queries.php` | `dc_upload_start()`, `dc_upload_part()`, `dc_upload_finish()`, `dc_upload_session()`, `dc_upload_discard()` |
-| `html/upload/start.php`, `html/upload/part.php`, `html/upload/finish.php` | the three routes (vhost: `/upload/(start\|part\|finish)` → these) |
+| `html/upload/start.php`, `html/upload/part.php`, `html/upload/finish.php`, `html/upload/cancel.php` | the routes (vhost: `/upload/(start\|part\|finish\|cancel)` → these; cancel since 2026-10-11, `large-uploads.md`) |
 | `html/upload/index.php` | the upload screen (the drop zone and per-file list, `assets/js/upload.js`) |
 | `html/d/index.php` | the gate: `/d/{id}` and `/d/{id}/v/{n}` |
 | `html/d/thumb.php` | `/d/{id}/thumb` |

@@ -93,7 +93,7 @@ function activity_sentence(array $r): string
         'document.restore' => 'restored a document', 'document.purge' => 'purged a document', 'document.lock' => 'locked a document', 'document.unlock' => 'unlocked a document', 'document.preview_hide' => 'hid a document\'s preview', 'document.preview_show' => 'showed a document\'s preview again',
         'document.lock_break' => 'broke a lock', 'document.transfer' => 'transferred a document', 'version.restore' => 'restored a version', 'version.purge' => 'purged a version',
         'document.describe' => 'described a document', 'document.reextract' => 'asked for the text to be read again', 'document.text_extracted' => 'had its text read', 'document.export' => 'made a zip of documents',
-        'upload.start' => 'started an upload', 'upload.finish' => 'finished an upload', 'upload.conflict' => 'met a name already taken', 'upload.refused' => 'had an upload refused', 'upload.expire' => 'had an upload expire',
+        'upload.start' => 'started an upload', 'upload.finish' => 'finished an upload', 'upload.conflict' => 'met a name already taken', 'upload.refused' => 'had an upload refused', 'upload.expire' => 'had an upload expire', 'upload.cancel' => 'cancelled an upload',
         'export.ready' => 'has a zip ready', 'export.download' => 'downloaded a zip', 'export.expire' => 'had zips expire', 'thumb.made' => 'got a thumbnail',
         'access.share' => 'shared something', 'access.share_guest' => 'shared with a guest', 'access.share_application' => 'shared with an application', 'access.level_set' => 'changed a share',
         'access.unshare' => 'removed a share', 'access.restrict' => 'restricted access',

@@ -25,7 +25,7 @@ elseif (preg_match('#^/d/([0-9]+)/([a-z_-]+)$#', $path, $m)) { $set(['id' => $m[
 elseif (preg_match('#^/f/([0-9]+)$#', $path, $m)) { $set(['id' => $m[1]]); $target = '/f/index.php'; }
 elseif (preg_match('#^/f/([0-9]+)/([a-z_-]+)$#', $path, $m)) { $set(['id' => $m[1]]); $target = '/f/' . $m[2] . '.php'; }
 elseif (preg_match('#^/exports/([0-9]+)$#', $path, $m)) { $set(['id' => $m[1]]); $target = '/exports/download.php'; }
-elseif (preg_match('#^/upload/(start|part|finish)$#', $path, $m)) { $target = '/upload/' . $m[1] . '.php'; }
+elseif (preg_match('#^/upload/(start|part|finish|cancel)$#', $path, $m)) { $target = '/upload/' . $m[1] . '.php'; }
 elseif (preg_match('#^/x/[0-9]+/[0-9]+/[0-9]+/[a-z][a-z0-9_]*/[a-f0-9]{64}$#', $path)) { $target = '/x/index.php'; }
 elseif (preg_match('#^/api/v1/upload/([0-9]+)/finish$#', $path, $m)) { $set(['session' => $m[1]]); $target = '/api/v1/upload/finish.php'; }
 elseif (preg_match('#^/api/v1/upload/([0-9]+)/([0-9]+)$#', $path, $m)) { $set(['session' => $m[1], 'n' => $m[2]]); $target = '/api/v1/upload/part.php'; }

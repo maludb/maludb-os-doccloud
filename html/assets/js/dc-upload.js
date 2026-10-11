@@ -8,7 +8,10 @@
  * the page was closed) carries on where it stopped: the start sends a resume_key (sha256 of the name, size, modified time and the first and
  * last megabyte) and the server answers the parts it already holds. Leaving the page while a file is going up asks first.
  * Routes: POST /upload/start (JSON), POST /upload/part?session=&n= (the raw bytes), POST /upload/finish. fetch with X-CSRF-Token; nothing of
- * the file is read into memory beyond one part (and the two megabytes of the key).
+ * the file is read into memory beyond one part (and the two megabytes of the key). Under each bar while it goes up: what has arrived of the
+ * whole, the speed over the last half minute and the time left at that speed (from the bytes sent in THIS run; "estimating…" until it knows).
+ * At the end of each bar while the file is queued, going up or paused: Cancel — asks first when something has been sent, stops the parts in
+ * flight (AbortController) and asks the server to drop the session and what arrived (POST /upload/cancel); not while the file is being stored.
  * Events on the wrap element: dc-upload:done {document_id, name}, dc-upload:all-done {count} (when nothing is queued or going up).
  */
 window.DcUpload = (function () {
@@ -28,8 +31,27 @@ window.DcUpload = (function () {
   }
   function failure(message, status, code) { return Object.assign(new Error(message), { status: status || 0, code: code || '' }); }
   function errorOf(r, fallback) { var e = r.json && r.json.error; return failure((e && e.message) || fallback, r.status, e && e.code); }
-  function state(row, cls, text) { row.badge.className = 'badge bg-soft-' + cls + ' text-' + cls + ' upload-state'; row.badge.textContent = text; row.el.dataset.state = text.split(' ')[0]; }
+  var CANCELLABLE = ['queued', 'uploading', 'retrying', 'resuming', 'paused'];
+  function state(row, cls, text) {
+    row.badge.className = 'badge bg-soft-' + cls + ' text-' + cls + ' upload-state'; row.badge.textContent = text; row.el.dataset.state = text.split(' ')[0];
+    if (row.cancel) row.cancel.classList.toggle('d-none', row.cancelled || CANCELLABLE.indexOf(row.el.dataset.state) < 0);
+  }
   function progress(row, pct) { row.bar.style.width = Math.max(0, Math.min(100, pct)) + '%'; row.bar.setAttribute('aria-valuenow', String(Math.round(pct))); }
+  function left(secs) {
+    if (secs < 45) return 'less than a minute left';
+    var m = Math.round(secs / 60); if (m < 90) return 'about ' + m + ' min left';
+    return 'about ' + Math.floor(m / 60) + ' h ' + (m % 60) + ' min left';
+  }
+  /** The speed and the time left: samples of (time, bytes here) over the last 30 s of this run; shown once 5 s or three parts have passed. */
+  function eta(row, bytes, size) {
+    var now = Date.now(); var s = row.samples || (row.samples = []); row.bytes = bytes;
+    s.push([now, bytes]); while (s.length > 2 && now - s[1][0] >= 30000) s.shift();
+    var dt = (now - s[0][0]) / 1000; var rate = dt > 0 ? (bytes - s[0][1]) / dt : 0;
+    var text = fmt(bytes) + ' of ' + fmt(size);
+    text += (row.acks >= 3 || dt >= 5) && rate > 0 ? ' · ' + fmt(Math.round(rate)) + '/s · ' + left((size - bytes) / rate) : ' · estimating…';
+    row.eta.textContent = text; row.eta.classList.remove('d-none'); row.bar.setAttribute('aria-valuetext', text);
+  }
+  function etaHide(row) { row.eta.classList.add('d-none'); row.samples = null; row.bar.removeAttribute('aria-valuetext'); }
   function busy() { return queue.some(function (r) { return r.running || !r.started; }); }
   function summarize() {
     var n = queue.length; var done = queue.filter(function (r) { return r.final; }).length; var paused = queue.filter(function (r) { return r.paused && !r.running; }).length;
@@ -40,17 +62,23 @@ window.DcUpload = (function () {
   function addRow(file, relPath) {
     rowNo++;
     var row = { file: file, relPath: relPath || '', n: rowNo, folder: null, documentId: documentId || null, mode: '', versionOf: null, key: null };
-    var li = el('div', 'list-group-item upload-row'); li.id = 'upload-row-' + rowNo; li.dataset.name = file.name;
+    var li = el('div', 'list-group-item upload-row'); li.id = 'upload-row-' + rowNo; li.dataset.name = file.name; li.dataset.state = 'queued';
     var top = el('div', 'd-flex align-items-center gap-2 min-w-0');
     var name = el('div', 'fw-semibold text-truncate flex-grow-1 min-w-0 upload-name', (relPath ? relPath + '/' : '') + file.name);
     var size = el('span', 'fs-11 text-muted text-nowrap', fmt(file.size));
     row.badge = el('span', 'badge bg-soft-secondary text-secondary upload-state', 'queued');
     top.appendChild(name); top.appendChild(size); top.appendChild(row.badge);
-    var prog = el('div', 'progress mt-1'); prog.style.height = '6px';
+    var line = el('div', 'd-flex align-items-center gap-2 mt-1');
+    var prog = el('div', 'progress flex-grow-1'); prog.style.height = '6px';
     row.bar = el('div', 'progress-bar'); row.bar.setAttribute('role', 'progressbar'); row.bar.style.width = '0%'; prog.appendChild(row.bar);
+    row.cancel = el('button', 'btn btn-sm btn-light btn-touch upload-cancel'); row.cancel.type = 'button'; row.cancel.id = 'upload-cancel-' + rowNo;
+    row.cancel.title = 'Cancel'; row.cancel.setAttribute('aria-label', 'Cancel the upload of ' + file.name); row.cancel.innerHTML = '<i class="feather-x"></i>';
+    row.cancel.addEventListener('click', function () { cancel(row); });
+    line.appendChild(prog); line.appendChild(row.cancel);
+    row.eta = el('div', 'fs-11 text-muted mt-1 upload-eta d-none'); row.eta.id = 'upload-eta-' + rowNo; row.eta.setAttribute('aria-hidden', 'true');   // the bar's aria-valuetext says it
     row.msg = el('div', 'fs-11 text-muted mt-1 upload-msg');
     row.choice = el('div', 'd-flex gap-1 mt-1 d-none upload-conflict');
-    li.appendChild(top); li.appendChild(prog); li.appendChild(row.msg); li.appendChild(row.choice);
+    li.appendChild(top); li.appendChild(line); li.appendChild(row.eta); li.appendChild(row.msg); li.appendChild(row.choice);
     row.el = li; list.appendChild(li);
     queue.push(row);
     return row;
@@ -92,15 +120,19 @@ window.DcUpload = (function () {
 
   function sendPart(row, session, n, attempt) {
     attempt = attempt || 0;
+    if (row.cancelled) return Promise.reject(failure('Cancelled.', 0, 'cancelled'));
     var start = (n - 1) * session.part_bytes; var blob = row.file.slice(start, Math.min(row.file.size, start + session.part_bytes));
-    return fetch('/upload/part?session=' + session.session_id + '&n=' + n, { method: 'POST', headers: headers({ 'Content-Type': 'application/octet-stream' }), body: blob, credentials: 'same-origin' })
+    return fetch('/upload/part?session=' + session.session_id + '&n=' + n, { method: 'POST', headers: headers({ 'Content-Type': 'application/octet-stream' }), body: blob, credentials: 'same-origin', signal: row.aborter ? row.aborter.signal : undefined })
       .then(function (r) { return r.json().then(function (j) { return { status: r.status, json: j }; }, function () { return { status: r.status, json: {} }; }); },
         function () { throw failure('The connection dropped.', 0); })
       .then(function (r) { if (r.status !== 200) { throw errorOf(r, 'Part ' + n + ' failed.'); } return r.json; })
       .catch(function (e) {
         if (attempt < RETRY_WAITS.length && RETRYABLE.indexOf(e.status) >= 0 && !row.stopping) {
           state(row, 'warning', 'retrying ' + (row.done || 0) + '/' + session.parts_total);
-          return new Promise(function (res) { setTimeout(res, RETRY_WAITS[attempt]); }).then(function () { return sendPart(row, session, n, attempt + 1); });
+          return new Promise(function (res) {                          // a Cancel ends the wait at once
+            var t = setTimeout(res, RETRY_WAITS[attempt]);
+            if (row.aborter) row.aborter.signal.addEventListener('abort', function () { clearTimeout(t); res(); }, { once: true });
+          }).then(function () { return sendPart(row, session, n, attempt + 1); });
         }
         throw e;
       });
@@ -108,9 +140,14 @@ window.DcUpload = (function () {
 
   function runSession(row, session) {
     var total = session.parts_total;
+    row.session = session; row.aborter = window.AbortController ? new AbortController() : null;
+    if (row.cancelled) { row.afterRun = null; return dropOnServer(row); }            // cancelled while the start was on its way
     if (total === 0) { progress(row, 100); state(row, 'info', 'finishing'); return finish(row, session, ''); }
     var have = {}; (session.parts_received || []).forEach(function (p) { have[p] = true; });
     row.done = Object.keys(have).length; row.stopping = false;
+    var size = row.file.size; var lenOf = function (n) { return n < total ? session.part_bytes : size - (total - 1) * session.part_bytes; };
+    var bytes = 0; Object.keys(have).forEach(function (p) { bytes += lenOf(Number(p)); });
+    row.samples = null; row.acks = 0; eta(row, bytes, size);
     progress(row, row.done / total * 100);
     state(row, 'info', 'uploading ' + row.done + '/' + total);
     if (session.resumed) { row.msg.textContent = 'Carrying on from ' + Math.round(row.done / total * 100) + '%: ' + row.done + ' of ' + total + ' parts were already here.'; }
@@ -123,14 +160,14 @@ window.DcUpload = (function () {
         while (inflight < MAX_INFLIGHT && next <= total) {
           (function (n) {
             inflight++;
-            sendPart(row, session, n).then(function () { inflight--; have[n] = true; row.done++; progress(row, row.done / total * 100); state(row, 'info', 'uploading ' + row.done + '/' + total); pump(); },
+            sendPart(row, session, n).then(function () { inflight--; have[n] = true; row.done++; row.acks++; bytes += lenOf(n); progress(row, row.done / total * 100); eta(row, bytes, size); state(row, 'info', 'uploading ' + row.done + '/' + total); pump(); },
               function (e) { inflight--; failed = failed || e; row.stopping = true; pump(); });
           })(next++);
           while (next <= total && have[next]) next++;
         }
       }
       pump();
-    }).then(function () { state(row, 'info', 'finishing'); return finish(row, session, ''); });
+    }).then(function () { etaHide(row); state(row, 'info', 'finishing'); return finish(row, session, ''); });
   }
 
   function finish(row, session, conflict) {
@@ -149,7 +186,7 @@ window.DcUpload = (function () {
   }
 
   function askConflict(row, session, err) {
-    state(row, 'warning', 'conflict'); row.msg.textContent = err.message + ' ';
+    etaHide(row); state(row, 'warning', 'conflict'); row.msg.textContent = err.message + ' ';
     row.choice.className = 'd-flex gap-1 mt-1 flex-wrap upload-conflict';
     row.choice.innerHTML = '';
     return new Promise(function (resolve) {
@@ -177,6 +214,8 @@ window.DcUpload = (function () {
    * update — Resume starts it afresh) pause the file; anything else is a refusal in its words.
    */
   function stopped(row, e) {
+    etaHide(row);
+    if (row.cancelled) return;
     var pausable = RETRYABLE.indexOf(e.status || 0) >= 0 || e.status === 507 || e.status === 410 || e.code === 'restart';
     if (!pausable) { state(row, 'danger', 'refused'); row.final = true; row.paused = false; row.msg.textContent = e.message || String(e); return; }
     row.paused = true;
@@ -190,7 +229,8 @@ window.DcUpload = (function () {
   function run(row) {
     row.started = true; row.running = true;
     return startFile(row).catch(function (e) { stopped(row, e); })
-      .then(function () { row.running = false; summarize(); runQueue(); });
+      .then(function () { row.running = false; return row.afterRun ? row.afterRun() : null; })
+      .then(function () { row.afterRun = null; summarize(); runQueue(); });
   }
 
   function resume(row) {
@@ -230,6 +270,28 @@ window.DcUpload = (function () {
     var entries = [];
     for (var i = 0; i < items.length; i++) { var e = items[i].webkitGetAsEntry ? items[i].webkitGetAsEntry() : null; if (e) entries.push(e); }
     return Promise.all(entries.map(function (e) { return readEntry(e, ''); })).then(function () { return { files: files, paths: paths }; });
+  }
+
+  /** Ask the server to drop the session and what arrived; whatever it answers, the row is cancelled (a session it no longer has is gone already). */
+  function dropOnServer(row) {
+    var done = function () { progress(row, 0); state(row, 'secondary', 'cancelled'); row.final = true; row.paused = false; row.msg.textContent = 'Cancelled. Nothing of it is kept.'; summarize(); };
+    if (!row.session || !row.session.session_id || row.session.parts_total === 0) { done(); return Promise.resolve(); }
+    return postForm('/upload/cancel', { session: row.session.session_id }).then(function (r) {
+      if (r.status === 409 && r.json.error && /stored already/.test(r.json.error.message || '')) { row.msg.textContent = r.json.error.message; return; }
+      done();
+    }, done);
+  }
+
+  function cancel(row) {
+    if (row.cancelled || row.final) return;
+    var sent = row.bytes || 0;                                         // what the server holds of it (kept when the row pauses)
+    if ((row.started || row.paused) && sent > 0 && !window.confirm('Cancel the upload of ' + row.file.name + '? The ' + fmt(sent) + ' already sent are removed.')) return;
+    row.cancelled = true; row.stopping = true; etaHide(row); state(row, 'secondary', 'cancelling');
+    if (row.aborter) row.aborter.abort();
+    if (!row.started) { row.started = true; dropOnServer(row); return; }
+    if (!row.running) { dropOnServer(row); return; }                 // paused: nothing in flight
+    // running: the parts in flight end (aborted), run() settles, then the server is told
+    row.afterRun = function () { return dropOnServer(row); };
   }
 
   function mount(root) {

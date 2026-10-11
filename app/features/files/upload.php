@@ -471,6 +471,24 @@ function upload_fail(PDO $pdo, int $sessionId, string $why): void
     $pdo->prepare("UPDATE upload_sessions SET status = 'failed', error = :e WHERE id = :s")->execute(['e' => mb_substr($why, 0, 500), 's' => $sessionId]);
 }
 
+/**
+ * Cancel an open session (the uploader's Cancel): expired with the error "cancelled" under the row lock, what arrived removed. 409 not_open
+ * when it is assembling (being stored: too late to cancel) or over. Returns [session_id, parts_done, byte_size].
+ */
+function upload_cancel(PDO $pdo, array $session): array
+{
+    $id = (int) $session['id'];
+    $st = $pdo->prepare("UPDATE upload_sessions SET status = 'expired', error = 'cancelled' WHERE id = :s AND status = 'open' RETURNING parts_done, byte_size");
+    $st->execute(['s' => $id]);
+    $r = $st->fetch();
+    if ($r === false) {
+        $now = (string) one_value($pdo, 'SELECT status FROM upload_sessions WHERE id = :s', ['s' => $id]);
+        throw new UploadRefused(409, 'not_open', $now === 'assembling' ? 'This upload is being stored already.' : 'This upload is ' . ($now === 'expired' ? 'over' : $now) . '.');
+    }
+    store_unlink('uploads/' . $id);
+    return ['session_id' => $id, 'parts_done' => (int) $r['parts_done'], 'byte_size' => (int) $r['byte_size']];
+}
+
 /** Discard a session (the uploader gave up, or skipped a conflict): the parts removed, the row expired. */
 function upload_discard(PDO $pdo, array $session): void
 {

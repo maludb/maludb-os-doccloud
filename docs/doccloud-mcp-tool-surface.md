@@ -270,7 +270,7 @@ query over 120 characters, a token, a link, a password, a storage path.**
 - `document.upload|version|rename|move|copy|describe|open|download|preview|export|lock|unlock|lock_break|trash|restore|purge|transfer|preview_hide|preview_show`:
   `document_id`, `name`, `version_no`, `byte_size`, `mime_type`, `sha256` (the hash is not a secret), `folder_id`, `owner_member_id`,
   `source` (web, api, agent, request, restore, copy), `link_id` (an open through a link), `application` (through a share).
-- `version.restore|purge`: `version_id`, `version_no`, `document_id`. `upload.start|finish|fail|expire`: `upload_session_id`, `parts`.
+- `version.restore|purge`: `version_id`, `version_no`, `document_id`. `upload.start|finish|fail|expire|cancel`: `upload_session_id`, `parts`.
 - `tag.create|apply|remove|merge|propose|accept|dismiss|delete`: `tag_id`, `slug`, `document_id`, `into_tag_id`, `source`.
 - `link.make|rotate|revoke|open|refused|expire`: `link_id`, `label`, `kind`, `folder_id` or `document_id`, `expires_at`, `what`,
   `address_key` (8 characters of the hash). `request.make|close|upload`: `link_id`, `label`, `document_id`, `byte_size`.

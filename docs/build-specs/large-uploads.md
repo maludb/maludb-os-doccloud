@@ -35,6 +35,18 @@ authentication, sessions and checks, its "rename the old file" on a repeated nam
 | L9 | The folder export | Its fixed 2 GB cap goes (it silently left a large file out): a zip holds up to the store's room and 10,000 entries; ZipArchive writes Zip64 past 4 GB; a file of 64 MB or more is **stored** uncompressed. |
 | L10 | Requests through a link | Unchanged: one request of at most 64 MB (or an admin's lower ceiling) — a file request is a single POST from someone with no account. |
 
+## Time left and Cancel (the owner, 2026-10-11, watching a 5.7 GB upload)
+- **Under each bar while it goes up**: what has arrived of the whole, the speed and the time left — "1.2 GB of 5.4 GB · 3.8 MB/s · about
+  18 min left". The speed is measured over the last 30 s of THIS run (bytes the server acknowledged, whole parts), so a resume starts its own
+  estimate; "estimating…" until three parts or five seconds have passed. The bar's `aria-valuetext` carries the same words.
+- **Cancel** (an × at the end of each bar) while a file is queued, going up, retrying or paused — not while it is being stored, and not on a
+  conflict (Skip is there). A queued file is cancelled at once; once anything has been sent it asks first ("The 1.2 GB already sent are
+  removed."). The parts in flight are aborted (`AbortController`, a retry's wait ends too), then **`POST /upload/cancel`** (a route of
+  `document_upload`, as start, part and finish are; the session's owner only, 404 otherwise; an open session only — 409 when it is being
+  stored or is over): the session expires with the error `cancelled` under its row lock (a part being written finishes first; one waiting is
+  refused), what arrived is removed, `upload.cancel` is logged with the parts that had arrived. A cancelled file cannot be resumed.
+- The uploader's script is included as `dc-upload.js?v=<its modified time>` so a browser never keeps an old copy after a deploy.
+
 ## Schema — `db/024_large_uploads.sql` (additive)
 - `dc_settings.max_document_bytes` drops NOT NULL, defaults to NULL, CHECK `IS NULL OR >= 1 MB` (no top); the seeded 2 GB is cleared.
 - `upload_sessions` gains `writes_at_offset` (boolean, default false; new sessions true), `hashed_parts` (integer, CHECK 0..parts_total),
@@ -72,5 +84,7 @@ the hash); a session from before db/024; the expiry moved by a part; 507 for a f
 promises leave no room for; the zone's words with and without a ceiling; the worker's sweep. `browser.mjs` (17, Chromium): a 2.1 GB file
 chosen goes to done with its sha256 (84 s on this VM); a page left mid-way asks first, and the same file chosen again carries on from where
 it stopped in ONE session; a part refused as the store full pauses the file with Resume, which finishes it; a part lost on the network is
-sent again. Slice 2, 3, 6, 7 and 9's suites and the schema proof re-run with the ceiling NULL.
+sent again; the time left under a bar (and in its aria-valuetext); Cancel on a queued file (nothing reaches the server), Cancel declined
+(it goes on), Cancel confirmed (the session expired `cancelled`, its file removed), the other file finishing. `large.php` §10: the cancel route
+(owner only, twice, too late while stored, a part after it, logged). Slice 2, 3, 6, 7 and 9's suites and the schema proof re-run with the ceiling NULL.
 Measured on this VM (busy, x86-64-v2): about 25–40 MB/s end to end with three parts in flight — the sha256 (PHP, ~60 MB/s here) is the bound.
