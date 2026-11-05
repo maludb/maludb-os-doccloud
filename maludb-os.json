@@ -109,6 +109,7 @@
       "name": "Records MCP",
       "kind": "mcp",
       "path": "/mcp/records",
+      "port_env": "MCP_RECORDS_PORT",
       "auth_kind": "bearer",
       "agent_reachable": true,
       "mcp_surface_version": 1
@@ -117,6 +118,7 @@
       "name": "Activity MCP",
       "kind": "mcp",
       "path": "/mcp/activity",
+      "port_env": "MCP_ACTIVITY_PORT",
       "auth_kind": "bearer",
       "agent_reachable": true,
       "mcp_surface_version": 1
